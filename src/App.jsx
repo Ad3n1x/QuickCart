@@ -29,6 +29,7 @@ function App() {
 
   const hash = window.location.hash;
   const publicMatch = hash.match(/^#\/store\/([^/]+)/);
+  const verifyMatch = hash.match(/^#\/verify-email\?token=([^&]+)/);
 
   const loadPrivate = async () => {
     const token = localStorage.getItem('quickcart_token');
