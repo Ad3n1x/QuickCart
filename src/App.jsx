@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BarChart3, Check, Copy, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, QrCode, Save, Settings, ShoppingBag, Store, Trash2, Users, X } from 'lucide-react';
+import { BarChart3, Copy, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, QrCode, Save, Settings, ShoppingBag, Store, Trash2, Users, X } from 'lucide-react';
 
 const API_BASE = import.meta.env.API_URL || '';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
@@ -27,12 +27,8 @@ function App() {
   const [authOpen, setAuthOpen] = useState(false), [authMode, setAuthMode] = useState('signup'), [authForm, setAuthForm] = useState({ name: '', email: '', password: '' }), [authError, setAuthError] = useState('');
   const [otpOpen, setOtpOpen] = useState(false), [otp, setOtp] = useState(''), [otpEmail, setOtpEmail] = useState(''), [otpMessage, setOtpMessage] = useState(''), [otpLoading, setOtpLoading] = useState(false);
   const [storeSetupOpen, setStoreSetupOpen] = useState(false), [productModalOpen, setProductModalOpen] = useState(false);
-  const [verificationState, setVerificationState] = useState(null);
-
   const hash = window.location.hash;
   const publicMatch = hash.match(/^#\/store\/([^/]+)/);
-  const verifyMatch = hash.match(/^#\/verify-email\?token=([^&]+)/);
-
   const loadPrivate = async () => {
     const token = localStorage.getItem('quickcart_token');
     if (!token) return;
@@ -48,12 +44,7 @@ function App() {
 
   const loadPublic = async slug => { try { setPublicStore(await api(`/api/storefront/${slug}`)); } catch { setPublicStore(null); } };
   useEffect(() => {
-    if (verifyMatch) {
-      setVerificationState({ loading: true, message: '' });
-      api('/api/auth/verify-email', { method: 'POST', body: JSON.stringify({ token: decodeURIComponent(verifyMatch[1]) }) })
-        .then(data => { localStorage.setItem('quickcart_token', data.token); setVerificationState({ loading: false, message: data.message }); setUser(data.user); loadPrivate(); })
-        .catch(error => setVerificationState({ loading: false, message: error.message, error: true }));
-    } else if (publicMatch) loadPublic(publicMatch[1]); else loadPrivate();
+    if (publicMatch) loadPublic(publicMatch[1]); else loadPrivate();
   }, [hash]);
 
   const submitAuth = async e => {
@@ -121,7 +112,6 @@ function App() {
     setProducts(current => current.filter(p => p.id !== id));
   };
 
-  if (verifyMatch) return <VerifyEmail state={verificationState} />;
   if (publicMatch) return <PublicStore data={publicStore} cart={customerCart} setCart={setCustomerCart} customer={customer} setCustomer={setCustomer} />;
   if (!user) return <Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} otpOpen={otpOpen} otp={otp} setOtp={setOtp} otpEmail={otpEmail} otpMessage={otpMessage} otpLoading={otpLoading} onVerifyOtp={verifyOtp} onResendOtp={resendOtp} onCloseOtp={() => setOtpOpen(false)} />;
   if (!store) return <><main className="landing"><div className="landing-nav"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div><section className="landing-hero"><span className="eyebrow-dark">ONE LAST STEP</span><h1>Set up your <span>store.</span></h1><p>Your account is ready. Add the basics and QuickCart will create your storefront.</p><button className="primary big" onClick={() => setStoreSetupOpen(true)} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></section></main><StoreSetupModal open={storeSetupOpen} onClose={() => setStoreSetupOpen(false)} onCreate={async () => { await createStore(); setStoreSetupOpen(false); }} saving={saving} /></>;
@@ -136,7 +126,7 @@ function App() {
       <aside className="sidebar"><div className="store-mini"><Store size={18} /><strong>{store.storeName}</strong><small>/{store.slug}</small></div>{[['dashboard','Overview',BarChart3],['products','Products',Package],['orders','Orders',ShoppingBag],['settings','Store settings',Settings]].map(([id,label,Icon]) => <button key={id} className={view === id ? 'nav active' : 'nav'} onClick={() => setView(id)}><Icon size={17} /> {label}</button>)}<div className="sidebar-spacer" /><div className="help"><Users size={17} /><strong>Built for social sellers</strong><span>WhatsApp-first checkout, simple catalog management.</span></div></aside>
       <section className="dashboard-content">
         {view === 'dashboard' && <><div className="page-head"><div><span className="eyebrow-dark">STORE DASHBOARD</span><h1>Good to see you, {user.name || 'seller'}.</h1><p>Manage your storefront and turn social traffic into orders.</p></div><button className="primary" onClick={() => setView('products')}><Plus size={17} /> Add product</button></div><div className="stats"><Stat label="Revenue" value={money(revenue)} /><Stat label="Orders" value={String(orders.length)} /><Stat label="Pending" value={String(pending)} /><Stat label="Products" value={String(products.length)} /></div><div className="dashboard-grid"><div className="panel"><div className="panel-head"><h2>Recent orders</h2><button className="link-btn" onClick={() => setView('orders')}>View all</button></div>{orders.length ? orders.slice(0, 5).map(o => <OrderRow key={o.id} order={o} />) : <Empty icon={<ShoppingBag />} text="No orders yet" />}</div><div className="panel quick"><h2>Store tools</h2><Tool icon={<Copy />} title="Copy storefront link" action={() => navigator.clipboard.writeText(shareUrl)} /><Tool icon={<QrCode />} title="Share QR code" action={() => alert(shareUrl)} /><Tool icon={<MessageCircle />} title="WhatsApp checkout" action={() => setView('settings')} /></div></div></>}
-        {view === 'products' && <><div className="page-head"><div><span className="eyebrow-dark">CATALOG</span><h1>Products</h1><p>Add products and control stock.</p></div><button className="primary" onClick={() => setProductModalOpen(true)}><Plus size={17} /> Add product</button></div><div className="product-admin panel"><div className="form-grid">{[['name','Product name','text'],['price','Price','number'],['description','Description','text'],['emoji','Icon','text'],['stock','Stock','number']].map(([key,label,type]) => <label className="field" key={key}><span>{label}</span><input type={type} value={productForm[key]} onChange={e => setProductForm({ ...productForm, [key]: type === 'number' ? Number(e.target.value) : e.target.value })} /></label>)}</div></div><div className="product-admin panel"><h2>Current products</h2>{products.map(p => <div className="admin-row" key={p.id}><span className="product-icon">{p.emoji}</span><div><strong>{p.name}</strong><small>{p.description} · {p.stock} in stock</small></div><strong>{money(p.price)}</strong><button className="icon-btn" onClick={() => deleteProduct(p.id)}><Trash2 size={16} /></button></div>)}</div></>}
+        {view === 'products' && <><div className="page-head"><div><span className="eyebrow-dark">CATALOG</span><h1>Products</h1><p>Add products and control stock.</p></div><button className="primary" onClick={() => setProductModalOpen(true)}><Plus size={17} /> Add product</button></div><div className="product-admin panel"><h2>Current products</h2>{products.map(p => <div className="admin-row" key={p.id}><span className="product-icon">{p.emoji}</span><div><strong>{p.name}</strong><small>{p.description} · {p.stock} in stock</small></div><strong>{money(p.price)}</strong><button className="icon-btn" onClick={() => deleteProduct(p.id)}><Trash2 size={16} /></button></div>)}</div></>}
         {view === 'orders' && <><div className="page-head"><div><span className="eyebrow-dark">SALES</span><h1>Orders</h1><p>Track every WhatsApp checkout.</p></div></div><div className="panel">{orders.length ? orders.map(o => <OrderRow key={o.id} order={o} />) : <Empty icon={<ShoppingBag />} text="No orders yet" />}</div></>}
         {view === 'settings' && <StoreSettings store={store} saving={saving} onSave={saveStore} shareUrl={shareUrl} />}
       </section>
