@@ -9,9 +9,10 @@ import { Resend } from 'resend';
 const app = express();
 
 const frontendUrl = process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app';
+const allowedOrigins = new Set([frontendUrl, 'http://localhost:5173', 'http://localhost:4173']);
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || origin === frontendUrl || /^https?:\/\/localhost(?::\\d+)?$/.test(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
     callback(new Error('Origin not allowed by CORS.'));
   }
 }));
