@@ -19,6 +19,10 @@ Set these on the hosting platforms, never in GitHub:
 - `BREVO_FROM_NAME`
 - `FRONTEND_URL`
 - `API_URL` (frontend build variable)
+- `ALATPAY_SECRET_KEY`
+- `ALATPAY_PUBLIC_KEY`
+- `ALATPAY_BUSINESS_ID`
+- `ALATPAY_BASE_URL`
 
 The MongoDB database is `quickcart`.
 
