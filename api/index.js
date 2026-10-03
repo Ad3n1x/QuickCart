@@ -19,7 +19,7 @@ const brevoFromName = process.env.BREVO_FROM_NAME || 'QuickCart';
 const alatPaySecretKey = process.env.ALATPAY_SECRET_KEY;
 const alatPayPublicKey = process.env.ALATPAY_PUBLIC_KEY;
 const alatPayBusinessId = process.env.ALATPAY_BUSINESS_ID;
-const alatPayBaseUrl = process.env.ALATPAY_BASE_URL || 'https://api.alatpay.ng';
+const alatPayBaseUrl = process.env.ALATPAY_BASE_URL || 'https://apibox.alatpay.ng/bank-transfer';
 if (!mongoUri) console.warn('MONGODB_URI is not configured.');
 if (!jwtSecret) console.warn('JWT_SECRET is not configured.');
 if (!brevoApiKey) console.warn('BREVO_API_KEY is not configured.');
