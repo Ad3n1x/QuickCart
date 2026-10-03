@@ -122,3 +122,9 @@ body{background:var(--bg);color:var(--ink)}button,a,input{font:inherit}.landing{
 .payment-confirmed-card strong,.payment-confirmed-card code{font-size:12px;text-align:right;word-break:break-all}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(93,146,121,.45)}70%{box-shadow:0 0 0 8px rgba(93,146,121,0)}100%{box-shadow:0 0 0 0 rgba(93,146,121,0)}}
 @media(max-width:520px){.payment-account-number strong{font-size:20px}.payment-confirmed-card{grid-template-columns:1fr}.payment-confirmed-card strong,.payment-confirmed-card code{text-align:left}}
+
+.global-loading{position:fixed;inset:0;z-index:3000;display:grid;place-items:center;background:rgba(7,25,18,.18);backdrop-filter:blur(3px);animation:fadeIn .12s ease}
+.loading-card{min-width:190px;padding:20px 24px;border:1px solid rgba(255,255,255,.8);border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 20px 60px rgba(16,43,33,.18);display:grid;place-items:center;gap:8px;text-align:center}
+.loading-card strong{font-size:13px}.loading-card span{font-size:10px;color:var(--muted)}
+.loading-spinner{width:28px;height:28px;border:3px solid #dfeae4;border-top-color:#12392d;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
