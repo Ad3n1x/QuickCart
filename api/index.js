@@ -65,7 +65,7 @@ async function createAlatPayVirtualAccount(order) {
     headers: { 'Content-Type': 'application/json', 'Ocp-Apim-Subscription-Key': alatPaySecretKey },
     body: JSON.stringify({
       businessId: alatPayBusinessId,
-      businessName: String(order.storeName || 'QuickCart Store'),
+      businessName: 'AD3N1X',
       amount: Number(order.total),
       currency: 'NGN',
       orderId: order.id,
