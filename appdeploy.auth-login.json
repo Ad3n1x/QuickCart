@@ -1,0 +1,14 @@
+{
+  "methods": ["google", "apple", "x", "email"],
+  "headline": "Create your QuickCart store",
+  "subtitle": "Sign in to manage your storefront, products and orders.",
+  "style": {
+    "mode": "light",
+    "accentColor": "#12392d",
+    "backgroundColor": "#f3f7f4",
+    "panelColor": "#ffffff",
+    "textColor": "#10201b",
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "borderRadius": 14
+  }
+}
