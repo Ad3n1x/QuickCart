@@ -7,8 +7,10 @@ import { randomUUID, createHash } from 'node:crypto';
 
 const app = express();
 const frontendUrl = process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app';
-const allowedOrigins = new Set([frontendUrl, 'http://localhost:5173', 'http://localhost:4173']);
-app.use(cors({ origin: (origin, callback) => { if (!origin || allowedOrigins.has(origin)) return callback(null, true); callback(new Error('Origin not allowed by CORS.')); } }));
+const allowedOrigins = new Set([frontendUrl, 'https://quick-cart-three-chi.vercel.app', 'http://localhost:5173', 'http://localhost:4173']);
+const isAllowedOrigin = origin => !origin || allowedOrigins.has(origin) || /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+app.use(cors({ origin: (origin, callback) => callback(null, isAllowedOrigin(origin)), methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'], allowedHeaders: ['Content-Type','Authorization','X-Store-Id'], optionsSuccessStatus: 204 }));
+app.options('*', cors({ origin: (origin, callback) => callback(null, isAllowedOrigin(origin)), methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'], allowedHeaders: ['Content-Type','Authorization','X-Store-Id'], optionsSuccessStatus: 204 }));
 app.use(express.json({ limit: '2mb' }));
 
 const mongoUri = process.env.MONGODB_URI;
