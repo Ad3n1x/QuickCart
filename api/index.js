@@ -29,8 +29,25 @@ if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 
 let dbPromise;
 async function db() { if (!mongoUri) throw new Error('MONGODB_URI is not configured.'); if (!dbPromise) { const client = new MongoClient(mongoUri); dbPromise = client.connect().then(c => c.db('quickcart')); } return dbPromise; }
-function tokenFor(user) { if (!jwtSecret) throw new Error('JWT_SECRET is not configured.'); return jwt.sign({ sub: user.id, email: user.email, name: user.name }, jwtSecret, { expiresIn: '7d' }); }
-function auth(req, res, next) { try { const h=req.headers.authorization||''; const token=h.startsWith('Bearer ')?h.slice(7):''; if(!token||!jwtSecret)return res.status(401).json({error:'Authentication required.'}); req.user=jwt.verify(token,jwtSecret); next(); } catch { return res.status(401).json({error:'Invalid or expired session.'}); } }
+function tokenFor(user) { if (!jwtSecret) throw new Error('JWT_SECRET is not configured.'); return jwt.sign({ sub: user.id, email: user.email, name: user.name }, jwtSecret, { expiresIn: '8h' }); }
+async function auth(req, res, next) {
+  try {
+    const h=req.headers.authorization||'';
+    const token=h.startsWith('Bearer ')?h.slice(7):'';
+    if(!token||!jwtSecret)return res.status(401).json({error:'Authentication required.'});
+    req.user=jwt.verify(token,jwtSecret);
+    const database=await db();
+    const user=await database.collection('users').findOne({id:req.user.sub},{projection:{lastActivityAt:1}});
+    if(!user)return res.status(401).json({error:'Session expired. Please sign in again.'});
+    const last=Date.parse(user.lastActivityAt||0);
+    if(last && Date.now()-last > 30*60*1000) return res.status(401).json({error:'Your session expired after 30 minutes of inactivity. Please sign in again.'});
+    await database.collection('users').updateOne({id:req.user.sub},{$set:{lastActivityAt:now()}});
+    next();
+  } catch(error) {
+    if(error?.name==='TokenExpiredError') return res.status(401).json({error:'Your session has expired. Please sign in again.'});
+    return res.status(401).json({error:'Invalid or expired session.'});
+  }
+}
 const hashToken = token => createHash('sha256').update(token).digest('hex');
 const now = () => new Date().toISOString();
 const slugify = value => String(value).toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,48);
