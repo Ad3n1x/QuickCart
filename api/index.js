@@ -65,10 +65,12 @@ async function createAlatPayVirtualAccount(order) {
     headers: { 'Content-Type': 'application/json', 'Ocp-Apim-Subscription-Key': alatPaySecretKey },
     body: JSON.stringify({
       businessId: alatPayBusinessId,
+      businessName: String(order.storeName || 'QuickCart Store'),
       amount: Number(order.total),
       currency: 'NGN',
       orderId: order.id,
       description: `QuickCart order ${order.id}`,
+      channel: 'WEB',
       customer: {
         email: String(order.customerEmail || ''),
         phone: String(order.customerPhone || ''),
@@ -123,7 +125,8 @@ app.post('/api/payments/alatpay/callback',async(req,res)=>{
     const data=payload.data||payload;
     const orderId=String(data.orderId||data.virtualAccount?.orderId||'').trim();
     const transactionId=String(data.transactionId||data.id||data.virtualAccount?.transactionId||'').trim();
-    const status=String(data.status||data.transactionStatus||'').toLowerCase();
+    const nipStatus=String(data.nipTransaction?.transactionStatus||'').toLowerCase();
+    const status=String(data.status||data.transactionStatus||nipStatus||'').toLowerCase();
     const update={paymentProvider:'alatpay',paymentTransactionId:transactionId,paymentUpdatedAt:now(),paymentCallback:payload};
     if(['success','successful','completed','paid','true'].includes(status)) {
       update.paymentStatus='paid';
