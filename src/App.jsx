@@ -25,6 +25,7 @@ function App() {
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' }), [saving, setSaving] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', price: 0, description: '', emoji: '🛍️', stock: 0 });
   const [authOpen, setAuthOpen] = useState(false), [authMode, setAuthMode] = useState('signup'), [authForm, setAuthForm] = useState({ name: '', email: '', password: '' }), [authError, setAuthError] = useState('');
+  const [otpOpen, setOtpOpen] = useState(false), [otp, setOtp] = useState(''), [otpEmail, setOtpEmail] = useState(''), [otpMessage, setOtpMessage] = useState(''), [otpLoading, setOtpLoading] = useState(false);
   const [storeSetupOpen, setStoreSetupOpen] = useState(false), [productModalOpen, setProductModalOpen] = useState(false);
   const [verificationState, setVerificationState] = useState(null);
 
@@ -63,13 +64,32 @@ function App() {
       if (authMode === 'signup') {
         setAuthOpen(false);
         setAuthError('');
-        alert(data.message || 'Check your email to verify your account.');
-        setAuthMode('login');
+        setOtpEmail(data.email || authForm.email.trim().toLowerCase());
+        setOtp('');
+        setOtpMessage(data.message || 'We sent a 6-digit code to your email.');
+        setOtpOpen(true);
         return;
       }
       localStorage.setItem('quickcart_token', data.token);
       setAuthOpen(false); setUser(data.user); await loadPrivate();
     } catch (error) { setAuthError(error.message); }
+  };
+
+  const verifyOtp = async e => {
+    e.preventDefault(); setOtpLoading(true); setOtpMessage('');
+    try {
+      const data = await api('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify({ email: otpEmail, otp }) });
+      localStorage.setItem('quickcart_token', data.token);
+      setOtpOpen(false); setOtp(''); setUser(data.user); await loadPrivate();
+    } catch (error) { setOtpMessage(error.message); }
+    finally { setOtpLoading(false); }
+  };
+
+  const resendOtp = async () => {
+    setOtpLoading(true); setOtpMessage('');
+    try { const data = await api('/api/auth/resend-otp', { method: 'POST', body: JSON.stringify({ email: otpEmail }) }); setOtpMessage(data.message || 'A new code has been sent.'); setOtp(''); }
+    catch (error) { setOtpMessage(error.message); }
+    finally { setOtpLoading(false); }
   };
 
   const signOut = () => { localStorage.removeItem('quickcart_token'); setUser(null); setStore(null); setProducts([]); setOrders([]); };
@@ -103,7 +123,7 @@ function App() {
 
   if (verifyMatch) return <VerifyEmail state={verificationState} />;
   if (publicMatch) return <PublicStore data={publicStore} cart={customerCart} setCart={setCustomerCart} customer={customer} setCustomer={setCustomer} />;
-  if (!user) return <Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} />;
+  if (!user) return <Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} otpOpen={otpOpen} otp={otp} setOtp={setOtp} otpEmail={otpEmail} otpMessage={otpMessage} otpLoading={otpLoading} onVerifyOtp={verifyOtp} onResendOtp={resendOtp} onCloseOtp={() => setOtpOpen(false)} />;
   if (!store) return <><main className="landing"><div className="landing-nav"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div><section className="landing-hero"><span className="eyebrow-dark">ONE LAST STEP</span><h1>Set up your <span>store.</span></h1><p>Your account is ready. Add the basics and QuickCart will create your storefront.</p><button className="primary big" onClick={() => setStoreSetupOpen(true)} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></section></main><StoreSetupModal open={storeSetupOpen} onClose={() => setStoreSetupOpen(false)} onCreate={async () => { await createStore(); setStoreSetupOpen(false); }} saving={saving} /></>;
 
   const revenue = orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0);
