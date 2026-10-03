@@ -128,3 +128,5 @@ body{background:var(--bg);color:var(--ink)}button,a,input{font:inherit}.landing{
 .loading-card strong{font-size:13px}.loading-card span{font-size:10px;color:var(--muted)}
 .loading-spinner{width:28px;height:28px;border:3px solid #dfeae4;border-top-color:#12392d;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+.icon-picker{grid-column:1/-1;margin:4px 0 18px}.field-label{font-size:12px;font-weight:850;color:#52655d;margin-bottom:9px}.icon-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#f8fbf9}.product-icon-choice{height:46px;border:1px solid #e1e9e4;border-radius:11px;background:#fff;font-size:24px;display:grid;place-items:center;transition:.15s;box-shadow:0 1px 2px rgba(18,57,45,.03)}.product-icon-choice:hover{transform:translateY(-1px);border-color:#b7d0c3;background:#f5faf7}.product-icon-choice.selected{border:2px solid #12392d;background:#edf5ef;box-shadow:0 0 0 3px #d9ff8b55}@media(max-width:640px){.icon-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:7px}.product-icon-choice{height:44px}}
