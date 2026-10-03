@@ -3,7 +3,10 @@ import { BarChart3, Check, Copy, Crown, Eye, EyeOff, ExternalLink, LogIn, LogOut
 
 const API_BASE = import.meta.env.API_URL || '';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
+let activeRequests = 0;
+const setGlobalLoading = delta => { activeRequests = Math.max(0, activeRequests + delta); window.dispatchEvent(new CustomEvent('quickcart-loading', { detail: { loading: activeRequests > 0 } })); };
 const api = async (path, options = {}) => {
+  setGlobalLoading(1);
   const token = localStorage.getItem('quickcart_token');
   const storeId = localStorage.getItem('quickcart_store_id');
   const response = await fetch(`${API_BASE}${path}`, {
@@ -11,7 +14,8 @@ const api = async (path, options = {}) => {
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(storeId ? { 'X-Store-Id': storeId } : {}), ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Request failed.');
+  if (!response.ok) { setGlobalLoading(-1); throw new Error(data.error || 'Request failed.'); }
+  setGlobalLoading(-1);
   return data;
 };
 
@@ -25,11 +29,13 @@ function App() {
   const [view, setView] = useState('dashboard'), [customerCart, setCustomerCart] = useState({}), [publicStore, setPublicStore] = useState(null), [premiumOpen, setPremiumOpen] = useState(false), [selectedPlan, setSelectedPlan] = useState('Premium');
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' }), [saving, setSaving] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', price: 0, description: '', emoji: '🛍️', stock: 0 });
+  const [globalLoading, setGlobalLoadingState] = useState(false);
   const [payment, setPayment] = useState(null), [paymentLoading, setPaymentLoading] = useState(false), [paymentStatus, setPaymentStatus] = useState('idle'), [paymentError, setPaymentError] = useState('');
   const [authOpen, setAuthOpen] = useState(false), [authMode, setAuthMode] = useState('signup'), [authForm, setAuthForm] = useState({ name: '', email: '', password: '', confirmPassword: '' }), [authError, setAuthError] = useState('');
   const [otpOpen, setOtpOpen] = useState(false), [otp, setOtp] = useState(''), [otpEmail, setOtpEmail] = useState(''), [otpMessage, setOtpMessage] = useState(''), [otpLoading, setOtpLoading] = useState(false);
   const [storeSetupOpen, setStoreSetupOpen] = useState(false), [productModalOpen, setProductModalOpen] = useState(false);
   const hash = window.location.hash;
+  useEffect(() => { const handler = event => setGlobalLoadingState(Boolean(event.detail?.loading)); window.addEventListener('quickcart-loading', handler); return () => window.removeEventListener('quickcart-loading', handler); }, []);
   const publicMatch = hash.match(/^#\/store\/([^/]+)/);
   const loadPrivate = async () => {
     const token = localStorage.getItem('quickcart_token');
@@ -143,9 +149,9 @@ function App() {
     setProducts(current => current.filter(p => p.id !== id));
   };
 
-  if (publicMatch) return <PublicStore data={publicStore} cart={customerCart} setCart={setCustomerCart} customer={customer} setCustomer={setCustomer} />;
-  if (!user) return <Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} otpOpen={otpOpen} otp={otp} setOtp={setOtp} otpEmail={otpEmail} otpMessage={otpMessage} otpLoading={otpLoading} onVerifyOtp={verifyOtp} onResendOtp={resendOtp} onCloseOtp={() => setOtpOpen(false)} />;
-  if (!store) return <><main className="landing"><div className="landing-nav"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div><section className="landing-hero"><span className="eyebrow-dark">ONE LAST STEP</span><h1>Set up your <span>store.</span></h1><p>Your account is ready. Add the basics and QuickCart will create your storefront.</p><button className="primary big" onClick={() => setStoreSetupOpen(true)} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></section></main><StoreSetupModal open={storeSetupOpen} onClose={() => setStoreSetupOpen(false)} onCreate={async (name, slug) => { await createStore(name, slug); setStoreSetupOpen(false); }} saving={saving} /></>;
+  if (publicMatch) return <><LoadingOverlay visible={globalLoading} /><PublicStore data={publicStore} cart={customerCart} setCart={setCustomerCart} customer={customer} setCustomer={setCustomer} />;
+  if (!user) return <><LoadingOverlay visible={globalLoading} /><Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} otpOpen={otpOpen} otp={otp} setOtp={setOtp} otpEmail={otpEmail} otpMessage={otpMessage} otpLoading={otpLoading} onVerifyOtp={verifyOtp} onResendOtp={resendOtp} onCloseOtp={() => setOtpOpen(false)} />;
+  if (!store) return <><LoadingOverlay visible={globalLoading} /><main className="landing"><div className="landing-nav"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div><section className="landing-hero"><span className="eyebrow-dark">ONE LAST STEP</span><h1>Set up your <span>store.</span></h1><p>Your account is ready. Add the basics and QuickCart will create your storefront.</p><button className="primary big" onClick={() => setStoreSetupOpen(true)} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></section></main><StoreSetupModal open={storeSetupOpen} onClose={() => setStoreSetupOpen(false)} onCreate={async (name, slug) => { await createStore(name, slug); setStoreSetupOpen(false); }} saving={saving} /></>;
 
   const revenue = orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0);
   const pending = orders.filter(o => o.status === 'new').length;
@@ -154,7 +160,7 @@ function App() {
   const lowStock = products.filter(p => Number(p.stock) <= 5).length;
   const shareUrl = `${window.location.origin}${window.location.pathname}#/store/${store.slug}`;
 
-  return <><main className="app-shell">
+  return <><LoadingOverlay visible={globalLoading} /><main className="app-shell">
     <header className="dashboard-top"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><div className="top-actions"><button className="premium-chip" onClick={() => setPremiumOpen(true)}><Crown size={15}/> Premium</button><a href={shareUrl} target="_blank" rel="noreferrer" className="ghost"><ExternalLink size={16} /> View store</a><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div></header>
     <div className="dashboard-layout">
       <aside className="sidebar"><div className="store-mini"><Store size={18} /><strong>{store.storeName}</strong><small>/{store.slug}</small></div><div className="store-switcher"><span>YOUR STORES</span>{stores.map(s => <button key={s.id} className={s.id === store.id ? 'store-option active' : 'store-option'} onClick={() => { localStorage.setItem('quickcart_store_id', s.id); window.location.reload(); }}>{s.storeName}</button>)}{stores.length < 2 && <button className="store-add" onClick={() => setStoreSetupOpen(true)}><Plus size={14}/> Add store</button>}</div>{[['dashboard','Overview',BarChart3],['products','Products',Package],['orders','Orders',ShoppingBag],['customers','Customers',UserRound],['analytics','Analytics',TrendingUp],['discounts','Discounts',Tag],['settings','Store settings',Settings],['premium','Premium',Crown]].map(([id,label,Icon]) => <button key={id} className={view === id ? 'nav active' : 'nav'} onClick={() => setView(id)}><Icon size={17} /> {label}</button>)}<div className="sidebar-spacer" /><div className="help"><Users size={17} /><strong>Built for social sellers</strong><span>WhatsApp-first checkout, simple catalog management.</span></div></aside>
@@ -269,6 +275,16 @@ function PremiumModal({ open, onClose, plan = 'Premium', payment, paymentStatus,
       </>}
     </div>
   </Modal>;
+}
+function LoadingOverlay({ visible }) {
+  if (!visible) return null;
+  return <div className="global-loading" role="status" aria-live="polite">
+    <div className="loading-card">
+      <div className="loading-spinner" aria-hidden="true"></div>
+      <strong>QuickCart is working…</strong>
+      <span>Please wait a moment.</span>
+    </div>
+  </div>;
 }
 function PasswordField({ label, value, placeholder, autoComplete, onChange }) { const [visible, setVisible] = useState(false); return <label className="auth-field"><span>{label}</span><div className="password-wrap"><input type={visible ? 'text' : 'password'} minLength="6" placeholder={placeholder} autoComplete={autoComplete} required value={value} onChange={e => onChange(e.target.value)} /><button type="button" className="password-toggle" aria-label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible(v => !v)}>{visible ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>; }
 function Feature({ title, text }) { return <div><strong>{title}</strong><span>{text}</span></div>; }
