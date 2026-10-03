@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Check, Copy, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, QrCode, Save, Settings, ShoppingBag, Store, Trash2, Users, X } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.API_URL || '';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
 const api = async (path, options = {}) => {
   const token = localStorage.getItem('quickcart_token');
