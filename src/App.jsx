@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Check, Copy, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, QrCode, Save, Settings, ShoppingBag, Store, Trash2, Users, X } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
 const api = async (path, options = {}) => {
   const token = localStorage.getItem('quickcart_token');
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) }
   });
@@ -24,6 +25,7 @@ function App() {
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' }), [saving, setSaving] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', price: 0, description: '', emoji: '🛍️', stock: 0 });
   const [authOpen, setAuthOpen] = useState(false), [authMode, setAuthMode] = useState('signup'), [authForm, setAuthForm] = useState({ name: '', email: '', password: '' }), [authError, setAuthError] = useState('');
+  const [verificationState, setVerificationState] = useState(null);
 
   const hash = window.location.hash;
   const publicMatch = hash.match(/^#\/store\/([^/]+)/);
@@ -42,13 +44,27 @@ function App() {
   };
 
   const loadPublic = async slug => { try { setPublicStore(await api(`/api/storefront/${slug}`)); } catch { setPublicStore(null); } };
-  useEffect(() => { if (publicMatch) loadPublic(publicMatch[1]); else loadPrivate(); }, [hash]);
+  useEffect(() => {
+    if (verifyMatch) {
+      setVerificationState({ loading: true, message: '' });
+      api('/api/auth/verify-email', { method: 'POST', body: JSON.stringify({ token: decodeURIComponent(verifyMatch[1]) }) })
+        .then(data => { localStorage.setItem('quickcart_token', data.token); setVerificationState({ loading: false, message: data.message }); setUser(data.user); loadPrivate(); })
+        .catch(error => setVerificationState({ loading: false, message: error.message, error: true }));
+    } else if (publicMatch) loadPublic(publicMatch[1]); else loadPrivate();
+  }, [hash]);
 
   const submitAuth = async e => {
     e.preventDefault(); setAuthError('');
     try {
       const endpoint = authMode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
       const data = await api(endpoint, { method: 'POST', body: JSON.stringify(authForm) });
+      if (authMode === 'signup') {
+        setAuthOpen(false);
+        setAuthError('');
+        alert(data.message || 'Check your email to verify your account.');
+        setAuthMode('login');
+        return;
+      }
       localStorage.setItem('quickcart_token', data.token);
       setAuthOpen(false); setUser(data.user); await loadPrivate();
     } catch (error) { setAuthError(error.message); }
@@ -83,6 +99,7 @@ function App() {
     setProducts(current => current.filter(p => p.id !== id));
   };
 
+  if (verifyMatch) return <VerifyEmail state={verificationState} />;
   if (publicMatch) return <PublicStore data={publicStore} cart={customerCart} setCart={setCustomerCart} customer={customer} setCustomer={setCustomer} />;
   if (!user) return <Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} />;
   if (!store) return <main className="center-page"><div className="panel onboarding"><Store size={44} /><h1>Create your storefront</h1><p>Your account is ready. Create your store and get a shareable storefront URL.</p><button className="primary" onClick={createStore} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></div></main>;
@@ -116,5 +133,10 @@ function OrderRow({ order }) { return <div className="order-row"><div><strong>{o
 function Tool({ icon, title, action }) { return <button className="tool" onClick={action}>{icon}<span>{title}</span><ExternalLink size={14} /></button>; }
 function StoreSettings({ store, saving, onSave, shareUrl }) { const [draft, setDraft] = useState(store); const [copied, setCopied] = useState(false); const save = async () => await onSave(draft); return <div><div className="page-head"><div><span className="eyebrow-dark">SETTINGS</span><h1>Store settings</h1><p>Make the storefront yours.</p></div><button className="primary" onClick={save}><Save size={17} /> {saving ? 'Saving…' : 'Save changes'}</button></div><div className="panel settings-form"><div className="form-grid">{[['storeName','Business name'],['slug','Store URL slug'],['tagline','Tagline'],['vendorPhone','WhatsApp number'],['deliveryFee','Default delivery fee'],['primaryColor','Brand color'],['paymentDetails','Payment details']].map(([key,label]) => <label className="field" key={key}><span>{label}</span><input value={draft[key] ?? ''} onChange={e => setDraft({ ...draft, [key]: key === 'deliveryFee' ? Number(e.target.value) : e.target.value })} /></label>)}</div><div className="share-box"><strong>Your storefront</strong><code>{shareUrl}</code><button className="ghost" onClick={async () => { await navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 1200); }}>{copied ? <Check size={15} /> : <Copy size={15} />} {copied ? 'Copied' : 'Copy link'}</button></div></div></div>; }
 function PublicStore({ data, cart, setCart, customer, setCustomer }) { const [sent, setSent] = useState(false); if (!data) return <main className="center-page"><div className="panel"><h1>Store not found</h1><p>This storefront may have moved or been removed.</p></div></main>; const { store, products } = data; const items = products.filter(p => cart[p.id]).map(p => ({ ...p, quantity: cart[p.id] })); const subtotal = items.reduce((s, p) => s + p.price * p.quantity, 0); const total = subtotal + (subtotal ? store.deliveryFee : 0); const message = [`🛍️ *NEW ORDER — ${store.storeName.toUpperCase()}*`, '', `*Customer:* ${customer.name}`, `*Phone:* ${customer.phone}`, `*Address:* ${customer.address}`, '', '*Items:*', ...items.map(i => `• ${i.quantity}x ${i.name} — ${money(i.price * i.quantity)}`), '', `*Subtotal:* ${money(subtotal)}`, `*Delivery:* ${money(store.deliveryFee)}`, `*TOTAL:* ${money(total)}`, '', '_Order generated by QuickCart_'].join('\\n'); const whatsapp = `https://wa.me/${store.vendorPhone.replace(/\\D/g, '')}?text=${encodeURIComponent(message)}`; const checkout = async () => { if (!customer.name || !customer.address || !items.length) return alert('Add products, your name and delivery address first.'); await api('/api/orders', { method: 'POST', body: JSON.stringify({ storeId: store.id, customerName: customer.name, customerPhone: customer.phone, address: customer.address, items: items.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })), subtotal, deliveryFee: store.deliveryFee, discount: 0, total }) }); setSent(true); window.open(whatsapp, '_blank'); }; return <main className="public-store" style={{ '--accent': store.primaryColor || '#12392d' }}><header className="public-nav"><div className="brand"><span className="brand-mark">Q</span>{store.storeName}</div><span className="pill">{items.reduce((s, i) => s + i.quantity, 0)} items</span></header><section className="public-hero"><span className="eyebrow-dark">OFFICIAL STOREFRONT</span><h1>{store.storeName}</h1><p>{store.tagline}</p></section><div className="public-grid"><section className="public-products">{products.map(p => <article className="public-product" key={p.id}><div className="product-art">{p.emoji}</div><div><h3>{p.name}</h3><p>{p.description}</p><strong>{money(p.price)}</strong></div><button className="primary" onClick={() => setCart(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}><Plus size={17} /></button></article>)}</section><aside className="panel public-checkout"><span className="eyebrow-dark">CHECKOUT</span><h2>Your order</h2>{items.length ? items.map(i => <div className="cart-line" key={i.id}><span>{i.quantity}× {i.name}</span><strong>{money(i.price * i.quantity)}</strong></div>) : <Empty icon={<ShoppingBag />} text="Cart is empty" />}<input placeholder="Your name" value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} /><input placeholder="Phone number" value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })} /><input placeholder="Delivery address" value={customer.address} onChange={e => setCustomer({ ...customer, address: e.target.value })} /><div className="total-line"><span>Total</span><strong>{money(total)}</strong></div><button className="primary checkout-btn" onClick={checkout}><MessageCircle size={18} /> {sent ? 'Order sent — send another' : 'Order via WhatsApp'}</button></aside></div></main>; }
+
+
+function VerifyEmail({ state }) {
+  return <main className="center-page"><div className="panel onboarding"><span className="brand-mark">Q</span><h1>{state?.loading ? 'Verifying your email…' : state?.error ? 'Verification failed' : 'Email verified 🎉'}</h1><p>{state?.message || 'Checking your verification link.'}</p>{!state?.loading && <a className="primary" href={window.location.pathname}>Continue to QuickCart</a>}</div></main>;
+}
 
 export default App;
