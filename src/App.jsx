@@ -120,6 +120,35 @@ function App() {
     return () => { active = false; clearInterval(timer); };
   }, [payment?.orderId, paymentStatus]);
 
+  useEffect(() => {
+    if (!user) return;
+    const IDLE_MS = 30 * 60 * 1000;
+    const ABSOLUTE_MS = 8 * 60 * 60 * 1000;
+    const loginAt = Number(localStorage.getItem('quickcart_login_at') || Date.now());
+    localStorage.setItem('quickcart_login_at', String(loginAt));
+    let lastActivity = Date.now();
+    let timer;
+    const logoutExpired = () => {
+      localStorage.removeItem('quickcart_token');
+      localStorage.removeItem('quickcart_store_id');
+      localStorage.removeItem('quickcart_login_at');
+      setUser(null); setStore(null); setStores([]); setProducts([]); setOrders([]);
+      setPremiumOpen(false);
+      window.history.replaceState({}, '', window.location.pathname);
+    };
+    const check = () => {
+      const nowMs = Date.now();
+      if (nowMs - lastActivity >= IDLE_MS || nowMs - loginAt >= ABSOLUTE_MS) logoutExpired();
+    };
+    const activity = () => { lastActivity = Date.now(); };
+    ['mousedown','keydown','touchstart','scroll'].forEach(event => window.addEventListener(event, activity, { passive:true }));
+    timer = setInterval(check, 15000);
+    return () => {
+      clearInterval(timer);
+      ['mousedown','keydown','touchstart','scroll'].forEach(event => window.removeEventListener(event, activity));
+    };
+  }, [user]);
+
   const signOut = () => { localStorage.removeItem('quickcart_token'); localStorage.removeItem('quickcart_store_id'); setUser(null); setStore(null); setStores([]); setProducts([]); setOrders([]); };
 
   const createStore = async (storeName = 'My Store', slug = '') => {
