@@ -3,17 +3,30 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { MongoClient } from 'mongodb';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes, createHash } from 'node:crypto';
+import { Resend } from 'resend';
 
 const app = express();
-app.use(cors());
+
+const frontendUrl = process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app';
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || origin === frontendUrl || /^https?:\/\/localhost(?::\\d+)?$/.test(origin)) return callback(null, true);
+    callback(new Error('Origin not allowed by CORS.'));
+  }
+}));
 app.use(express.json({ limit: '2mb' }));
 
 const mongoUri = process.env.MONGODB_URI;
 const jwtSecret = process.env.JWT_SECRET;
+const resendApiKey = process.env.RESEND_API_KEY;
+const resendFrom = process.env.RESEND_FROM_EMAIL || 'QuickCart <onboarding@resend.dev>';
 
 if (!mongoUri) console.warn('MONGODB_URI is not configured.');
 if (!jwtSecret) console.warn('JWT_SECRET is not configured.');
+if (!resendApiKey) console.warn('RESEND_API_KEY is not configured.');
+
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 let dbPromise;
 async function db() {
@@ -47,6 +60,27 @@ function slugify(value) {
 }
 
 const now = () => new Date().toISOString();
+const hashToken = token => createHash('sha256').update(token).digest('hex');
+
+async function sendVerificationEmail(email, name, rawToken) {
+  if (!resend) throw new Error('RESEND_API_KEY is not configured.');
+  const verifyUrl = `${frontendUrl}/#/verify-email?token=${encodeURIComponent(rawToken)}`;
+  const result = await resend.emails.send({
+    from: resendFrom,
+    to: [email],
+    subject: 'Verify your QuickCart email',
+    html: `
+      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:32px;color:#18231f">
+        <h1 style="margin-bottom:8px">Welcome to QuickCart 👋</h1>
+        <p>Hi ${name || 'there'},</p>
+        <p>Verify your email to activate your QuickCart seller account.</p>
+        <p><a href="${verifyUrl}" style="display:inline-block;padding:13px 20px;background:#12392d;color:white;text-decoration:none;border-radius:10px">Verify my email</a></p>
+        <p style="font-size:13px;color:#66716c">This link expires in 24 hours. If you did not create this account, you can ignore this email.</p>
+      </div>
+    `
+  });
+  if (result.error) throw new Error(result.error.message || 'Unable to send verification email.');
+}
 
 app.get('/api/_healthcheck', async (_req, res) => {
   try {
@@ -61,29 +95,102 @@ app.get('/api/_healthcheck', async (_req, res) => {
 
 app.post('/api/auth/signup', async (req, res) => {
   try {
-    const { users } = await db().then(d => ({ users: d.collection('users') }));
+    const database = await db();
+    const users = database.collection('users');
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
     const name = String(req.body.name || '').trim();
     if (!email || password.length < 6 || !name) return res.status(400).json({ error: 'Name, email and a password of at least 6 characters are required.' });
     if (await users.findOne({ email })) return res.status(409).json({ error: 'An account with that email already exists.' });
-    const user = { id: randomUUID(), name, email, passwordHash: await bcrypt.hash(password, 12), createdAt: now() };
+
+    const rawToken = randomBytes(32).toString('hex');
+    const user = {
+      id: randomUUID(),
+      name,
+      email,
+      passwordHash: await bcrypt.hash(password, 12),
+      emailVerified: false,
+      emailVerificationTokenHash: hashToken(rawToken),
+      emailVerificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      createdAt: now()
+    };
+
     await users.insertOne(user);
-    const { passwordHash, ...safeUser } = user;
-    res.status(201).json({ user: safeUser, token: tokenFor(user) });
+    try {
+      await sendVerificationEmail(email, name, rawToken);
+    } catch (mailError) {
+      await users.deleteOne({ id: user.id });
+      throw mailError;
+    }
+
+    res.status(201).json({ message: 'Account created. Check your email to verify your account.' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Unable to create account.' });
+    res.status(500).json({ error: error.message || 'Unable to create account.' });
+  }
+});
+
+app.post('/api/auth/verify-email', async (req, res) => {
+  try {
+    const rawToken = String(req.body.token || '');
+    if (!rawToken) return res.status(400).json({ error: 'Verification token is required.' });
+
+    const database = await db();
+    const users = database.collection('users');
+    const user = await users.findOne({
+      emailVerificationTokenHash: hashToken(rawToken),
+      emailVerificationExpiresAt: { $gt: new Date() }
+    });
+
+    if (!user) return res.status(400).json({ error: 'This verification link is invalid or has expired.' });
+
+    await users.updateOne(
+      { id: user.id },
+      { $set: { emailVerified: true }, $unset: { emailVerificationTokenHash: '', emailVerificationExpiresAt: '' } }
+    );
+
+    const updatedUser = { ...user, emailVerified: true };
+    const { passwordHash, emailVerificationTokenHash, emailVerificationExpiresAt, ...safeUser } = updatedUser;
+    res.json({ message: 'Email verified successfully.', user: safeUser, token: tokenFor(updatedUser) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to verify email.' });
+  }
+});
+
+app.post('/api/auth/resend-verification', async (req, res) => {
+  try {
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const database = await db();
+    const users = database.collection('users');
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'No account was found with that email.' });
+    if (user.emailVerified) return res.status(400).json({ error: 'That email is already verified. You can sign in.' });
+
+    const rawToken = randomBytes(32).toString('hex');
+    await users.updateOne(
+      { id: user.id },
+      { $set: { emailVerificationTokenHash: hashToken(rawToken), emailVerificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) } }
+    );
+    await sendVerificationEmail(user.email, user.name, rawToken);
+    res.json({ message: 'A new verification email has been sent.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to resend verification email.' });
   }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { users } = await db().then(d => ({ users: d.collection('users') }));
+    const database = await db();
+    const users = database.collection('users');
     const email = String(req.body.email || '').trim().toLowerCase();
     const password = String(req.body.password || '');
     const user = await users.findOne({ email });
     if (!user || !await bcrypt.compare(password, user.passwordHash || '')) return res.status(401).json({ error: 'Email or password is incorrect.' });
+    if (!user.emailVerified) return res.status(403).json({ error: 'Please verify your email before signing in.', code: 'EMAIL_NOT_VERIFIED' });
     res.json({ user: { id: user.id, name: user.name, email: user.email }, token: tokenFor(user) });
   } catch (error) {
     console.error(error);
