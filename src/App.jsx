@@ -211,8 +211,16 @@ function Modal({ children, onClose, wide = false }) { return <div className="mod
 
 function StoreSetupModal({ open, onClose, onCreate, saving }) { const [name,setName]=useState(''); const [slug,setSlug]=useState(''); if (!open) return null; return <Modal onClose={onClose}><div className="modal-heading"><span className="brand-mark">Q</span><div><span className="eyebrow-dark">STORE SETUP</span><h2>Create another storefront</h2><p>Your free QuickCart account can have up to 2 stores.</p></div></div><div className="form-grid"><label className="field"><span>Store name</span><input autoFocus required placeholder="e.g. Adenix Fashion" value={name} onChange={e=>setName(e.target.value)} /></label><label className="field"><span>Store URL slug</span><input placeholder="adenix-fashion" value={slug} onChange={e=>setSlug(e.target.value)} /></label></div><button className="primary" onClick={()=>onCreate(name,slug)} disabled={saving || !name.trim()}><Plus size={17} /> {saving ? 'Creating…' : 'Create store'}</button></Modal>; }
 
-function ProductModal({ open, onClose, form, setForm, onAdd }) { if (!open) return null; return <Modal onClose={onClose} wide><div className="modal-heading"><span className="brand-mark">+</span><div><span className="eyebrow-dark">NEW PRODUCT</span><h2>Add a product</h2><p>Keep the first version simple. You can edit your catalog later.</p></div></div><div className="form-grid">{[['name','Product name','text'],['price','Price','number'],['description','Description','text'],['emoji','Icon','text'],['stock','Stock','number']].map(([key,label,type]) => <label className="field" key={key}><span>{label}</span><input autoFocus={key === 'name'} type={type} value={form[key]} onChange={e => setForm({ ...form, [key]: type === 'number' ? Number(e.target.value) : e.target.value })} /></label>)}</div><button className="primary" onClick={onAdd}><Plus size={17} /> Add product</button></Modal>; }
-
+const productIcons = ['🛍️','👕','👗','👟','🧢','📱','💻','🎧','⌚','📷','🎮','📚','☕','🍔','🍕','🧴','💄','🎁','🏠','🪴','💡','🎒','💍','🕶️','🧸','🚲','⚽','🎸','🍰','📦'];
+function ProductModal({ open, onClose, form, setForm, onAdd }) {
+  if (!open) return null;
+  return <Modal onClose={onClose} wide>
+    <div className="modal-heading"><span className="brand-mark">+</span><div><span className="eyebrow-dark">NEW PRODUCT</span><h2>Add a product</h2><p>Choose an icon so customers can recognize the product at a glance.</p></div></div>
+    <div className="form-grid">{[['name','Product name','text'],['price','Price','number'],['description','Description','text'],['stock','Stock','number']].map(([key,label,type]) => <label className="field" key={key}><span>{label}</span><input autoFocus={key === 'name'} type={type} value={form[key]} onChange={e => setForm({ ...form, [key]: type === 'number' ? Number(e.target.value) : e.target.value })} /></label>)}</div>
+    <div className="icon-picker"><div className="field-label">Product icon</div><div className="icon-grid">{productIcons.map(icon => <button key={icon} type="button" className={form.emoji === icon ? 'product-icon-choice selected' : 'product-icon-choice'} onClick={() => setForm({ ...form, emoji: icon })} aria-label={'Use ' + icon + ' as product icon'}>{icon}</button>)}</div></div>
+    <button className="primary" onClick={onAdd}><Plus size={17} /> Add product</button>
+  </Modal>;
+}
 function OtpModal({ open, email, otp, setOtp, message, loading, onVerify, onResend, onClose }) {
   if (!open) return null;
   return <div className="modal-backdrop"><form className="panel auth-modal otp-modal" onSubmit={onVerify}>
