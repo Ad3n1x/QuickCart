@@ -5,9 +5,10 @@ const API_BASE = import.meta.env.API_URL || '';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
 const api = async (path, options = {}) => {
   const token = localStorage.getItem('quickcart_token');
+  const storeId = localStorage.getItem('quickcart_store_id');
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options.headers || {}) }
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(storeId ? { 'X-Store-Id': storeId } : {}), ...(options.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || 'Request failed.');
@@ -20,7 +21,7 @@ const defaultProducts = [
 ];
 
 function App() {
-  const [user, setUser] = useState(null), [store, setStore] = useState(null), [products, setProducts] = useState([]), [orders, setOrders] = useState([]);
+  const [user, setUser] = useState(null), [store, setStore] = useState(null), [stores, setStores] = useState([]), [products, setProducts] = useState([]), [orders, setOrders] = useState([]);
   const [view, setView] = useState('dashboard'), [customerCart, setCustomerCart] = useState({}), [publicStore, setPublicStore] = useState(null);
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' }), [saving, setSaving] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', price: 0, description: '', emoji: '🛍️', stock: 0 });
@@ -34,7 +35,7 @@ function App() {
     if (!token) return;
     try {
       const me = await api('/api/me');
-      setUser(me.user); setStore(me.store);
+      setUser(me.user); setStores(me.stores || (me.store ? [me.store] : [])); if (me.stores?.length && !localStorage.getItem('quickcart_store_id')) localStorage.setItem('quickcart_store_id', me.stores[0].id); setStore(me.stores?.find(s => s.id === localStorage.getItem('quickcart_store_id')) || me.store);
       if (me.store) {
         const [p, o] = await Promise.all([api('/api/products'), api('/api/orders')]);
         setProducts(p.products || []); setOrders(o.orders || []);
@@ -88,13 +89,13 @@ function App() {
     finally { setOtpLoading(false); }
   };
 
-  const signOut = () => { localStorage.removeItem('quickcart_token'); setUser(null); setStore(null); setProducts([]); setOrders([]); };
+  const signOut = () => { localStorage.removeItem('quickcart_token'); localStorage.removeItem('quickcart_store_id'); setUser(null); setStore(null); setStores([]); setProducts([]); setOrders([]); };
 
-  const createStore = async () => {
+  const createStore = async (storeName = 'My Store', slug = '') => {
     setSaving(true);
     try {
-      const data = await api('/api/store', { method: 'POST', body: JSON.stringify({ storeName: 'My Store', slug: 'my-store', tagline: 'Shop with us', vendorPhone: '', deliveryFee: 0, primaryColor: '#12392d' }) });
-      setStore(data.store);
+      const data = await api('/api/store', { method: 'POST', body: JSON.stringify({ storeName, slug: slug || storeName, tagline: 'Shop with us', vendorPhone: '', deliveryFee: 0, primaryColor: '#12392d' }) });
+      setStore(data.store); setStores(current => [...current, data.store]); localStorage.setItem('quickcart_store_id', data.store.id);
       for (const product of defaultProducts) await api('/api/products', { method: 'POST', body: JSON.stringify(product) });
       const p = await api('/api/products'); setProducts(p.products || []);
     } finally { setSaving(false); }
@@ -119,7 +120,7 @@ function App() {
 
   if (publicMatch) return <PublicStore data={publicStore} cart={customerCart} setCart={setCustomerCart} customer={customer} setCustomer={setCustomer} />;
   if (!user) return <Landing openAuth={() => setAuthOpen(true)} authOpen={authOpen} mode={authMode} setMode={setAuthMode} form={authForm} setForm={setAuthForm} error={authError} onSubmit={submitAuth} otpOpen={otpOpen} otp={otp} setOtp={setOtp} otpEmail={otpEmail} otpMessage={otpMessage} otpLoading={otpLoading} onVerifyOtp={verifyOtp} onResendOtp={resendOtp} onCloseOtp={() => setOtpOpen(false)} />;
-  if (!store) return <><main className="landing"><div className="landing-nav"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div><section className="landing-hero"><span className="eyebrow-dark">ONE LAST STEP</span><h1>Set up your <span>store.</span></h1><p>Your account is ready. Add the basics and QuickCart will create your storefront.</p><button className="primary big" onClick={() => setStoreSetupOpen(true)} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></section></main><StoreSetupModal open={storeSetupOpen} onClose={() => setStoreSetupOpen(false)} onCreate={async () => { await createStore(); setStoreSetupOpen(false); }} saving={saving} /></>;
+  if (!store) return <><main className="landing"><div className="landing-nav"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div><section className="landing-hero"><span className="eyebrow-dark">ONE LAST STEP</span><h1>Set up your <span>store.</span></h1><p>Your account is ready. Add the basics and QuickCart will create your storefront.</p><button className="primary big" onClick={() => setStoreSetupOpen(true)} disabled={saving}><Plus size={18} /> {saving ? 'Creating…' : 'Create my store'}</button></section></main><StoreSetupModal open={storeSetupOpen} onClose={() => setStoreSetupOpen(false)} onCreate={async (name, slug) => { await createStore(name, slug); setStoreSetupOpen(false); }} saving={saving} /></>;
 
   const revenue = orders.filter(o => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0);
   const pending = orders.filter(o => o.status === 'new').length;
@@ -128,7 +129,7 @@ function App() {
   return <><main className="app-shell">
     <header className="dashboard-top"><div className="brand"><span className="brand-mark">Q</span> QuickCart</div><div className="top-actions"><a href={shareUrl} target="_blank" rel="noreferrer" className="ghost"><ExternalLink size={16} /> View store</a><button className="ghost" onClick={signOut}><LogOut size={16} /> Sign out</button></div></header>
     <div className="dashboard-layout">
-      <aside className="sidebar"><div className="store-mini"><Store size={18} /><strong>{store.storeName}</strong><small>/{store.slug}</small></div>{[['dashboard','Overview',BarChart3],['products','Products',Package],['orders','Orders',ShoppingBag],['settings','Store settings',Settings]].map(([id,label,Icon]) => <button key={id} className={view === id ? 'nav active' : 'nav'} onClick={() => setView(id)}><Icon size={17} /> {label}</button>)}<div className="sidebar-spacer" /><div className="help"><Users size={17} /><strong>Built for social sellers</strong><span>WhatsApp-first checkout, simple catalog management.</span></div></aside>
+      <aside className="sidebar"><div className="store-mini"><Store size={18} /><strong>{store.storeName}</strong><small>/{store.slug}</small></div><div className="store-switcher"><span>YOUR STORES</span>{stores.map(s => <button key={s.id} className={s.id === store.id ? 'store-option active' : 'store-option'} onClick={() => { localStorage.setItem('quickcart_store_id', s.id); window.location.reload(); }}>{s.storeName}</button>)}{stores.length < 2 && <button className="store-add" onClick={() => setStoreSetupOpen(true)}><Plus size={14}/> Add store</button>}</div>{[['dashboard','Overview',BarChart3],['products','Products',Package],['orders','Orders',ShoppingBag],['settings','Store settings',Settings]].map(([id,label,Icon]) => <button key={id} className={view === id ? 'nav active' : 'nav'} onClick={() => setView(id)}><Icon size={17} /> {label}</button>)}<div className="sidebar-spacer" /><div className="help"><Users size={17} /><strong>Built for social sellers</strong><span>WhatsApp-first checkout, simple catalog management.</span></div></aside>
       <section className="dashboard-content">
         {view === 'dashboard' && <><div className="page-head"><div><span className="eyebrow-dark">STORE DASHBOARD</span><h1>Good to see you, {user.name || 'seller'}.</h1><p>Manage your storefront and turn social traffic into orders.</p></div><button className="primary" onClick={() => setView('products')}><Plus size={17} /> Add product</button></div><div className="stats"><Stat label="Revenue" value={money(revenue)} /><Stat label="Orders" value={String(orders.length)} /><Stat label="Pending" value={String(pending)} /><Stat label="Products" value={String(products.length)} /></div><div className="dashboard-grid"><div className="panel"><div className="panel-head"><h2>Recent orders</h2><button className="link-btn" onClick={() => setView('orders')}>View all</button></div>{orders.length ? orders.slice(0, 5).map(o => <OrderRow key={o.id} order={o} />) : <Empty icon={<ShoppingBag />} text="No orders yet" />}</div><div className="panel quick"><h2>Store tools</h2><Tool icon={<Copy />} title="Copy storefront link" action={() => navigator.clipboard.writeText(shareUrl)} /><Tool icon={<QrCode />} title="Share QR code" action={() => alert(shareUrl)} /><Tool icon={<MessageCircle />} title="WhatsApp checkout" action={() => setView('settings')} /></div></div></>}
         {view === 'products' && <><div className="page-head"><div><span className="eyebrow-dark">CATALOG</span><h1>Products</h1><p>Add products and control stock.</p></div><button className="primary" onClick={() => setProductModalOpen(true)}><Plus size={17} /> Add product</button></div><div className="product-admin panel"><h2>Current products</h2>{products.map(p => <div className="admin-row" key={p.id}><span className="product-icon">{p.emoji}</span><div><strong>{p.name}</strong><small>{p.description} · {p.stock} in stock</small></div><strong>{money(p.price)}</strong><button className="icon-btn" onClick={() => deleteProduct(p.id)}><Trash2 size={16} /></button></div>)}</div></>}
@@ -145,7 +146,7 @@ function Landing({ openAuth, authOpen, mode, setMode, form, setForm, error, onSu
 
 function Modal({ children, onClose, wide = false }) { return <div className="modal-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}><div className={wide ? 'panel modal-card wide' : 'panel modal-card'}>{children}<button type="button" className="close" onClick={onClose}><X size={18} /></button></div></div>; }
 
-function StoreSetupModal({ open, onClose, onCreate, saving }) { if (!open) return null; return <Modal onClose={onClose}><div className="modal-heading"><span className="brand-mark">Q</span><div><span className="eyebrow-dark">STORE SETUP</span><h2>Create your storefront</h2><p>QuickCart will start you with a simple catalog you can edit later.</p></div></div><button className="primary" onClick={onCreate} disabled={saving}><Plus size={17} /> {saving ? 'Creating…' : 'Create my store'}</button></Modal>; }
+function StoreSetupModal({ open, onClose, onCreate, saving }) { const [name,setName]=useState(''); const [slug,setSlug]=useState(''); if (!open) return null; return <Modal onClose={onClose}><div className="modal-heading"><span className="brand-mark">Q</span><div><span className="eyebrow-dark">STORE SETUP</span><h2>Create another storefront</h2><p>Your free QuickCart account can have up to 2 stores.</p></div></div><div className="form-grid"><label className="field"><span>Store name</span><input autoFocus required placeholder="e.g. Adenix Fashion" value={name} onChange={e=>setName(e.target.value)} /></label><label className="field"><span>Store URL slug</span><input placeholder="adenix-fashion" value={slug} onChange={e=>setSlug(e.target.value)} /></label></div><button className="primary" onClick={()=>onCreate(name,slug)} disabled={saving || !name.trim()}><Plus size={17} /> {saving ? 'Creating…' : 'Create store'}</button></Modal>; }
 
 function ProductModal({ open, onClose, form, setForm, onAdd }) { if (!open) return null; return <Modal onClose={onClose} wide><div className="modal-heading"><span className="brand-mark">+</span><div><span className="eyebrow-dark">NEW PRODUCT</span><h2>Add a product</h2><p>Keep the first version simple. You can edit your catalog later.</p></div></div><div className="form-grid">{[['name','Product name','text'],['price','Price','number'],['description','Description','text'],['emoji','Icon','text'],['stock','Stock','number']].map(([key,label,type]) => <label className="field" key={key}><span>{label}</span><input autoFocus={key === 'name'} type={type} value={form[key]} onChange={e => setForm({ ...form, [key]: type === 'number' ? Number(e.target.value) : e.target.value })} /></label>)}</div><button className="primary" onClick={onAdd}><Plus size={17} /> Add product</button></Modal>; }
 
