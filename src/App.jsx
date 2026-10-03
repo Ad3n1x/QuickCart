@@ -25,7 +25,7 @@ function App() {
   const [view, setView] = useState('dashboard'), [customerCart, setCustomerCart] = useState({}), [publicStore, setPublicStore] = useState(null), [premiumOpen, setPremiumOpen] = useState(false), [selectedPlan, setSelectedPlan] = useState('Premium');
   const [customer, setCustomer] = useState({ name: '', phone: '', address: '' }), [saving, setSaving] = useState(false);
   const [productForm, setProductForm] = useState({ name: '', price: 0, description: '', emoji: '🛍️', stock: 0 });
-  const [payment, setPayment] = useState(null), [paymentLoading, setPaymentLoading] = useState(false);
+  const [payment, setPayment] = useState(null), [paymentLoading, setPaymentLoading] = useState(false), [paymentStatus, setPaymentStatus] = useState('idle'), [paymentError, setPaymentError] = useState('');
   const [authOpen, setAuthOpen] = useState(false), [authMode, setAuthMode] = useState('signup'), [authForm, setAuthForm] = useState({ name: '', email: '', password: '', confirmPassword: '' }), [authError, setAuthError] = useState('');
   const [otpOpen, setOtpOpen] = useState(false), [otp, setOtp] = useState(''), [otpEmail, setOtpEmail] = useState(''), [otpMessage, setOtpMessage] = useState(''), [otpLoading, setOtpLoading] = useState(false);
   const [storeSetupOpen, setStoreSetupOpen] = useState(false), [productModalOpen, setProductModalOpen] = useState(false);
@@ -90,6 +90,30 @@ function App() {
     finally { setOtpLoading(false); }
   };
 
+  useEffect(() => {
+    if (!payment?.orderId || paymentStatus === 'paid' || paymentStatus === 'failed' || paymentStatus === 'expired') return;
+    let active = true;
+    let timer;
+    const checkPayment = async () => {
+      try {
+        const result = await api(`/api/payments/alatpay/status?orderId=${encodeURIComponent(payment.orderId)}`);
+        if (!active) return;
+        setPaymentStatus(result.paymentStatus || 'awaiting_transfer');
+        if (result.paymentStatus === 'paid') {
+          setPayment(current => current ? { ...current, status: 'paid' } : current);
+          clearInterval(timer);
+        } else if (['failed','expired'].includes(result.paymentStatus)) {
+          clearInterval(timer);
+        }
+      } catch (error) {
+        if (active) setPaymentError(error.message || 'Unable to check payment status.');
+      }
+    };
+    checkPayment();
+    timer = setInterval(checkPayment, 3000);
+    return () => { active = false; clearInterval(timer); };
+  }, [payment?.orderId, paymentStatus]);
+
   const signOut = () => { localStorage.removeItem('quickcart_token'); localStorage.removeItem('quickcart_store_id'); setUser(null); setStore(null); setStores([]); setProducts([]); setOrders([]); };
 
   const createStore = async (storeName = 'My Store', slug = '') => {
@@ -141,7 +165,7 @@ function App() {
         {view === 'customers' && <CustomersPage customers={customers} />}{view === 'analytics' && <AnalyticsPage revenue={revenue} orders={orders} averageOrder={averageOrder} />}{view === 'discounts' && <DiscountsPage onUpgrade={() => setView('premium')} />}{view === 'settings' && <StoreSettings store={store} saving={saving} onSave={saveStore} shareUrl={shareUrl} />}{view === 'premium' && <PremiumPage onUpgrade={plan => { setSelectedPlan(plan || 'Premium'); setPremiumOpen(true); }} />}
       </section>
     </div>
-  </main><ProductModal open={productModalOpen} onClose={() => setProductModalOpen(false)} form={productForm} setForm={setProductForm} onAdd={async () => { await addProduct(); setProductModalOpen(false); }} /><PremiumModal open={premiumOpen} onClose={() => setPremiumOpen(false)} plan={selectedPlan} payment={payment} paymentLoading={paymentLoading} onPayPlan={async plan => { setPaymentLoading(true); try { const result = await api('/api/payments/alatpay/plan', { method:'POST', body:JSON.stringify({ plan }) }); setPayment(result); } catch (e) { alert(e.message); } finally { setPaymentLoading(false); } }} /></>;
+  </main><ProductModal open={productModalOpen} onClose={() => setProductModalOpen(false)} form={productForm} setForm={setProductForm} onAdd={async () => { await addProduct(); setProductModalOpen(false); }} /><PremiumModal open={premiumOpen} onClose={() => setPremiumOpen(false)} plan={selectedPlan} payment={payment} paymentStatus={paymentStatus} paymentError={paymentError} paymentLoading={paymentLoading} onPayPlan={async plan => { setPaymentLoading(true); setPaymentError(''); setPayment(null); setPaymentStatus('idle'); try { const result = await api('/api/payments/alatpay/plan', { method:'POST', body:JSON.stringify({ plan }) }); setPayment(result); setPaymentStatus(result.status || 'awaiting_transfer'); } catch (e) { setPaymentError(e.message); } finally { setPaymentLoading(false); } }} onResetPayment={() => { setPayment(null); setPaymentStatus('idle'); setPaymentError(''); }} /></>;
 }
 
 function Landing({ openAuth, authOpen, mode, setMode, form, setForm, error, onSubmit, otpOpen, otp, setOtp, otpEmail, otpMessage, otpLoading, onVerifyOtp, onResendOtp, onCloseOtp }) {
@@ -186,9 +210,65 @@ function PremiumPage({ onUpgrade }) {
   ];
   return <div className="premium-page"><div className="page-head"><div><span className="eyebrow-dark">QUICKCART PLANS</span><h1>Start free. Grow when you're ready.</h1><p>Keep the simple WhatsApp-first workflow and unlock more powerful seller tools as your business grows.</p></div><Crown className="premium-crown" size={34}/></div><div className="plans">{plans.map(p=><div className={p.featured?'plan-card featured':'plan-card'} key={p.name}>{p.featured&&<span className="plan-badge">MOST POPULAR</span>}<span className="eyebrow-dark">{p.name.toUpperCase()}</span><h2>{p.name}</h2><div className="plan-price">{p.price}<small>{p.period}</small></div><p>{p.desc}</p><div className="plan-features">{p.features.map(f=><span key={f}><Check size={15}/>{f}</span>)}</div>{p.name !== 'Free'&&<button className="primary" onClick={() => onUpgrade(p.name)}><Crown size={16}/> {p.name === 'Business' ? 'Choose Business' : 'Upgrade to Premium'}</button>}</div>)}</div></div>;
 }
-function PremiumModal({ open, onClose, plan = 'Premium', payment, paymentLoading, onPayPlan }) {
+function PremiumModal({ open, onClose, plan = 'Premium', payment, paymentStatus, paymentError, paymentLoading, onPayPlan, onResetPayment }) {
+  const [copied, setCopied] = useState(false);
   if (!open) return null;
-  return <Modal onClose={onClose} wide><div className="premium-modal"><span className="premium-label"><Crown size={14}/> PREMIUM</span><h2>{plan === 'Business' ? 'Choose QuickCart Business.' : 'Unlock QuickCart Premium.'}</h2><p>{plan === 'Business' ? 'Business includes every Premium feature plus advanced reports and team workflows.' : 'Premium includes the full seller growth toolkit.'}</p><div className="modal-price"><strong>{plan === 'Business' ? '₦9,999' : '₦4,999'}</strong><span>/ month</span></div><div className="modal-feature-grid"><span><Check/> Analytics</span><span><Check/> Inventory</span><span><Check/> Customers</span><span><Check/> Discounts</span><span><Check/> Branding</span><span><Check/> Advanced orders</span></div><button className="primary big" disabled={paymentLoading} onClick={() => onPayPlan(plan)}>{paymentLoading ? 'Opening ALATPay…' : payment ? 'Generate new payment' : 'Continue to ALATPay'}</button>{payment && <div className="panel" style={{marginTop:16,padding:16}}><strong>ALATPay bank transfer</strong><p style={{margin:'8px 0',color:'var(--muted)'}}>Transfer <b>{money(payment.amount)}</b> to the virtual account below.</p><p style={{margin:'6px 0'}}>Account: <b>{payment.accountNumber || '—'}</b></p><p style={{margin:'6px 0'}}>Bank code: <b>{payment.bankCode || '—'}</b></p><small>Expires: {payment.expiresAt ? new Date(payment.expiresAt).toLocaleString() : '30 minutes'}</small></div>}</div></Modal>;
+  const amount = plan === 'Business' ? 9999 : 4999;
+  const paid = paymentStatus === 'paid';
+  const failed = paymentStatus === 'failed';
+  const expired = paymentStatus === 'expired';
+  const waiting = payment && !paid && !failed && !expired;
+  const copyAccount = async () => {
+    if (!payment?.accountNumber) return;
+    await navigator.clipboard.writeText(payment.accountNumber);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1400);
+  };
+  return <Modal onClose={onClose} wide>
+    <div className="premium-modal">
+      {paid ? <>
+        <div className="payment-success-icon"><Check size={30}/></div>
+        <span className="premium-label"><Check size={14}/> PAYMENT CONFIRMED</span>
+        <h2>You're {plan} now. 🎉</h2>
+        <p>Your payment was confirmed by ALATPay and your QuickCart subscription has been activated.</p>
+        <div className="payment-confirmed-card">
+          <span>Plan</span><strong>{plan}</strong>
+          <span>Amount</span><strong>{money(amount)} / month</strong>
+          <span>Order</span><code>{payment.orderId}</code>
+        </div>
+        <button className="primary big" onClick={onClose}>Continue to QuickCart</button>
+      </> : waiting ? <>
+        <span className="premium-label"><Crown size={14}/> COMPLETE PAYMENT</span>
+        <h2>Pay for {plan} securely.</h2>
+        <p>Transfer exactly <strong>{money(payment.amount || amount)}</strong> to the temporary account below. QuickCart will detect the confirmed payment automatically.</p>
+        <div className="payment-account-card">
+          <div className="payment-waiting"><span className="pulse-dot"></span><strong>Waiting for payment</strong><small>Checking automatically every few seconds</small></div>
+          <div className="payment-detail"><span>Amount</span><strong>{money(payment.amount || amount)}</strong></div>
+          <div className="payment-detail"><span>Bank code</span><strong>{payment.bankCode || '—'}</strong></div>
+          <div className="payment-account-number"><span>Account number</span><strong>{payment.accountNumber || '—'}</strong><button type="button" className="ghost" onClick={copyAccount}>{copied ? <Check size={15}/> : <Copy size={15}/>} {copied ? 'Copied' : 'Copy'}</button></div>
+          <div className="payment-expiry">Expires: {payment.expiresAt ? new Date(payment.expiresAt).toLocaleString() : 'within 30 minutes'}</div>
+        </div>
+        <div className="payment-tip"><strong>Don't close this window.</strong> You can switch to your banking app, make the transfer, then return here. The popup will update automatically after ALATPay confirms it.</div>
+        {paymentError && <div className="error">{paymentError}</div>}
+        <button className="ghost payment-cancel" onClick={onResetPayment}>Use another payment attempt</button>
+      </> : failed || expired ? <>
+        <div className="payment-failed-icon"><X size={28}/></div>
+        <span className="premium-label">{expired ? 'PAYMENT EXPIRED' : 'PAYMENT FAILED'}</span>
+        <h2>{expired ? 'This payment window expired.' : 'The payment was not completed.'}</h2>
+        <p>{expired ? 'The temporary account is no longer active. Start a new payment to continue.' : 'ALATPay reported that this payment did not complete.'}</p>
+        <button className="primary big" onClick={onResetPayment}>Try again</button>
+      </> : <>
+        <span className="premium-label"><Crown size={14}/> {plan.toUpperCase()}</span>
+        <h2>{plan === 'Business' ? 'Choose QuickCart Business.' : 'Unlock QuickCart Premium.'}</h2>
+        <p>{plan === 'Business' ? 'Business includes every Premium feature plus advanced reports and team workflows.' : 'Premium includes the full seller growth toolkit.'}</p>
+        <div className="modal-price"><strong>{money(amount)}</strong><span>/ month</span></div>
+        <div className="modal-feature-grid"><span><Check/> Analytics</span><span><Check/> Inventory</span><span><Check/> Customers</span><span><Check/> Discounts</span><span><Check/> Branding</span><span><Check/> Advanced orders</span></div>
+        {paymentError && <div className="error">{paymentError}</div>}
+        <button className="primary big" disabled={paymentLoading} onClick={() => onPayPlan(plan)}>{paymentLoading ? 'Creating secure payment…' : 'Continue to payment'}</button>
+        <small className="payment-secure-note">Secure bank-transfer checkout powered by ALATPay.</small>
+      </>}
+    </div>
+  </Modal>;
 }
 function PasswordField({ label, value, placeholder, autoComplete, onChange }) { const [visible, setVisible] = useState(false); return <label className="auth-field"><span>{label}</span><div className="password-wrap"><input type={visible ? 'text' : 'password'} minLength="6" placeholder={placeholder} autoComplete={autoComplete} required value={value} onChange={e => onChange(e.target.value)} /><button type="button" className="password-toggle" aria-label={visible ? 'Hide password' : 'Show password'} onClick={() => setVisible(v => !v)}>{visible ? <EyeOff size={17} /> : <Eye size={17} />}</button></div></label>; }
 function Feature({ title, text }) { return <div><strong>{title}</strong><span>{text}</span></div>; }
