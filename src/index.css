@@ -35,3 +35,5 @@ body{background:var(--bg);color:var(--ink)}button,a,input{font:inherit}.landing{
 .auth-trust{display:flex;align-items:center;justify-content:center;gap:6px;color:#6f8178;font-size:11px;margin-top:-2px}
 .auth-modal .link-btn{justify-content:center;width:100%}
 @media(max-width:520px){.auth-modal{padding:24px 18px}.auth-brand h2{font-size:24px}}
+
+.store-switcher{display:grid;gap:5px;margin:2px 0 12px;padding:10px 8px;border:1px solid var(--line);border-radius:14px;background:#f8fbf9}.store-switcher>span{font-size:9px;font-weight:900;letter-spacing:.12em;color:#8a9992;padding:2px 4px}.store-option,.store-add{border:0;background:transparent;text-align:left;padding:8px 9px;border-radius:9px;color:#60746a;font-weight:750;font-size:12px;display:flex;align-items:center;gap:6px}.store-option:hover,.store-option.active{background:#e8f2ed;color:#12392d}.store-add{color:#527d69}.store-add:hover{background:#edf5ef}
