@@ -16,10 +16,16 @@ const jwtSecret = process.env.JWT_SECRET;
 const brevoApiKey = process.env.BREVO_API_KEY;
 const brevoFromEmail = process.env.BREVO_FROM_EMAIL;
 const brevoFromName = process.env.BREVO_FROM_NAME || 'QuickCart';
+const alatPaySecretKey = process.env.ALATPAY_SECRET_KEY;
+const alatPayPublicKey = process.env.ALATPAY_PUBLIC_KEY;
+const alatPayBusinessId = process.env.ALATPAY_BUSINESS_ID;
+const alatPayBaseUrl = process.env.ALATPAY_BASE_URL || 'https://api.alatpay.ng';
 if (!mongoUri) console.warn('MONGODB_URI is not configured.');
 if (!jwtSecret) console.warn('JWT_SECRET is not configured.');
 if (!brevoApiKey) console.warn('BREVO_API_KEY is not configured.');
 if (!brevoFromEmail) console.warn('BREVO_FROM_EMAIL is not configured.');
+if (!alatPaySecretKey) console.warn('ALATPAY_SECRET_KEY is not configured.');
+if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 
 let dbPromise;
 async function db() { if (!mongoUri) throw new Error('MONGODB_URI is not configured.'); if (!dbPromise) { const client = new MongoClient(mongoUri); dbPromise = client.connect().then(c => c.db('quickcart')); } return dbPromise; }
@@ -51,6 +57,91 @@ app.get('/api/products',auth,async(req,res)=>{const database=await db(),store=aw
 app.post('/api/products',auth,async(req,res)=>{const database=await db(),store=await database.collection('stores').findOne({userId:req.user.sub});if(!store)return res.status(400).json({error:'Create your store first.'});const product={id:randomUUID(),storeId:store.id,name:String(req.body.name||'Product'),price:Number(req.body.price||0),description:String(req.body.description||''),emoji:String(req.body.emoji||'🛍️'),stock:Number(req.body.stock??0),active:req.body.active!==false,createdAt:now()};await database.collection('products').insertOne(product);res.status(201).json({product});});
 app.delete('/api/products/:id',auth,async(req,res)=>{const database=await db(),store=await database.collection('stores').findOne({userId:req.user.sub});if(!store)return res.status(404).json({error:'Store not found.'});const result=await database.collection('products').deleteOne({id:req.params.id,storeId:store.id});if(!result.deletedCount)return res.status(404).json({error:'Product not found.'});res.json({deleted:true});});
 app.get('/api/storefront/:slug',async(req,res)=>{const database=await db(),store=await database.collection('stores').findOne({slug:req.params.slug});if(!store)return res.status(404).json({error:'Store not found.'});const products=await database.collection('products').find({storeId:store.id,active:true}).sort({createdAt:-1}).toArray();res.json({store,products});});
+async function createAlatPayVirtualAccount(order) {
+  if (!alatPaySecretKey) throw new Error('ALATPAY_SECRET_KEY is not configured.');
+  if (!alatPayBusinessId) throw new Error('ALATPAY_BUSINESS_ID is not configured.');
+  const response = await fetch(`${alatPayBaseUrl}/api/v1/bankTransfer/virtualAccount`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Ocp-Apim-Subscription-Key': alatPaySecretKey },
+    body: JSON.stringify({
+      businessId: alatPayBusinessId,
+      amount: Number(order.total),
+      currency: 'NGN',
+      orderId: order.id,
+      description: `QuickCart order ${order.id}`,
+      customer: {
+        email: String(order.customerEmail || ''),
+        phone: String(order.customerPhone || ''),
+        firstName: String(order.customerName || 'Customer').split(' ')[0],
+        lastName: String(order.customerName || '').split(' ').slice(1).join(' ') || 'Customer',
+        metadata: JSON.stringify({ quickCartOrderId: order.id, storeId: order.storeId })
+      }
+    })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.status === false) throw new Error(data.message || 'ALATPay payment initialization failed.');
+  return data.data || data;
+}
+
+app.post('/api/payments/alatpay',async(req,res)=>{
+  try {
+    const database=await db();
+    const orderId=String(req.body.orderId||'').trim();
+    const order=await database.collection('orders').findOne({id:orderId});
+    if(!order)return res.status(404).json({error:'Order not found.'});
+    const payment=await createAlatPayVirtualAccount(order);
+    await database.collection('orders').updateOne({id:order.id},{$set:{
+      paymentProvider:'alatpay',
+      paymentStatus:'awaiting_transfer',
+      paymentTransactionId:payment.transactionId || payment.id || '',
+      paymentReference:payment.orderId || order.id,
+      paymentAccountNumber:payment.virtualBankAccountNumber || '',
+      paymentBankCode:payment.virtualBankCode || '',
+      paymentExpiresAt:payment.expiredAt || null,
+      paymentUpdatedAt:now()
+    }});
+    res.status(201).json({
+      orderId:order.id,
+      transactionId:payment.transactionId || payment.id || null,
+      accountNumber:payment.virtualBankAccountNumber || null,
+      bankCode:payment.virtualBankCode || null,
+      amount:payment.amount ?? order.total,
+      currency:payment.currency || 'NGN',
+      expiresAt:payment.expiredAt || null,
+      status:payment.status || 'pending'
+    });
+  } catch(error) {
+    console.error(error);
+    res.status(502).json({error:error.message||'Unable to initialize ALATPay payment.'});
+  }
+});
+
+app.post('/api/payments/alatpay/callback',async(req,res)=>{
+  try {
+    const database=await db();
+    const payload=req.body||{};
+    const data=payload.data||payload;
+    const orderId=String(data.orderId||data.virtualAccount?.orderId||'').trim();
+    const transactionId=String(data.transactionId||data.id||data.virtualAccount?.transactionId||'').trim();
+    const status=String(data.status||data.transactionStatus||'').toLowerCase();
+    const update={paymentProvider:'alatpay',paymentTransactionId:transactionId,paymentUpdatedAt:now(),paymentCallback:payload};
+    if(['success','successful','completed','paid','true'].includes(status)) {
+      update.paymentStatus='paid';
+      update.status='paid';
+    } else if(['failed','failure','cancelled','canceled','expired'].includes(status)) {
+      update.paymentStatus='failed';
+    } else if(status) {
+      update.paymentStatus=status;
+    }
+    if(orderId) await database.collection('orders').updateOne({id:orderId},{$set:update});
+    else if(transactionId) await database.collection('orders').updateOne({paymentTransactionId:transactionId},{$set:update});
+    res.json({received:true});
+  } catch(error) {
+    console.error(error);
+    res.status(500).json({error:'Unable to process ALATPay callback.'});
+  }
+});
+
 app.post('/api/orders',async(req,res)=>{const database=await db(),storeId=String(req.body.storeId||''),items=Array.isArray(req.body.items)?req.body.items:[],customerName=String(req.body.customerName||'').trim(),customerPhone=String(req.body.customerPhone||'').trim(),address=String(req.body.address||'').trim();if(!storeId||!customerName||!address||!items.length)return res.status(400).json({error:'Store, customer name, address and at least one item are required.'});if(!await database.collection('stores').findOne({id:storeId}))return res.status(404).json({error:'Store not found.'});const order={id:randomUUID(),storeId,customerName,customerPhone,address,items,subtotal:Number(req.body.subtotal||0),deliveryFee:Number(req.body.deliveryFee||0),discount:Number(req.body.discount||0),total:Number(req.body.total||0),status:'new',paymentStatus:'pending',createdAt:now()};await database.collection('orders').insertOne(order);if(customerPhone)await database.collection('customers').updateOne({storeId,phone:customerPhone},{$set:{storeId,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});res.status(201).json({orderId:order.id});});
 app.get('/api/orders',auth,async(req,res)=>{const database=await db(),store=await database.collection('stores').findOne({userId:req.user.sub});if(!store)return res.json({orders:[]});res.json({orders:await database.collection('orders').find({storeId:store.id}).sort({createdAt:-1}).toArray()});});
 
