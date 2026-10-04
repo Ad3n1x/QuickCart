@@ -1,6 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { createRoot } from 'react-dom/client';
+import App, { AppErrorBoundary } from './App.jsx';
 import './index.css';
 
 const root = document.getElementById('root');
@@ -18,29 +19,32 @@ function showFatalError(error) {
   root.appendChild(box);
 }
 
-function renderBootError(error) {
-  showFatalError(error);
-}
-
 window.addEventListener('error', event => {
-  if (event?.error) renderBootError(event.error);
+  if (event?.error) showFatalError(event.error);
 });
 window.addEventListener('unhandledrejection', event => {
-  renderBootError(event?.reason || new Error('Unhandled promise rejection'));
+  showFatalError(event?.reason || new Error('Unhandled promise rejection'));
 });
 
-(async () => {
-  try {
-    // Dynamic import is intentional: if App.jsx or one of its dependencies fails
-    // to load/evaluate, GitHub Pages shows the real error instead of a silent blank page.
-    const module = await import('./App.jsx');
-    const App = module.default;
-    const AppErrorBoundary = module.AppErrorBoundary;
-    if (!App || !AppErrorBoundary) throw new Error('QuickCart App module loaded without its expected exports.');
-    createRoot(root).render(
-      React.createElement(AppErrorBoundary, null, React.createElement(App))
-    );
-  } catch (error) {
-    renderBootError(error);
+// If a stale browser cache tries to load a removed Vite chunk, recover once by
+// reloading the current document instead of leaving the user on a blank screen.
+window.addEventListener('vite:preloadError', event => {
+  event.preventDefault();
+  const key = 'quickcart_preload_recovery';
+  if (!sessionStorage.getItem(key)) {
+    sessionStorage.setItem(key, '1');
+    window.location.reload();
+  } else {
+    showFatalError(event?.payload?.err || new Error('A QuickCart application chunk could not be loaded.'));
   }
-})();
+});
+
+try {
+  if (!root) throw new Error('QuickCart root element was not found.');
+  if (!App || !AppErrorBoundary) throw new Error('QuickCart App module loaded without its expected exports.');
+  createRoot(root).render(
+    React.createElement(AppErrorBoundary, null, React.createElement(App))
+  );
+} catch (error) {
+  showFatalError(error);
+}
