@@ -43,6 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s dist/index.html
+          ! grep -Fq '\\n' dist/index.html
           test -d dist/assets
           test -n "$(find dist/assets -maxdepth 1 -type f -print -quit)"
           grep -Eq 'src="/QuickCart/assets/[^"]+\.js"' dist/index.html
