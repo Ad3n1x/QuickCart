@@ -514,3 +514,9 @@ button,a{ -webkit-tap-highlight-color:transparent }
 .receipt-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .receipt-options .receipt-upload{min-width:0}
 @media(max-width:520px){.receipt-options{grid-template-columns:1fr}}
+
+.install-banner,.sync-status{position:fixed;left:50%;transform:translateX(-50%);z-index:4999;border-radius:999px;box-shadow:0 12px 32px rgba(16,43,33,.12);font-size:11px;font-weight:800}
+.install-banner{top:124px;border:1px solid #b9d0c4;background:#12392d;color:#fff;padding:10px 16px;cursor:pointer}
+.sync-status{top:172px;background:#fff;border:1px solid var(--line);color:#234438;padding:9px 14px;pointer-events:none}
+@media(max-width:700px){.install-banner{top:116px}.sync-status{top:160px}}
+@media(max-width:520px){.install-banner,.sync-status{left:10px;right:10px;width:auto;transform:none;text-align:center}.install-banner{top:112px}.sync-status{top:158px}}
