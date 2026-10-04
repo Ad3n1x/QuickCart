@@ -47,8 +47,8 @@ jobs:
           ! grep -Fq '\\n' dist/index.html
           test -d dist/assets
           test -n "$(find dist/assets -maxdepth 1 -type f -print -quit)"
-          grep -Eq 'src="/QuickCart/assets/[^"]+\\.js"' dist/index.html
-          grep -Eq 'href="/QuickCart/assets/[^"]+\\.css"' dist/index.html
+          grep -Eq 'src="/QuickCart/assets/[^"]+\.js"' dist/index.html
+          grep -Eq 'href="/QuickCart/assets/[^"]+\.css"' dist/index.html
           ! grep -qE '(src|href)="\\./(src|assets)/' dist/index.html
           test -f dist/quickcart-logo.svg
           cp dist/index.html dist/404.html
