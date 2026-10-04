@@ -892,3 +892,13 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .quickcart-side-nav .nav-link{min-height:46px;padding:11px 12px}
   .order-row>select{min-width:104px;max-width:130px}
 }
+
+/* Final navigation dropdown hardening */
+@media (max-width:900px){
+  .dashboard-top{position:sticky!important;z-index:12000!important;overflow:visible!important}
+  .dashboard-top-inner{position:relative!important;overflow:visible!important}
+  .mobile-menu-btn{display:flex!important;position:relative!important;z-index:12020!important;pointer-events:auto!important}
+  .dashboard-actions{position:absolute!important;top:calc(100% + 6px)!important;left:12px!important;right:12px!important;width:auto!important;z-index:12010!important;display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+  .dashboard-actions.is-open{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important}
+  .dashboard-actions>*{pointer-events:auto!important}
+}
