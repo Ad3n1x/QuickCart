@@ -1068,3 +1068,12 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .mobile-nav-backdrop{z-index:12500!important}
   .sidebar{z-index:13000!important}
 }
+
+
+/* Mobile spacing above system notices */
+@media(max-width:900px){
+  .system-notices{
+    margin-top:68px!important;
+    padding-top:12px!important;
+  }
+}
