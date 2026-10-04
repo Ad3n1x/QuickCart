@@ -1,5 +1,6 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { createRoot } from 'react-dom/client';
 import App, { AppErrorBoundary } from './App.jsx';
 import './index.css';
@@ -26,8 +27,6 @@ window.addEventListener('unhandledrejection', event => {
   showFatalError(event?.reason || new Error('Unhandled promise rejection'));
 });
 
-// If a stale browser cache tries to load a removed Vite chunk, recover once by
-// reloading the current document instead of leaving the user on a blank screen.
 window.addEventListener('vite:preloadError', event => {
   event.preventDefault();
   const key = 'quickcart_preload_recovery';
