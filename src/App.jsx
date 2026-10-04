@@ -1,7 +1,7 @@
 import { Component, useEffect, useMemo, useState } from 'react';
 import { BarChart3, Check, Copy, Crown, Eye, EyeOff, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, Save, Settings, ShoppingBag, Store, Trash2, TrendingUp, UserRound, Users, Tag, X, Edit3, Download, Search, Truck, Share2, ScanLine, FileText } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
-// Responsive UI build verification.
+// Responsive UI build verification. Clean JSX snapshot.
 import 'react-toastify/dist/ReactToastify.css';
 const API_BASE = import.meta.env.VITE_API_URL || 'https://quickcart-api-f7x7.onrender.com';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
