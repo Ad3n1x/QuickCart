@@ -458,3 +458,9 @@ button,a{ -webkit-tap-highlight-color:transparent }
 }
 @media(max-width:360px){.quick-actions{grid-template-columns:1fr}.public-product{grid-template-columns:48px minmax(0,1fr);}.public-product>button{grid-column:2;justify-self:stretch;justify-content:center}.product-art{width:48px;height:48px}}
 @media(prefers-reduced-motion:reduce){button,a,.panel,.plan-card,.tool,.nav,.public-product,.stat,.store-mini,.choice{transition:none!important}.page-rise,.product-admin,.settings-form,.premium-page{animation:none!important}}
+
+
+/* Offline-first status */
+.offline-banner,.online-banner{position:sticky;top:0;z-index:1200;display:flex;align-items:center;justify-content:center;gap:8px;min-height:34px;padding:7px 14px;text-align:center;font-size:11px;font-weight:750;line-height:1.4;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+.offline-banner{background:#fff7df;color:#765c16;border-color:#ead69d}.online-banner{background:#e8f5ed;color:#286544;border-color:#cbe3d3;animation:offlineNotice .35s ease}.offline-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}@keyframes offlineNotice{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:520px){.offline-banner,.online-banner{font-size:10px;padding:7px 10px}}
