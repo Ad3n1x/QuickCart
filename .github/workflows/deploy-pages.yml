@@ -55,9 +55,6 @@ jobs:
           echo "Published files:"
           find dist -maxdepth 2 -type f | sort | head -120
 
-      - name: Let automatic Pages deployment settle
-        run: sleep 90
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
