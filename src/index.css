@@ -530,3 +530,36 @@ button,a{ -webkit-tap-highlight-color:transparent }
 .receipt-btn svg{flex:none}
 @media(max-width:700px){.order-row{grid-template-columns:minmax(0,1fr) auto}.order-row>select{grid-column:2;grid-row:1}.order-row>strong{grid-column:1;grid-row:2}.receipt-btn{grid-column:2;grid-row:2;justify-self:end}}
 @media(max-width:420px){.receipt-btn{padding:8px 9px;font-size:11px}.receipt-btn svg{width:14px;height:14px}}
+
+/* Final declutter pass */
+.dashboard-content{padding-left:clamp(16px,3vw,32px);padding-right:clamp(16px,3vw,32px)}
+.dashboard-grid{gap:14px}.dashboard-grid>.panel,.dashboard-grid>.quick{min-height:0}
+.stats{gap:10px;margin-bottom:14px}.stat{padding:16px;border-radius:16px;box-shadow:none}.stat:hover{transform:none}
+.panel{padding:18px;border-radius:16px;box-shadow:0 8px 26px rgba(16,43,33,.045)}.panel:hover{box-shadow:0 8px 26px rgba(16,43,33,.045)}
+.page-head{margin-bottom:18px}.page-head h1{font-size:32px}.page-head p{font-size:13px}
+.quick-actions{margin:14px 0 18px;gap:8px}.quick-action{min-height:44px;padding:9px 10px;border-radius:11px;box-shadow:none;font-size:11px}.quick-action:hover{transform:none;box-shadow:none}
+.order-row,.admin-row{gap:10px;padding:12px 0}.tool{padding:10px;border-radius:10px}.sidebar{padding:18px 13px}.nav{padding:9px 10px}.store-mini{padding:12px;margin-bottom:12px}.help{padding:12px}
+.form-grid{gap:12px}.field{gap:5px}.field input,.field textarea,.field select{padding:10px}
+.dashboard-top{height:64px;padding:12px clamp(14px,3vw,32px)}.dashboard-content{padding-top:82px}
+.top-actions{gap:6px}.top-actions .ghost{padding:9px 11px}
+.public-hero{margin:16px auto;padding:42px 24px;border-radius:20px}.public-grid{gap:14px}.public-product{border-radius:14px;padding:10px;box-shadow:none}.public-product:hover{transform:none;box-shadow:none}
+.modal-card{border-radius:18px}.modal-heading{margin-bottom:16px}.modal-heading h2{font-size:23px}
+.upgrade-banner,.analytics-upgrade{padding:18px;border-radius:16px;box-shadow:none}.upgrade-banner h2,.analytics-upgrade h2{font-size:19px}
+.plans{gap:12px}.plan-card{min-height:0;padding:20px;border-radius:16px;box-shadow:none}.plan-card.featured{transform:none;box-shadow:none}
+.analytics-grid,.advanced-grid{gap:12px}.advanced-stats{gap:9px}.advanced-stats>div{padding:14px;box-shadow:none}
+/* Reduce persistent floating UI so it doesn't cover content */
+.install-banner{top:76px}.sync-status{top:126px}.offline-banner,.online-banner{top:72px!important}
+@media(max-width:700px){
+ .dashboard-content{padding:78px 14px 40px}.dashboard-top{padding:11px 14px}
+ .page-head h1{font-size:28px}.stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:20px}
+ .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
+ .dashboard-grid{gap:10px}.panel{padding:15px}
+ .landing-hero{padding-left:18px;padding-right:18px}.feature-strip{padding:0 16px}
+ .public-hero{margin:10px 10px;padding:30px 18px}.public-grid{padding:0 10px}
+}
+@media(max-width:420px){
+ .stats{grid-template-columns:1fr 1fr}.stat span{font-size:10px}.stat strong{font-size:19px}
+ .quick-action{min-height:42px;font-size:10px}.quick-action svg{width:15px;height:15px}
+ .order-row{gap:7px}.receipt-btn{min-height:34px}
+ .page-head h1{font-size:26px}
+}
