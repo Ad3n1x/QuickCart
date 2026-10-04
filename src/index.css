@@ -822,3 +822,38 @@ button{touch-action:manipulation}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:0s!important;animation-duration:0s!important}
 }
+
+/* Final responsive hardening */
+html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{overflow-x:hidden}
+#root,.app-shell{width:100%;max-width:100%;overflow-x:hidden}
+input,select,textarea,button{min-height:40px}
+textarea{resize:vertical}
+a,button{word-break:normal}
+.dashboard-content>*{max-width:100%}
+.panel,.stat,.tool,.advanced-card,.analytics-panel,.plan-card,.public-product,.public-checkout,.order-row,.admin-row{overflow-wrap:anywhere}
+@media(max-width:900px){
+  .dashboard-top-inner{min-height:62px}
+  .dashboard-brand .brand-wordmark{font-size:19px}
+  .dashboard-actions{overflow-y:auto;max-height:calc(100dvh - 62px)}
+  .sidebar{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+  .dashboard-content{overflow:visible}
+}
+@media(max-width:600px){
+  .page-head{gap:12px}
+  .page-head .page-actions,.page-head>div:last-child{display:grid;grid-template-columns:1fr;width:100%}
+  .page-head .page-actions>* ,.page-head>div:last-child>*{width:100%;justify-content:center}
+  .panel-head .link-btn{max-width:100%}
+  .panel{border-radius:15px}
+  .modal{width:min(100% - 20px,620px);max-height:calc(100dvh - 20px);overflow:auto}
+  .modal-actions{display:grid;grid-template-columns:1fr}
+  .modal-actions>*{width:100%;justify-content:center}
+  .public-checkout{padding:14px}
+}
+@media(max-width:380px){
+  .dashboard-brand .brand-wordmark{display:none}
+  .dashboard-top-inner{gap:6px}
+  .top-actions{gap:4px}
+  .quick-action{min-width:0}
+  .stats,.advanced-stats{gap:8px}
+}
