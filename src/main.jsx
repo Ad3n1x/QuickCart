@@ -6,6 +6,24 @@ import './index.css';
 
 const root = document.getElementById('root');
 
+function showFatalError(error) {
+  console.error('QuickCart fatal startup error:', error);
+  if (!root) return;
+  root.innerHTML = '';
+  const box = document.createElement('main');
+  box.style.cssText = 'min-height:100vh;display:grid;place-items:center;padding:24px;background:#f7faf8;color:#102b21;font-family:system-ui,sans-serif';
+  box.innerHTML = '<section style="max-width:680px;width:100%;background:#fff;border:1px solid #e4ebe7;border-radius:18px;padding:28px;box-shadow:0 18px 55px rgba(16,43,33,.08)"><h1 style="margin:0 0 10px">QuickCart could not start</h1><p style="color:#60746a">The page loaded, but the application failed during startup. Reloading can clear a stale cached bundle.</p><button id="quickcart-reload" style="margin-top:10px;padding:11px 15px;border:0;border-radius:11px;background:#12392d;color:#fff;font-weight:800">Reload QuickCart</button></section>';
+  box.querySelector('#quickcart-reload')?.addEventListener('click', () => window.location.reload());
+  root.appendChild(box);
+}
+
+window.addEventListener('error', event => {
+  if (event?.error) showFatalError(event.error);
+});
+window.addEventListener('unhandledrejection', event => {
+  showFatalError(event?.reason || new Error('Unhandled promise rejection'));
+});
+
 function BootError({ error }) {
   return React.createElement('main', {
     style: { minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24, background: '#f7faf8', color: '#102b21', fontFamily: 'system-ui, sans-serif' }
