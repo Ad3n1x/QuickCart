@@ -492,3 +492,21 @@ button,a{ -webkit-tap-highlight-color:transparent }
 @media(max-width:520px){
   .online-banner,.offline-banner{top:8px!important;width:calc(100vw - 16px);border-radius:14px}
 }
+
+/* Fixed dashboard/public navigation */
+.dashboard-top,.public-nav{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  z-index:4000!important;
+  width:100%;
+}
+.dashboard-content{padding-top:calc(32px + 24px);}
+.public-store{padding-top:72px;}
+.offline-banner,.online-banner{top:76px!important;}
+@media(max-width:700px){
+  .dashboard-content{padding-top:76px;}
+  .public-store{padding-top:68px;}
+  .offline-banner,.online-banner{top:70px!important;}
+}
