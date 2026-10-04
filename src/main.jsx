@@ -1,6 +1,7 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { createRoot } from 'react-dom/client';
+import App, { AppErrorBoundary } from './App.jsx';
 import './index.css';
 
 const root = document.getElementById('root');
@@ -16,14 +17,9 @@ function BootError({ error }) {
   React.createElement('button', { onClick: () => window.location.reload(), style: { marginTop: 16, padding: '11px 15px', border: 0, borderRadius: 11, background: '#12392d', color: '#fff', fontWeight: 800 } }, 'Reload QuickCart')));
 }
 
-async function boot() {
-  try {
-    const { default: App, AppErrorBoundary } = await import('./App.jsx');
-    createRoot(root).render(React.createElement(AppErrorBoundary, null, React.createElement(App)));
-  } catch (error) {
-    console.error('QuickCart startup error:', error);
-    createRoot(root).render(React.createElement(BootError, { error }));
-  }
+try {
+  createRoot(root).render(React.createElement(AppErrorBoundary, null, React.createElement(App)));
+} catch (error) {
+  console.error('QuickCart startup error:', error);
+  createRoot(root).render(React.createElement(BootError, { error }));
 }
-
-boot();
