@@ -1194,3 +1194,13 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .sidebar .mobile-sidebar-close svg{width:16px!important;height:16px!important;stroke-width:2!important}
   .sidebar .store-mini{padding-right:50px!important}
 }
+
+
+/* Actionable login system notices */
+.notice-popup-backdrop{z-index:16000!important}
+.notice-popup{position:relative;width:min(430px,100%);padding:28px!important;border-radius:22px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 30px 90px rgba(5,24,17,.28)!important}
+.notice-popup h2{margin:9px 34px 8px 0;font-size:26px;letter-spacing:-.04em}
+.notice-popup p{margin:0;color:var(--muted);line-height:1.6;font-size:13px;max-width:360px}
+.notice-popup-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.notice-popup-actions>*{justify-content:center}
+@media(max-width:480px){.notice-popup{padding:23px!important}.notice-popup-actions{display:grid}.notice-popup-actions>*{width:100%}}
