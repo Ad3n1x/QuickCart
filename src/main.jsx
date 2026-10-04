@@ -33,7 +33,8 @@ window.addEventListener('error', event => {
   if (event?.error) showFatalError(event.error);
 });
 window.addEventListener('unhandledrejection', event => {
-  showFatalError(event?.reason || new Error('Unhandled promise rejection'));
+  if (event?.reason?.code === 'OFFLINE') return;
+  console.error('QuickCart unhandled promise rejection:', event?.reason);
 });
 
 window.addEventListener('vite:preloadError', event => {
