@@ -31,8 +31,15 @@ jobs:
         run: npm install
       - name: Build for GitHub Pages
         env:
+          VITE_GITHUB_PAGES: 'true'
           VITE_BASE_PATH: /QuickCart/
-        run: npm run build
+        run: npm run build -- --base=/QuickCart/
+      - name: Verify Pages build
+        run: |
+          test -f dist/index.html
+          test -f dist/404.html || cp dist/index.html dist/404.html
+          grep -q '/QuickCart/assets/' dist/index.html
+          find dist -maxdepth 2 -type f | sort | head -80
       - name: SPA fallback
         run: cp dist/index.html dist/404.html
       - name: Setup Pages
