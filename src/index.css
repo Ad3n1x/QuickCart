@@ -464,3 +464,31 @@ button,a{ -webkit-tap-highlight-color:transparent }
 .offline-banner,.online-banner{position:sticky;top:0;z-index:1200;display:flex;align-items:center;justify-content:center;gap:8px;min-height:34px;padding:7px 14px;text-align:center;font-size:11px;font-weight:750;line-height:1.4;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
 .offline-banner{background:#fff7df;color:#765c16;border-color:#ead69d}.online-banner{background:#e8f5ed;color:#286544;border-color:#cbe3d3;animation:offlineNotice .35s ease}.offline-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}@keyframes offlineNotice{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:520px){.offline-banner,.online-banner{font-size:10px;padding:7px 10px}}
+
+/* Fixed reconnect notice */
+.online-banner{
+  position:fixed!important;
+  top:12px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(520px,calc(100vw - 24px));
+  min-height:38px;
+  border:1px solid #cbe3d3;
+  border-radius:999px;
+  box-shadow:0 12px 32px rgba(16,43,33,.12);
+  z-index:5000;
+  pointer-events:none;
+}
+.offline-banner{
+  position:fixed!important;
+  top:12px!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(620px,calc(100vw - 24px));
+  border-radius:999px;
+  box-shadow:0 12px 32px rgba(16,43,33,.12);
+  z-index:5000;
+}
+@media(max-width:520px){
+  .online-banner,.offline-banner{top:8px!important;width:calc(100vw - 16px);border-radius:14px}
+}
