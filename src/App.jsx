@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Check, Copy, Crown, Eye, EyeOff, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, Save, Settings, ShoppingBag, Store, Trash2, TrendingUp, UserRound, Users, Tag, X, Edit3, Download, Search, Truck, Share2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-const API_BASE = import.meta.env.API_URL || 'https://quickcart-api-f7x7.onrender.com';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://quickcart-api-f7x7.onrender.com';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
 let activeRequests = 0;
 const setGlobalLoading = delta => { activeRequests = Math.max(0, activeRequests + delta); window.dispatchEvent(new CustomEvent('quickcart-loading', { detail: { loading: activeRequests > 0 } })); };
