@@ -8,7 +8,7 @@ let activeRequests = 0;
 const setGlobalLoading = delta => { activeRequests = Math.max(0, activeRequests + delta); window.dispatchEvent(new CustomEvent('quickcart-loading', { detail: { loading: activeRequests > 0 } })); };
 const api = async (path, options = {}) => { setGlobalLoading(1); const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 15000); try { const token = localStorage.getItem('quickcart_token'); const storeId = localStorage.getItem('quickcart_store_id'); const response = await fetch(`${API_BASE}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(storeId ? { 'X-Store-Id': storeId } : {}), ...(options.headers || {}) }, signal: controller.signal }); const data = await response.json().catch(() => ({})); if (!response.ok) { const error = new Error(data.error || 'Request failed.'); error.status = response.status; error.path = path; error.code = data.code; error.retryAfterSeconds = data.retryAfterSeconds; throw error; } return data; } finally { clearTimeout(timeout); setGlobalLoading(-1); } };
 const defaultProducts = [{ name: 'Classic Tee', price: 12000, description: 'Everyday cotton tee', emoji: '👕', stock: 20, active: true }, { name: 'Urban Cap', price: 5000, description: 'Structured streetwear cap', emoji: '🧢', stock: 15, active: true }];
-class AppErrorBoundary extends Component {
+export class AppErrorBoundary extends Component {
  state={error:null};
  static getDerivedStateFromError(error){return {error};}
  componentDidCatch(error,info){console.error('QuickCart dashboard error:',error,info);}
