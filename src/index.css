@@ -1045,3 +1045,13 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .mobile-nav-backdrop{z-index:12500!important}
   .sidebar{z-index:13000!important}
 }
+
+
+/* Notice/nav/sidebar layering: notices above nav, sidebar above notices */
+.system-notices{position:relative!important;z-index:3000!important}
+@media(max-width:900px){
+  .dashboard-top{z-index:12000!important}
+  .mobile-nav-backdrop{z-index:12500!important}
+  .sidebar{z-index:13000!important}
+  .system-notices{z-index:14000!important}
+}
