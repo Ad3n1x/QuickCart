@@ -43,7 +43,8 @@ function App() {
   const [storeSetupOpen, setStoreSetupOpen] = useState(false), [productModalOpen, setProductModalOpen] = useState(false), [editingProduct, setEditingProduct] = useState(null), [planInfo, setPlanInfo] = useState({ plan: 'Free' }), [discounts, setDiscounts] = useState([]), [discountForm, setDiscountForm] = useState({ code: '', type: 'percent', value: 10, expiresAt: '' });
   const hash = window.location.hash;
   useEffect(() => { const handler = event => setGlobalLoadingState(Boolean(event.detail?.loading)); window.addEventListener('quickcart-loading', handler); return () => window.removeEventListener('quickcart-loading', handler); }, []);
-  const pathStoreMatch = window.location.pathname.match(/^\/store\/([^/]+)\/?$/);\n  const publicMatch = pathStoreMatch || hash.match(/^#\/store\/([^/]+)/);
+  const pathStoreMatch = window.location.pathname.match(/^\/store\/([^/]+)\/?$/);
+  const publicMatch = pathStoreMatch || hash.match(/^#\/store\/([^/]+)/);
   const loadPrivate = async () => {
     const token = localStorage.getItem('quickcart_token');
     if (!token) return;
