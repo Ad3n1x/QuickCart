@@ -1,12 +1,108 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#12392d"><title>QuickCart Store</title><style>
-:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#102c22;background:#f4f7f5}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#edf5f1 0,#f8faf9 38%,#f4f7f5 100%)}button,input{font:inherit}.wrap{width:min(1120px,100%);margin:auto;padding:20px}.hero{position:relative;overflow:hidden;background:#12392d;color:#fff;border-radius:28px;padding:clamp(28px,6vw,64px);margin-bottom:22px;box-shadow:0 18px 50px #12392d24}.hero:after{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-70px;top:-80px;background:#ffffff12}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;opacity:.72;text-transform:uppercase}.hero h1{position:relative;margin:8px 0 8px;font-size:clamp(30px,6vw,58px);line-height:1.02;letter-spacing:-.04em}.hero p{position:relative;max-width:620px;margin:0;font-size:clamp(15px,2vw,18px);line-height:1.6;opacity:.82}.section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:28px 2px 14px}.section-head h2{margin:0;font-size:24px;letter-spacing:-.02em}.muted{color:#64756d}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #dce7e1;border-radius:22px;padding:20px;box-shadow:0 8px 28px #12392d0a}.product{display:flex;flex-direction:column;min-width:0;transition:transform .18s ease,box-shadow .18s ease}.product:hover{transform:translateY(-3px);box-shadow:0 14px 34px #12392d12}.emoji{display:grid;place-items:center;height:150px;border-radius:16px;background:#eef5f1;font-size:58px}.product h3{margin:16px 0 5px;font-size:18px}.description{min-height:42px;line-height:1.45;color:#64756d}.price{font-size:20px;font-weight:850;margin:12px 0}.btn{width:100%;border:0;border-radius:13px;padding:13px 16px;background:#12392d;color:#fff;font-weight:800;cursor:pointer;transition:transform .15s ease,opacity .15s ease,background .15s ease}.btn:hover{background:#0c2c22;transform:translateY(-1px)}.btn:active{transform:translateY(0)}.cart{position:sticky;bottom:12px;margin-top:22px;box-shadow:0 14px 40px #12392d18}.cart h2{margin:0 0 12px}.cart-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf1ef}.cart-total{display:flex;justify-content:space-between;font-size:18px;margin:15px 0}.form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.input{width:100%;padding:13px 14px;border:1px solid #ccd9d2;border-radius:12px;outline:none;background:#fbfcfb}.input:focus{border-color:#12392d;box-shadow:0 0 0 3px #12392d12}.empty{text-align:center;padding:28px 10px}.error{padding:24px;text-align:center}.error h2{margin-top:0}@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form{grid-template-columns:1fr}.hero{border-radius:22px}.cart{position:static}}@media(max-width:520px){.wrap{padding:12px}.grid{grid-template-columns:1fr;gap:12px}.hero{padding:30px 22px}.emoji{height:125px}.card{border-radius:18px;padding:16px}.section-head{margin-top:22px}.cart .btn{padding:14px}.product:hover{transform:none}}
-</style></head><body><main class="wrap" id="app"><section class="card empty">Loading store…</section></main><script>
-const API='https://quickcart-api-f7x7.onrender.com';const q=new URLSearchParams(location.search);const slug=q.get('slug');const money=n=>new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(n)||0);let data,cart=[];
-async function load(){if(!slug)throw Error('Missing store slug');const r=await fetch(API+'/api/storefront/'+encodeURIComponent(slug));const d=await r.json();if(!r.ok)throw Error(d.error||'Store not found');data=d;document.title=(d.store?.storeName||'QuickCart Store')+' · QuickCart';render()}
-function render(){const s=data.store;const products=data.products||[];document.getElementById('app').innerHTML=`<section class="hero"><span class="eyebrow">QuickCart storefront</span><h1>${esc(s.storeName)}</h1><p>${esc(s.tagline||'Shop with us')}</p></section><div class="section-head"><h2>Products</h2><span class="muted">${products.length} item${products.length===1?'':'s'}</span></div><section class="grid">${products.length?products.map((p,i)=>`<article class="card product"><div class="emoji">${esc(p.emoji||'🛍️')}</div><h3>${esc(p.name)}</h3><span class="description">${esc(p.description||'Quality product from this store.')}</span><span class="price">${money(p.price)}</span><button class="btn" onclick="add(${i})">Add to cart</button></article>`).join(''):`<section class="card empty"><h3>No products yet</h3><p class="muted">This store hasn't added products yet.</p></section>`}</section>${cartSection()}`}
-function cartSection(){return `<section class="card cart"><h2>Your cart</h2>${cart.length?cart.map(x=>`<div class="cart-row"><span>${esc(x.name)} × ${x.qty}</span><strong>${money(x.price*x.qty)}</strong></div>`).join('')+'<div class="cart-total"><span>Total</span><strong>'+money(cart.reduce((a,x)=>a+x.price*x.qty,0))+'</strong></div><div class="form"><input class="input" id="name" placeholder="Your name"><input class="input" id="phone" placeholder="WhatsApp number"><input class="input" id="address" placeholder="Delivery address"></div><br><button class="btn" onclick="checkout()">Order on WhatsApp</button>`:`<p class="muted empty">Your cart is empty. Add a product to get started.</p>`}</section>`}
-function add(i){const p=data.products[i],x=cart.find(x=>x.id===p.id);if(x)x.qty++;else cart.push({...p,qty:1});render()}
-function checkout(){const name=document.getElementById('name').value.trim(),phone=document.getElementById('phone').value.trim(),address=document.getElementById('address').value.trim();if(!name||!phone||!address)return alert('Please enter your name, WhatsApp number and address.');const total=cart.reduce((a,x)=>a+x.price*x.qty,0);const msg=encodeURIComponent('Hello '+data.store.storeName+', I want to place an order:\n\n'+cart.map(x=>x.name+' x '+x.qty+' — '+money(x.price*x.qty)).join('\n')+'\n\nTotal: '+money(total)+'\nName: '+name+'\nPhone: '+phone+'\nAddress: '+address);const wa=String(data.store.vendorPhone||'').replace(/\D/g,'');if(!wa)return alert('This store has not added a WhatsApp number yet.');location.href='https://wa.me/'+wa+'?text='+msg}
-function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}load().catch(e=>document.getElementById('app').innerHTML='<section class="card error"><h2>Store unavailable</h2><p class="muted">'+esc(e.message)+'</p><button class="btn" onclick="location.reload()">Try again</button></section>');
-</script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#12392d">
+<title>QuickCart Store</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#102c22;background:#f4f7f5}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#edf5f1,#f8faf9 38%,#f4f7f5)}button,input{font:inherit}.wrap{width:min(1120px,100%);margin:auto;padding:20px}.hero{background:#12392d;color:#fff;border-radius:28px;padding:clamp(28px,6vw,64px);margin-bottom:22px;box-shadow:0 18px 50px #12392d24}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;opacity:.72;text-transform:uppercase}.hero h1{margin:8px 0;font-size:clamp(30px,6vw,58px);line-height:1.02;letter-spacing:-.04em}.hero p{max-width:620px;margin:0;font-size:clamp(15px,2vw,18px);line-height:1.6;opacity:.82}.section-head{display:flex;justify-content:space-between;align-items:end;margin:28px 2px 14px}.section-head h2{margin:0;font-size:24px}.muted{color:#64756d}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:#fff;border:1px solid #dce7e1;border-radius:22px;padding:20px;box-shadow:0 8px 28px #12392d0a}.product{display:flex;flex-direction:column}.product:hover{transform:translateY(-3px);box-shadow:0 14px 34px #12392d12}.emoji{display:grid;place-items:center;height:150px;border-radius:16px;background:#eef5f1;font-size:58px}.product h3{margin:16px 0 5px}.description{min-height:42px;line-height:1.45;color:#64756d}.price{font-size:20px;font-weight:850;margin:12px 0}.btn{width:100%;border:0;border-radius:13px;padding:13px 16px;background:#12392d;color:#fff;font-weight:800;cursor:pointer}.btn:hover{background:#0c2c22}.cart{margin-top:22px}.cart-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #edf1ef}.cart-total{display:flex;justify-content:space-between;font-size:18px;margin:15px 0}.form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.input{width:100%;padding:13px 14px;border:1px solid #ccd9d2;border-radius:12px;outline:none;background:#fbfcfb}.input:focus{border-color:#12392d;box-shadow:0 0 0 3px #12392d12}.empty,.error{text-align:center;padding:28px 10px}@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form{grid-template-columns:1fr}}@media(max-width:520px){.wrap{padding:12px}.grid{grid-template-columns:1fr;gap:12px}.hero{padding:30px 22px;border-radius:22px}.emoji{height:125px}.card{border-radius:18px;padding:16px}.product:hover{transform:none}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"><section class="card empty">Loading store...</section></main>
+<script>
+(function(){
+  'use strict';
+  var API='https://quickcart-api-f7x7.onrender.com';
+  var params=new URLSearchParams(window.location.search);
+  var slug=params.get('slug');
+  var data=null;
+  var cart=[];
+
+  function money(value){
+    return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(value)||0);
+  }
+
+  function esc(value){
+    return String(value==null?'':value).replace(/[&<>"']/g,function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
+
+  function cartSection(){
+    var html='<section class="card cart"><h2>Your cart</h2>';
+    if(!cart.length){
+      return html+'<p class="muted empty">Your cart is empty. Add a product to get started.</p></section>';
+    }
+    cart.forEach(function(item){
+      html+='<div class="cart-row"><span>'+esc(item.name)+' x '+item.qty+'</span><strong>'+money(item.price*item.qty)+'</strong></div>';
+    });
+    var total=cart.reduce(function(sum,item){return sum+(Number(item.price)||0)*item.qty;},0);
+    html+='<div class="cart-total"><span>Total</span><strong>'+money(total)+'</strong></div>';
+    html+='<div class="form"><input class="input" id="customerName" placeholder="Your name"><input class="input" id="customerPhone" placeholder="WhatsApp number"><input class="input" id="customerAddress" placeholder="Delivery address"></div>';
+    html+='<br><button class="btn" id="checkoutBtn">Order on WhatsApp</button></section>';
+    return html;
+  }
+
+  function render(){
+    var store=data.store||{};
+    var products=data.products||[];
+    document.title=(store.storeName||'QuickCart Store')+' - QuickCart';
+    var html='<section class="hero"><span class="eyebrow">QuickCart storefront</span><h1>'+esc(store.storeName||'Store')+'</h1><p>'+esc(store.tagline||'Shop with us')+'</p></section>';
+    html+='<div class="section-head"><h2>Products</h2><span class="muted">'+products.length+' item'+(products.length===1?'':'s')+'</span></div>';
+    if(products.length){
+      html+='<section class="grid">';
+      products.forEach(function(product,index){
+        html+='<article class="card product"><div class="emoji">'+esc(product.emoji||'🛍️')+'</div><h3>'+esc(product.name)+'</h3><span class="description">'+esc(product.description||'Quality product from this store.')+'</span><span class="price">'+money(product.price)+'</span><button class="btn add-btn" data-index="'+index+'">Add to cart</button></article>';
+      });
+      html+='</section>';
+    }else{
+      html+='<section class="card empty"><h3>No products yet</h3><p class="muted">This store has not added products yet.</p></section>';
+    }
+    html+=cartSection();
+    document.getElementById('app').innerHTML=html;
+    document.querySelectorAll('.add-btn').forEach(function(button){
+      button.addEventListener('click',function(){add(Number(button.getAttribute('data-index')));});
+    });
+    var checkout=document.getElementById('checkoutBtn');
+    if(checkout) checkout.addEventListener('click',checkoutOrder);
+  }
+
+  function add(index){
+    var product=data.products[index];
+    var existing=cart.find(function(item){return item.id===product.id;});
+    if(existing) existing.qty+=1;
+    else cart.push({id:product.id,name:product.name,price:product.price,qty:1});
+    render();
+  }
+
+  function checkoutOrder(){
+    var name=document.getElementById('customerName').value.trim();
+    var phone=document.getElementById('customerPhone').value.trim();
+    var address=document.getElementById('customerAddress').value.trim();
+    if(!name||!phone||!address){alert('Please enter your name, WhatsApp number and address.');return;}
+    var total=cart.reduce(function(sum,item){return sum+(Number(item.price)||0)*item.qty;},0);
+    var lines=['Hello '+(data.store.storeName||'store')+', I want to place an order:',''];
+    cart.forEach(function(item){lines.push(item.name+' x '+item.qty+' - '+money(item.price*item.qty));});
+    lines.push('','Total: '+money(total),'Name: '+name,'Phone: '+phone,'Address: '+address);
+    var whatsapp=String(data.store.vendorPhone||'').replace(/\D/g,'');
+    if(!whatsapp){alert('This store has not added a WhatsApp number yet.');return;}
+    window.location.href='https://wa.me/'+whatsapp+'?text='+encodeURIComponent(lines.join('\n'));
+  }
+
+  async function load(){
+    if(!slug) throw new Error('Missing store slug');
+    var response=await fetch(API+'/api/storefront/'+encodeURIComponent(slug));
+    var result=await response.json();
+    if(!response.ok) throw new Error(result.error||'Store not found');
+    data=result;
+    render();
+  }
+
+  load().catch(function(error){
+    document.getElementById('app').innerHTML='<section class="card error"><h2>Store unavailable</h2><p class="muted">'+esc(error.message)+'</p><button class="btn" id="retry">Try again</button></section>';
+    document.getElementById('retry').addEventListener('click',function(){window.location.reload();});
+  });
+})();
+</script>
+</body>
+</html>
