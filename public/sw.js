@@ -1,4 +1,4 @@
-const CACHE = 'quickcart-shell-v2';
+const CACHE = 'quickcart-shell-v3';
 const BASE = new URL(self.registration.scope).pathname;
 const SHELL = [BASE, BASE + 'index.html'];
 
@@ -18,16 +18,18 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
 
   event.respondWith((async () => {
+    const url = new URL(request.url);
     const cached = await caches.match(request);
+    const isAsset = /\\.(?:js|css)(?:$|\\?)/i.test(url.pathname + url.search);
 
-    if (request.mode === 'navigate') {
+    if (request.mode === 'navigate' || isAsset) {
       try {
-        const fresh = await fetch(request);
+        const fresh = await fetch(request, { cache: 'no-cache' });
         const cache = await caches.open(CACHE);
         cache.put(request, fresh.clone()).catch(() => {});
         return fresh;
       } catch {
-        return cached || caches.match(BASE + 'index.html') || Response.error();
+        return cached || (request.mode === 'navigate' ? caches.match(BASE + 'index.html') : Response.error());
       }
     }
 
