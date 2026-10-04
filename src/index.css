@@ -1055,3 +1055,7 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .sidebar{z-index:13000!important}
   .system-notices{z-index:14000!important}
 }
+
+
+/* Final layering correction */
+@media(max-width:900px){.system-notices{z-index:12550!important}.dashboard-top{z-index:12000!important}.mobile-nav-backdrop{z-index:12500!important}.sidebar{z-index:13000!important}}
