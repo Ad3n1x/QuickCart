@@ -51,8 +51,12 @@ jobs:
           test -f dist/quickcart-logo.svg
           cp dist/index.html dist/404.html
           printf '%s\n' "${GITHUB_SHA}" > dist/build-version.txt
+          touch dist/.nojekyll
           echo "Published files:"
           find dist -maxdepth 2 -type f | sort | head -120
+
+      - name: Let automatic Pages deployment settle
+        run: sleep 90
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
