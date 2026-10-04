@@ -1,7 +1,7 @@
 (() => {
   const openStore = slug => window.open(`/store.html?slug=${encodeURIComponent(slug)}`, '_blank', 'noopener');
   const storeUrl = slug => `${location.origin}/store.html?slug=${encodeURIComponent(slug)}`;
-  const openQr = slug => window.open(`/qr.html?url=${encodeURIComponent(storeUrl(slug))}`, '_blank', 'noopener');
+  const openQr = slug => window.open(`/qr.html?slug=${encodeURIComponent(slug)}`, '_blank', 'noopener');
   document.addEventListener('click', event => {
     const link = event.target.closest?.('a[href*="#/store/"]');
     if (link) {
