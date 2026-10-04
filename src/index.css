@@ -1032,3 +1032,8 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .sidebar.mobile-open{transform:translateX(0)!important}
 }
 @media (min-width:901px){.dashboard-layout{padding-top:0!important}}
+
+
+/* System notices must remain above the mobile sidebar */
+.system-notices{position:relative!important;z-index:14000!important}
+.system-notices>*{position:relative!important;z-index:14001!important}
