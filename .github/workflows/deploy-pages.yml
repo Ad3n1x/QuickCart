@@ -50,7 +50,17 @@ jobs:
           ! grep -qE '(src|href)="\./(src|assets)/' dist/index.html
           test -f dist/quickcart-logo.svg
           cp dist/index.html dist/404.html
-          printf '%s\n' "${GITHUB_SHA}" > dist/build-version.txt
+          # Bust stale browser/CDN asset references on every deployment.
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, re
+          p = Path('dist/index.html')
+          s = p.read_text()
+          sha = os.environ['GITHUB_SHA']
+          s = re.sub(r'(/QuickCart/assets/[^"']+\.(?:js|css))(?:\?[^"']*)?', rf'\1?v={sha}', s)
+          p.write_text(s)
+          Path('dist/build-version.txt').write_text(sha + '\n')
+          PY
           touch dist/.nojekyll
           echo "Published files:"
           find dist -maxdepth 2 -type f | sort | head -120
@@ -66,3 +76,18 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify published site
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL --retry 2 --connect-timeout 10 "https://ad3n1x.github.io/QuickCart/build-version.txt?verify=${GITHUB_SHA}" | grep -Fxq "${GITHUB_SHA}"; then
+              echo "GitHub Pages is serving build ${GITHUB_SHA}."
+              exit 0
+            fi
+            echo "Published site has not updated yet (attempt ${attempt}/5)."
+            sleep 15
+          done
+          echo "GitHub Pages did not serve the newly deployed build."
+          exit 1
