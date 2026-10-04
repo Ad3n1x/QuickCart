@@ -370,3 +370,39 @@ button,a,.panel,.plan-card,.tool,.nav,.public-product,.stat,.store-mini,.choice,
 .insight-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #edf2ef;font-size:11px}.insight-row:last-child{border-bottom:0}.insight-row span{text-transform:capitalize;color:#40594e}.insight-row strong{color:#17392d}
 @media(max-width:850px){.advanced-stats{grid-template-columns:repeat(2,1fr)}.advanced-grid{grid-template-columns:1fr}.analytics-toolbar{align-items:stretch;flex-direction:column}}
 @media(max-width:600px){.tier-gate{padding:28px 18px}.advanced-stats{grid-template-columns:1fr 1fr}.advanced-stats>div{padding:14px}.advanced-stats strong{font-size:18px}.advanced-card{padding:16px}.range-switch{width:100%}.range-switch button{flex:1}}
+
+/* Responsive interaction and accessible scrolling */
+.modal-backdrop{overflow-y:auto;overscroll-behavior:contain;align-items:center;-webkit-overflow-scrolling:touch}
+.modal-card{box-sizing:border-box;width:min(680px,calc(100vw - 24px));max-height:min(88vh,760px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:24px}
+.modal-card:focus{outline:none}
+.modal-close{z-index:3}
+.premium-modal{min-width:0}
+.premium-modal h2,.premium-modal p,.premium-modal .panel,.premium-modal .payment-account-card{min-width:0}
+.premium-modal .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.premium-modal .page-actions{display:flex;flex-wrap:wrap;gap:9px}
+.premium-modal .page-actions button{min-height:44px}
+.premium-modal .payment-account-number{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.premium-modal .payment-account-number strong{overflow-wrap:anywhere}
+.premium-modal code{overflow-wrap:anywhere}
+@media(max-width:700px){
+ .modal-backdrop{padding:10px;align-items:flex-end}
+ .modal-card{width:100%;max-width:none;max-height:92vh;border-radius:20px;padding:20px 16px 18px}
+ .premium-modal h2{font-size:24px;padding-right:30px}
+ .premium-modal>p{font-size:12px;line-height:1.55}
+ .premium-modal .form-grid{grid-template-columns:1fr}
+ .modal-feature-grid{grid-template-columns:1fr 1fr!important}
+ .modal-price strong{font-size:30px}
+}
+@media(max-width:420px){
+ .modal-backdrop{padding:0}
+ .modal-card{max-height:94vh;border-radius:20px 20px 0 0;padding:18px 14px 16px}
+ .modal-feature-grid{grid-template-columns:1fr!important}
+ .premium-modal .page-actions{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 28%);padding-top:18px;margin-left:-2px;margin-right:-2px}
+ .premium-modal .page-actions button{flex:1;min-width:110px}
+ .premium-modal .panel{padding:15px}
+ .premium-modal .payment-account-number{align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .modal-backdrop,.modal-card{animation:none!important}
+}
