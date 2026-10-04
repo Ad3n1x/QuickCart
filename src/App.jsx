@@ -113,6 +113,7 @@ function App() {
         setPaymentStatus(result.paymentStatus || 'awaiting_transfer');
         if (result.paymentStatus === 'paid') {
           setPayment(current => current ? { ...current, status: 'paid' } : current);
+          try { setPlanInfo(await api('/api/plan')); } catch {}
           clearInterval(timer);
         } else if (['failed','expired'].includes(result.paymentStatus)) {
           clearInterval(timer);
@@ -282,11 +283,11 @@ function DiscountsPage({ discounts, form, setForm, onAdd, onDelete, onUpgrade })
 function LockedPage({ title, text, onUpgrade }) { return <div className="locked-feature panel"><div className="feature-icon"><Crown/></div><div><span className="eyebrow-dark">PREMIUM FEATURE</span><h2>{title}</h2><p>{text}</p><button className="primary" onClick={onUpgrade}><Crown size={16}/> Upgrade</button></div></div>; }
 function PremiumPage({ onUpgrade }) {
   const plans = [
-    {name:'Free',price:'₦0',period:'/forever',desc:'Everything needed to start selling.',features:['2 storefronts','Basic catalog','WhatsApp checkout','Order management']},
-    {name:'Premium',price:'₦4,999',period:'/month',desc:'The growth toolkit for serious sellers.',featured:true,features:['Unlimited products','Sales analytics','Customer history','Inventory tools','Discounts & coupons','Custom branding','Advanced order tools','Priority support']},
-    {name:'Business',price:'₦9,999',period:'/month',desc:'For larger social-commerce operations.',features:['Everything in Premium','Advanced reports','Team workflows','Priority support']}
+    {name:'Free',price:'₦0',period:'/forever',desc:'A complete starting point for a small seller.',features:['Up to 2 storefronts','Up to 25 products per store','Product catalog + stock counts','WhatsApp checkout','Order tracking','Basic store settings','CSV export/import']},
+    {name:'Premium',price:'₦4,999',period:'/month',desc:'The full growth toolkit for active sellers.',featured:true,features:['Everything in Free','Unlimited products','Unlimited storefronts','Sales analytics','Customer history','Inventory controls','Discounts & coupons','Product images + variants','Delivery zones','Advanced order workflow','Custom branding','Priority support']},
+    {name:'Business',price:'₦9,999',period:'/month',desc:'For larger operations that need deeper reporting and support.',features:['Everything in Premium','Advanced reports','Operational dashboards','Priority support']}
   ];
-  return <div className="premium-page"><div className="page-head"><div><span className="eyebrow-dark">QUICKCART PLANS</span><h1>Start free. Grow when you're ready.</h1><p>Keep the simple WhatsApp-first workflow and unlock more powerful seller tools as your business grows.</p></div><Crown className="premium-crown" size={34}/></div><div className="plans">{plans.map(p=><div className={p.featured?'plan-card featured':'plan-card'} key={p.name}>{p.featured&&<span className="plan-badge">MOST POPULAR</span>}<span className="eyebrow-dark">{p.name.toUpperCase()}</span><h2>{p.name}</h2><div className="plan-price">{p.price}<small>{p.period}</small></div><p>{p.desc}</p><div className="plan-features">{p.features.map(f=><span key={f}><Check size={15}/>{f}</span>)}</div>{p.name !== 'Free'&&<button className="primary" onClick={() => onUpgrade(p.name)}><Crown size={16}/> {p.name === 'Business' ? 'Choose Business' : 'Upgrade to Premium'}</button>}</div>)}</div></div>;
+  return <div className="premium-page"><div className="page-head"><div><span className="eyebrow-dark">QUICKCART PLANS</span><h1>Simple at first. Powerful when you need it.</h1><p>Every plan keeps the core WhatsApp-first selling flow. Paid plans unlock the tools that become valuable as order volume grows.</p></div><Crown className="premium-crown" size={34}/></div><div className="plans">{plans.map(p=><div className={p.featured?'plan-card featured':'plan-card'} key={p.name}>{p.featured&&<span className="plan-badge">MOST POPULAR</span>}<span className="eyebrow-dark">{p.name.toUpperCase()}</span><h2>{p.name}</h2><div className="plan-price">{p.price}<small>{p.period}</small></div><p>{p.desc}</p><div className="plan-features">{p.features.map(f=><span key={f}><Check size={15}/>{f}</span>)}</div>{p.name !== 'Free'&&<button className="primary" onClick={() => onUpgrade(p.name)}><Crown size={16}/> {p.name === 'Business' ? 'Choose Business' : 'Upgrade to Premium'}</button>}</div>)}</div></div>;
 }
 function PremiumModal({ open, onClose, plan = 'Premium', payment, paymentStatus, paymentError, paymentLoading, onPayPlan, onResetPayment }) {
   const [copied, setCopied] = useState(false);
