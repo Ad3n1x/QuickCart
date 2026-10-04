@@ -7,6 +7,15 @@ import './index.css';
 
 const root = document.getElementById('root');
 
+// Keep the app shell available offline. API calls are handled separately and use cached GET data when available.
+if ('serviceWorker' in navigator && !import.meta.env.DEV) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
+      .then(reg => reg.update().catch(() => {}))
+      .catch(error => console.warn('QuickCart offline support could not start:', error));
+  });
+}
+
 function showFatalError(error) {
   console.error('QuickCart fatal startup error:', error);
   if (!root) return;
