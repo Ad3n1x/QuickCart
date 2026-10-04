@@ -32,3 +32,6 @@ npm install
 npm run server
 npm run dev
 ``
+
+
+<!-- Keep Vercel deployments aligned with the latest main commit. -->
