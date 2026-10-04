@@ -167,7 +167,7 @@ html{scroll-behavior:smooth}button:disabled,.disabled{opacity:.55;cursor:not-all
 @media(max-width:640px){.premium-page .page-head .primary{width:100%;justify-content:center;white-space:normal}.premium-modal h2{font-size:25px}.premium-modal .form-grid{gap:10px}}
 
 /* Premium navigation polish */
-.dashboard-top{background:rgba(255,255,255,.9);backdrop-filter:blur(18px);border-bottom:1px solid rgba(213,226,219,.9);box-shadow:0 8px 30px rgba(16,43,33,.045)}
+.dashboard-top{position:relative;z-index:1200;background:rgba(255,255,255,.9);backdrop-filter:blur(18px);border-bottom:1px solid rgba(213,226,219,.9);box-shadow:0 8px 30px rgba(16,43,33,.045)}
 .dashboard-top-inner{min-height:72px;max-width:1440px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:20px}
 .dashboard-brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:900;font-size:19px;letter-spacing:-.035em}
 .dashboard-brand .brand-mark{width:38px;height:38px;border-radius:12px;box-shadow:0 7px 18px rgba(18,57,45,.14)}
@@ -193,7 +193,7 @@ html{scroll-behavior:smooth}button:disabled,.disabled{opacity:.55;cursor:not-all
  .dashboard-brand{font-size:18px}
  .dashboard-brand .brand-mark{width:36px;height:36px}
  .mobile-menu-btn{display:flex}
- .dashboard-actions{position:absolute;top:calc(100% + 8px);left:14px;right:14px;margin:0;padding:9px;display:grid;gap:6px;background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 45px rgba(16,43,33,.14);opacity:0;visibility:hidden;transform:translateY(-7px) scale(.985);transform-origin:top right;transition:opacity .16s ease,transform .16s ease,visibility .16s ease}
+ .dashboard-actions{position:absolute;z-index:1210;top:calc(100% + 8px);left:14px;right:14px;margin:0;padding:9px;display:grid;gap:6px;background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 45px rgba(16,43,33,.14);opacity:0;visibility:hidden;transform:translateY(-7px) scale(.985);transform-origin:top right;transition:opacity .16s ease,transform .16s ease,visibility .16s ease}
  .dashboard-actions.is-open{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
  .dashboard-actions .premium-chip,.dashboard-actions .nav-action{width:100%;justify-content:center;min-height:44px}
  .dashboard-actions .nav-action.ghost{justify-content:center}
