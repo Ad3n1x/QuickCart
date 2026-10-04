@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -57,7 +57,7 @@ jobs:
           p = Path('dist/index.html')
           s = p.read_text()
           sha = os.environ['GITHUB_SHA']
-          s = re.sub(r'(/QuickCart/assets/[^"']+\.(?:js|css))(?:\?[^"']*)?', rf'\1?v={sha}', s)
+          s = re.sub(r"(/QuickCart/assets/[^\"']+\.(?:js|css))(?:\?[^\"']*)?", rf"\1?v={sha}", s)
           p.write_text(s)
           Path('dist/build-version.txt').write_text(sha + '\n')
           PY
