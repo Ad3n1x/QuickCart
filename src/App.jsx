@@ -414,6 +414,7 @@ function StoreSettings({ store, saving, onSave, shareUrl }) {
 function PublicStore({ data, cart, setCart, customer, setCustomer }) {
   const [sent, setSent] = useState(false);
   const [search, setSearch] = useState('');
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   if (!data) return <main className="center-page"><div className="panel"><h1>Store not found</h1><p>This storefront may have moved or been removed.</p></div></main>;
   const { store, products } = data;
   const visibleProducts = products.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.description || '').toLowerCase().includes(search.toLowerCase()));
@@ -424,18 +425,18 @@ function PublicStore({ data, cart, setCart, customer, setCustomer }) {
   const whatsapp = `https://wa.me/${String(store.vendorPhone || '').replace(/\\D/g, '')}?text=${encodeURIComponent(message)}`;
   const checkout = async () => {
     if (!customer.name.trim() || !customer.address.trim() || !items.length) return toast.error('Add products, your name and delivery address first.');
-    setPaymentLoading(true);
+    setCheckoutLoading(true);
     try {
       await api('/api/orders', { method: 'POST', body: JSON.stringify({ storeId: store.id, customerName: customer.name.trim(), customerPhone: customer.phone.trim(), address: customer.address.trim(), items: items.map(i => ({ id:i.id, quantity:i.quantity })), discountCode: '' }) });
       setSent(true);
       window.open(whatsapp, '_blank', 'noopener,noreferrer');
-    } catch (error) { toast.error(error.message); } finally { setPaymentLoading(false); }
+    } catch (error) { toast.error(error.message); } finally { setCheckoutLoading(false); }
   };
   return <main className="public-store" style={{ '--accent': store.primaryColor || '#12392d' }}>
     <header className="public-nav"><div className="brand"><img className="brand-logo" src="/quickcart-logo.svg" alt="QuickCart" /><span>{store.storeName}</span></div><span className="pill">{items.reduce((s, i) => s + i.quantity, 0)} items</span></header>
     <section className="public-hero"><span className="eyebrow-dark">OFFICIAL STOREFRONT</span><h1>{store.storeName}</h1><p>{store.tagline}</p><div className="store-search"><Search size={17}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search products…"/></div></section>
     <div className="public-grid"><section className="public-products">{visibleProducts.length ? visibleProducts.map(p => <article className="public-product" key={p.id}><div className="product-art">{p.imageUrl ? <img src={p.imageUrl} alt={p.name}/> : p.emoji}</div><div><h3>{p.name}</h3><p>{p.description}</p><strong>{money(p.price)}</strong>{Array.isArray(p.variants)&&p.variants.length ? <small>Options: {p.variants.join(' · ')}</small> : null}</div><button className="primary" disabled={Number(p.stock)<=0} onClick={() => setCart(c => ({ ...c, [p.id]: Math.min(Number(p.stock)||0, (c[p.id] || 0) + 1) }))}>{Number(p.stock)>0 ? <Plus size={17}/> : 'Sold out'}</button></article>) : <Empty icon={<Search/>} text="No products match that search" />}</section>
-      <aside className="panel public-checkout"><span className="eyebrow-dark">WHATSAPP CHECKOUT</span><h2>Your order</h2>{items.length ? items.map(i => <div className="cart-line" key={i.id}><span>{i.quantity}× {i.name}</span><strong>{money(i.price * i.quantity)}</strong></div>) : <Empty icon={<ShoppingBag />} text="Cart is empty" />}<input placeholder="Your name" value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })}/><input placeholder="Phone number" value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })}/><input placeholder="Delivery address" value={customer.address} onChange={e => setCustomer({ ...customer, address: e.target.value })}/><div className="total-line"><span>Total</span><strong>{money(total)}</strong></div><button className="primary checkout-btn" onClick={checkout} disabled={paymentLoading || !String(store.vendorPhone||'').replace(/\\D/g,'')}>{paymentLoading ? 'Creating order…' : sent ? 'Order sent — send again' : 'Continue on WhatsApp'} <MessageCircle size={18}/></button>{!String(store.vendorPhone||'').replace(/\\D/g,'') && <small className="error">This store has not configured a WhatsApp number yet.</small>}<div className="payment-box"><strong>Payment</strong><span>{store.paymentDetails || 'The seller will confirm payment instructions with you on WhatsApp.'}</span></div></aside>
+      <aside className="panel public-checkout"><span className="eyebrow-dark">WHATSAPP CHECKOUT</span><h2>Your order</h2>{items.length ? items.map(i => <div className="cart-line" key={i.id}><span>{i.quantity}× {i.name}</span><strong>{money(i.price * i.quantity)}</strong></div>) : <Empty icon={<ShoppingBag />} text="Cart is empty" />}<input placeholder="Your name" value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })}/><input placeholder="Phone number" value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })}/><input placeholder="Delivery address" value={customer.address} onChange={e => setCustomer({ ...customer, address: e.target.value })}/><div className="total-line"><span>Total</span><strong>{money(total)}</strong></div><button className="primary checkout-btn" onClick={checkout} disabled={checkoutLoading || !String(store.vendorPhone||'').replace(/\\D/g,'')}>{checkoutLoading ? 'Creating order…' : sent ? 'Order sent — send again' : 'Continue on WhatsApp'} <MessageCircle size={18}/></button>{!String(store.vendorPhone||'').replace(/\\D/g,'') && <small className="error">This store has not configured a WhatsApp number yet.</small>}<div className="payment-box"><strong>Payment</strong><span>{store.paymentDetails || 'The seller will confirm payment instructions with you on WhatsApp.'}</span></div></aside>
     </div>
   </main>;
 }
