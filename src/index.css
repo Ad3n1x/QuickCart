@@ -230,3 +230,23 @@ html{scroll-behavior:smooth}button:disabled,.disabled{opacity:.55;cursor:not-all
  .dashboard-brand .premium-brand-mark{width:38px;height:38px;border-radius:12px}
  .dashboard-brand .premium-brand-mark:before{border-radius:11px}
 }
+
+/* Flexible fulfillment + QR payment checkout */
+.checkout-choice{display:grid;gap:8px;margin-top:14px}
+.checkout-choice>strong{font-size:11px;font-weight:850;color:#65766e}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choice{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border:1px solid var(--line);border-radius:11px;background:#fff;color:#52655d;font-weight:800;font-size:12px}
+.choice:hover{background:#f7faf8;border-color:#cbdcd2}
+.choice.active{background:#e8f2ed;border-color:#7da993;color:#12392d;box-shadow:0 0 0 2px rgba(125,169,147,.12)}
+.payment-box{align-items:center;text-align:center}
+.payment-box small{width:100%;color:#52655d;line-height:1.55}
+.payment-box span{font-size:10px;color:#7b867f;line-height:1.5}
+.payment-qr{width:150px;height:150px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid var(--line);padding:8px}
+.settings-callout{display:grid;gap:4px;margin:6px 0 16px;padding:13px 15px;border:1px solid #dce7e0;border-radius:13px;background:#f7faf8}
+.settings-callout strong{font-size:12px}
+.settings-callout span{font-size:11px;color:var(--muted);line-height:1.5}
+.qr-preview{display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:13px;border:1px solid var(--line);border-radius:14px;background:#fbfdfc}
+.qr-preview img{width:84px;height:84px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff;padding:5px}
+.qr-preview div{display:grid;gap:4px}
+.qr-preview small{color:var(--muted);line-height:1.45}
+@media(max-width:520px){.choice-grid{grid-template-columns:1fr}.payment-qr{width:135px;height:135px}.qr-preview{align-items:flex-start}}
