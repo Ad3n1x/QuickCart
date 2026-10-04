@@ -14,6 +14,26 @@ app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 app.use(express.json({ limit: '2mb' }));
 
+app.post('/api/auth/login', async (req,res) => {
+  try {
+    const email=String(req.body?.email||'').trim().toLowerCase();
+    const password=String(req.body?.password||'');
+    if(!email || !password) return res.status(400).json({error:'Email and password are required.'});
+    const database=await db();
+    const users=database.collection('users');
+    const user=await users.findOne({$or:[{emailHash:hashEmail(email)},{email}]});
+    if(!user || !(await bcrypt.compare(password,user.passwordHash||''))) return res.status(401).json({error:'Invalid email or password.'});
+    const safe=secureUser(user);
+    if(!user.emailVerified) return res.status(403).json({error:'Please verify your email before signing in.',code:'EMAIL_NOT_VERIFIED',email:safe.email});
+    const updated={...safe,lastActivityAt:new Date()};
+    await users.updateOne({id:user.id},{$set:{lastActivityAt:updated.lastActivityAt}});
+    return res.json({message:'Signed in successfully.',user:{id:user.id,name:safe.name,email:safe.email},token:tokenFor(updated)});
+  } catch (error) {
+    console.error('LOGIN_ERROR',error);
+    return res.status(500).json({error:'Unable to sign in right now. Please try again.'});
+  }
+});
+
 const mongoUri = process.env.MONGODB_URI;
 const jwtSecret = process.env.JWT_SECRET;
 const brevoApiKey = process.env.BREVO_API_KEY;
