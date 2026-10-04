@@ -250,3 +250,13 @@ html{scroll-behavior:smooth}button:disabled,.disabled{opacity:.55;cursor:not-all
 .qr-preview div{display:grid;gap:4px}
 .qr-preview small{color:var(--muted);line-height:1.45}
 @media(max-width:520px){.choice-grid{grid-template-columns:1fr}.payment-qr{width:135px;height:135px}.qr-preview{align-items:flex-start}}
+
+.receipt-ocr{display:grid;gap:8px;margin-top:10px}
+.receipt-upload{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 12px;border:1px dashed #9ab7a8;border-radius:12px;background:#f8fbf9;color:#214b3b;font-weight:850;font-size:12px;cursor:pointer}
+.receipt-upload:hover{background:#eef6f1;border-color:#6e9d86}
+.receipt-upload input{display:none}
+.ocr-result{display:grid;gap:3px;padding:10px 12px;border-radius:11px;font-size:11px}
+.ocr-result.match{background:#edf8f0;border:1px solid #b9ddc2;color:#235c35}
+.ocr-result.mismatch{background:#fff4f1;border:1px solid #e8c4bb;color:#8b3e30}
+.ocr-result span{line-height:1.45}
+.ocr-note{font-size:10px;color:#7a857f;line-height:1.45}
