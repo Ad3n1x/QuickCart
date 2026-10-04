@@ -612,8 +612,7 @@ button,a{ -webkit-tap-highlight-color:transparent }
  .panel-head .link-btn{font-size:10px;padding:5px}
  .order-row>select{max-width:110px}
 }
-\n
-/* Banner flow fix: notifications stay in document flow and never cover controls. */
+\n/* Banner flow fix: notifications stay in document flow and never cover controls. */
 .offline-banner,.online-banner{
   position:relative!important;
   top:auto!important;
