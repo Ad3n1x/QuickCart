@@ -902,3 +902,23 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .dashboard-actions.is-open{display:flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;transform:none!important}
   .dashboard-actions>*{pointer-events:auto!important}
 }
+
+
+/* Fix mobile sidebar visibility */
+@media (max-width:900px){
+  .sidebar{
+    display:flex!important;
+    flex-direction:column!important;
+    visibility:visible!important;
+  }
+  .sidebar:not(.mobile-open){
+    pointer-events:none!important;
+  }
+  .sidebar.mobile-open{
+    pointer-events:auto!important;
+  }
+  .mobile-menu-btn{
+    display:flex!important;
+    visibility:visible!important;
+  }
+}
