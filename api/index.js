@@ -116,7 +116,47 @@ app.post('/api/payments/alatpay/plan',auth,async(req,res)=>{try{const database=a
 app.post('/api/payments/alatpay',async(req,res)=>{try{const database=await db();const orderId=String(req.body.orderId||'').trim();const order=await database.collection('orders').findOne({id:orderId});if(!order)return res.status(404).json({error:'Order not found.'});const payment=await createAlatPayVirtualAccount(order);await database.collection('orders').updateOne({id:order.id},{$set:{paymentProvider:'alatpay',paymentStatus:'awaiting_transfer',paymentTransactionId:payment.transactionId||payment.id||'',paymentReference:payment.orderId||order.id,paymentAccountNumber:payment.virtualBankAccountNumber||'',paymentBankCode:payment.virtualBankCode||'',paymentExpiresAt:payment.expiredAt||null,paymentUpdatedAt:now()}});res.status(201).json({orderId:order.id,transactionId:payment.transactionId||payment.id||null,accountNumber:payment.virtualBankAccountNumber||null,bankCode:payment.virtualBankCode||null,amount:payment.amount??order.total,currency:payment.currency||'NGN',expiresAt:payment.expiredAt||null,status:payment.status||'pending'});}catch(error){console.error(error);res.status(502).json({error:error.message||'Unable to initialize ALATPay payment.'});}});
 app.get('/api/payments/alatpay/status',auth,async(req,res)=>{try{const database=await db();const orderId=String(req.query.orderId||'').trim();if(!orderId)return res.status(400).json({error:'Order ID is required.'});const order=await database.collection('orders').findOne({id:orderId,storeId:'subscription',customerEmail:req.user.email});if(!order)return res.status(404).json({error:'Payment not found.'});res.json({orderId:order.id,plan:order.plan||null,paymentStatus:order.paymentStatus||'pending',status:order.status||'new',amount:order.total,expiresAt:order.paymentExpiresAt||null});}catch(error){console.error(error);res.status(500).json({error:'Unable to check payment status.'});}});
 app.post('/api/payments/alatpay/callback',async(req,res)=>{try{const database=await db();const payload=req.body||{};const data=payload.data||payload;const orderId=String(data.orderId||data.virtualAccount?.orderId||'').trim();const transactionId=String(data.transactionId||data.id||data.virtualAccount?.transactionId||'').trim();const nipStatus=String(data.nipTransaction?.transactionStatus||'').toLowerCase();const status=String(data.status||data.transactionStatus||nipStatus||'').toLowerCase();const amount=Number(data.amount??data.virtualAccount?.amount??data.nipTransaction?.amount??0);const currency=String(data.currency||data.virtualAccount?.currency||'').toUpperCase();const success=['success','successful','completed','paid','true'].includes(status);const failed=['failed','failure','cancelled','canceled','expired'].includes(status);let order=null;if(orderId)order=await database.collection('orders').findOne({id:orderId});if(!order&&transactionId)order=await database.collection('orders').findOne({paymentTransactionId:transactionId});if(!order)return res.status(404).json({received:false,error:'Order not found.'});const amountMatches=!amount||Math.round(amount*100)===Math.round(Number(order.total)*100);const currencyMatches=!currency||currency==='NGN';const update={paymentProvider:'alatpay',paymentTransactionId:transactionId||order.paymentTransactionId||'',paymentUpdatedAt:now(),paymentCallback:payload};if(success&&amountMatches&&currencyMatches){update.paymentStatus='paid';update.status='paid';if(order.plan){const expires=new Date();expires.setMonth(expires.getMonth()+1);await database.collection('users').updateOne({id:order.customerUserId||order.userId||''},{$set:{subscriptionPlan:order.plan,subscriptionStatus:'active',subscriptionExpiresAt:expires.toISOString(),subscriptionUpdatedAt:now()}});}}else if(failed){update.paymentStatus='failed';}else if(success&&(!amountMatches||!currencyMatches)){update.paymentStatus='failed';update.paymentFailureReason='Payment amount or currency did not match the QuickCart order.';}else if(status){update.paymentStatus=status;}await database.collection('orders').updateOne({id:order.id},{$set:update});res.json({received:true,processed:true,paymentStatus:update.paymentStatus||order.paymentStatus});}catch(error){console.error(error);res.status(500).json({error:'Unable to process ALATPay callback.'});}});
-app.post('/api/orders',async(req,res)=>{const database=await db(),storeId=String(req.body.storeId||''),items=Array.isArray(req.body.items)?req.body.items:[],customerName=String(req.body.customerName||'').trim(),customerPhone=String(req.body.customerPhone||'').trim(),address=String(req.body.address||'').trim();if(!storeId||!customerName||!address||!items.length)return res.status(400).json({error:'Store, customer name, address and at least one item are required.'});if(!await database.collection('stores').findOne({id:storeId}))return res.status(404).json({error:'Store not found.'});const order={id:randomUUID(),storeId,customerName,customerPhone,address,items,subtotal:Number(req.body.subtotal||0),deliveryFee:Number(req.body.deliveryFee||0),discount:Number(req.body.discount||0),total:Number(req.body.total||0),status:'new',paymentStatus:'pending',createdAt:now()};await database.collection('orders').insertOne(order);if(customerPhone)await database.collection('customers').updateOne({storeId,phone:customerPhone},{$set:{storeId,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});res.status(201).json({orderId:order.id});});
+app.post('/api/orders',async(req,res)=>{
+  try{
+    const database=await db(),storeId=String(req.body.storeId||''),store=await database.collection('stores').findOne({id:storeId});
+    const items=Array.isArray(req.body.items)?req.body.items:[],customerName=String(req.body.customerName||'').trim(),customerPhone=String(req.body.customerPhone||'').trim(),address=String(req.body.address||'').trim();
+    if(!store||!customerName||!address||!items.length)return res.status(400).json({error:'Store, customer name, address and at least one item are required.'});
+    const requested=new Map();
+    for(const item of items){const id=String(item.id||'');const qty=Number(item.quantity);if(!id||!Number.isInteger(qty)||qty<1||qty>100)return res.status(400).json({error:'Invalid cart item.'});requested.set(id,(requested.get(id)||0)+qty);}
+    const productIds=[...requested.keys()];
+    const products=await database.collection('products').find({id:{$in:productIds},storeId,active:true}).toArray();
+    if(products.length!==productIds.length)return res.status(400).json({error:'One or more products are unavailable.'});
+    let subtotal=0;const normalized=[];
+    for(const product of products){const qty=requested.get(product.id);if(Number(product.stock)<qty)return res.status(409).json({error:`${product.name} does not have enough stock.`});const price=Number(product.price);subtotal+=price*qty;normalized.push({productId:product.id,name:product.name,quantity:qty,price});}
+    let discount=0;
+    const discountCode=String(req.body.discountCode||'').trim().toUpperCase();
+    if(discountCode){
+      const d=await database.collection('discounts').findOne({storeId,code:discountCode,active:true});
+      if(!d)return res.status(400).json({error:'Invalid or inactive discount code.'});
+      if(d.expiresAt&&new Date(d.expiresAt)<=new Date())return res.status(400).json({error:'That discount has expired.'});
+      discount=d.type==='percent'?Math.round(subtotal*(Number(d.value)/100)):Number(d.value);
+      discount=Math.min(subtotal,Math.max(0,discount));
+    }
+    const deliveryFee=subtotal?Math.max(0,Number(store.deliveryFee||0)):0;
+    const total=Math.max(0,subtotal+deliveryFee-discount);
+    const updated=[];
+    try{
+      for(const product of products){
+        const qty=requested.get(product.id);
+        const result=await database.collection('products').updateOne({id:product.id,storeId,active:true,stock:{$gte:qty}},{$inc:{stock:-qty}});
+        if(!result.modifiedCount)throw new Error(`${product.name} just sold out. Please refresh and try again.`);
+        updated.push({id:product.id,qty});
+      }
+    }catch(error){
+      for(const item of updated)await database.collection('products').updateOne({id:item.id,storeId},{$inc:{stock:item.qty}});
+      return res.status(409).json({error:error.message});
+    }
+    const order={id:randomUUID(),storeId,customerName,customerPhone,address,items:normalized,subtotal,deliveryFee,discount,total,status:'new',paymentStatus:'pending',createdAt:now()};
+    await database.collection('orders').insertOne(order);
+    if(customerPhone)await database.collection('customers').updateOne({storeId,phone:customerPhone},{$set:{storeId,name:customerName,phone:customerPhone,address,lastOrderId:order.id,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});
+    res.status(201).json({orderId:order.id,order:{...order}});
+  }catch(error){console.error(error);res.status(500).json({error:error.message||'Unable to create order.'});}
+});
 app.get('/api/orders',auth,async(req,res)=>{const database=await db(),store=await database.collection('stores').findOne({userId:req.user.sub});if(!store)return res.json({orders:[]});res.json({orders:await database.collection('orders').find({storeId:store.id}).sort({createdAt:-1}).toArray()});});
 
 export default app;
