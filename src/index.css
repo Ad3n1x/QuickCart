@@ -612,7 +612,8 @@ button,a{ -webkit-tap-highlight-color:transparent }
  .panel-head .link-btn{font-size:10px;padding:5px}
  .order-row>select{max-width:110px}
 }
-\n/* Banner flow fix: notifications stay in document flow and never cover controls. */
+
+/* Banner flow fix: notifications stay in document flow and never cover controls. */
 .offline-banner,.online-banner{
   position:relative!important;
   top:auto!important;
@@ -668,7 +669,8 @@ button,a{ -webkit-tap-highlight-color:transparent }
   .install-banner{min-height:38px;padding:8px 12px}
   .sync-status{min-height:34px;padding:8px 12px}
 }
-\n
+
+
 /* Final responsive shell: keep every dashboard section inside the viewport. */
 html,body,#root,.app-shell{width:100%;max-width:100%;overflow-x:hidden}
 .dashboard-layout{grid-template-columns:minmax(0,240px) minmax(0,1fr);width:100%;max-width:100%}
@@ -856,4 +858,37 @@ a,button{word-break:normal}
   .top-actions{gap:4px}
   .quick-action{min-width:0}
   .stats,.advanced-stats{gap:8px}
+}
+
+
+/* Sidebar + dropdown cleanup */
+.quickcart-side-nav{gap:5px;padding-top:10px}
+.quickcart-side-nav .nav-link{
+  width:100%;min-height:44px;display:flex;align-items:center;gap:11px;
+  padding:10px 12px;border:1px solid transparent;border-radius:12px;
+  color:var(--muted);background:transparent;text-align:left;cursor:pointer;
+  transition:background .16s ease,color .16s ease,border-color .16s ease;
+}
+.quickcart-side-nav .nav-link:hover{background:#f4f8f6;color:var(--ink)}
+.quickcart-side-nav .nav-link.active{
+  background:#eaf4ef;color:var(--accent);border-color:#d8e9e0;font-weight:700;
+}
+.quickcart-side-nav .nav-link svg{flex:0 0 auto}
+.sidebar{background:#fff;border-right:1px solid var(--line)}
+.store-mini{border-bottom:1px solid var(--line);margin-bottom:8px;padding-bottom:14px}
+select{
+  appearance:none;-webkit-appearance:none;
+  min-height:42px!important;width:100%;padding:9px 38px 9px 12px!important;
+  border:1px solid var(--line);border-radius:10px;background-color:#fff;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23657971' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:14px;
+  color:var(--ink);font:inherit;line-height:1.2;cursor:pointer;
+}
+select:hover{border-color:#b8cbc2}
+select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(25,104,73,.10)}
+.order-row>select{min-width:112px;width:auto}
+@media(max-width:600px){
+  .sidebar{width:min(320px,90vw)!important;padding:16px!important}
+  .quickcart-side-nav .nav-link{min-height:46px;padding:11px 12px}
+  .order-row>select{min-width:104px;max-width:130px}
 }
