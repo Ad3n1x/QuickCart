@@ -1059,3 +1059,12 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
 
 /* Final layering correction */
 @media(max-width:900px){.system-notices{z-index:12550!important}.dashboard-top{z-index:12000!important}.mobile-nav-backdrop{z-index:12500!important}.sidebar{z-index:13000!important}}
+
+
+/* System notices sit below the fixed mobile nav */
+@media(max-width:900px){
+  .dashboard-top{z-index:12000!important}
+  .system-notices{z-index:11000!important}
+  .mobile-nav-backdrop{z-index:12500!important}
+  .sidebar{z-index:13000!important}
+}
