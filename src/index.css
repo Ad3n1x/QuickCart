@@ -563,3 +563,52 @@ button,a{ -webkit-tap-highlight-color:transparent }
  .order-row{gap:7px}.receipt-btn{min-height:34px}
  .page-head h1{font-size:26px}
 }
+
+/* Layering / collision fix: each persistent UI layer gets its own space */
+:root{--qc-nav-h:64px;--qc-notice-h:42px}
+.dashboard-top,.public-nav{z-index:2000!important}
+.dashboard-top{height:var(--qc-nav-h)!important}
+.public-nav{min-height:var(--qc-nav-h)!important}
+.offline-banner,.online-banner{z-index:3000!important;top:calc(var(--qc-nav-h) + 8px)!important}
+.install-banner{z-index:2990!important;top:calc(var(--qc-nav-h) + var(--qc-notice-h) + 8px)!important}
+.sync-status{z-index:2980!important;top:calc(var(--qc-nav-h) + var(--qc-notice-h) + 56px)!important}
+.modal-backdrop{z-index:9000!important}
+.Toastify{z-index:10000!important}
+.Toastify__toast-container{z-index:10000!important}
+.dashboard-layout{min-height:100vh}
+.dashboard-content{padding-top:calc(var(--qc-nav-h) + 26px)!important}
+.public-store{padding-top:var(--qc-nav-h)!important}
+/* Never allow long controls to force cards wider than their parent */
+.panel,.stat,.tool,.order-row,.admin-row,.plan-card,.advanced-card,.analytics-panel,.public-product,.public-checkout{min-width:0}
+.panel-head{min-width:0;gap:10px;flex-wrap:wrap}
+.panel-head>*{min-width:0}
+.page-head{min-width:0;flex-wrap:wrap}
+.page-head>*{min-width:0}
+.order-row>*,.admin-row>*{min-width:0}
+.order-row select,.admin-row select{max-width:100%}
+.order-row strong,.admin-row strong,.order-row small,.admin-row small{overflow-wrap:anywhere}
+.quick-actions{position:relative;z-index:1}
+/* Mobile: keep fixed notices out of the main content and let controls wrap */
+@media(max-width:700px){
+ :root{--qc-nav-h:62px;--qc-notice-h:40px}
+ .dashboard-content{padding-top:calc(var(--qc-nav-h) + 22px)!important}
+ .offline-banner,.online-banner{top:calc(var(--qc-nav-h) + 6px)!important;width:calc(100vw - 20px);max-width:520px}
+ .install-banner{top:calc(var(--qc-nav-h) + var(--qc-notice-h) + 6px)!important;max-width:calc(100vw - 20px)}
+ .sync-status{top:calc(var(--qc-nav-h) + var(--qc-notice-h) + 54px)!important;max-width:calc(100vw - 20px)}
+ .page-head{align-items:flex-start}
+ .page-head .page-actions,.page-head>div:last-child{width:100%;display:flex;flex-wrap:wrap;gap:8px}
+ .page-head .page-actions>*{flex:0 1 auto}
+ .panel-head{align-items:flex-start}
+ .panel-head .link-btn{margin-left:auto}
+ .order-row{grid-template-columns:minmax(0,1fr) auto!important}
+ .order-row>select{grid-column:2;grid-row:1;max-width:130px}
+ .order-row>strong{grid-column:1;grid-row:2}
+ .receipt-btn{grid-column:2;grid-row:2;justify-self:end}
+}
+@media(max-width:420px){
+ .dashboard-content{padding-left:12px!important;padding-right:12px!important}
+ .top-actions{max-width:58vw;overflow:hidden}
+ .top-actions>*{min-width:0}
+ .panel-head .link-btn{font-size:10px;padding:5px}
+ .order-row>select{max-width:110px}
+}
