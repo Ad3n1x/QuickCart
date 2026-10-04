@@ -204,3 +204,29 @@ html{scroll-behavior:smooth}button:disabled,.disabled{opacity:.55;cursor:not-all
  .dashboard-actions .nav-action:hover{background:#f0f5f2}
  .dashboard-actions .premium-chip:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(128,96,20,.12)}
 }
+
+/* Premium QuickCart brand mark */
+.dashboard-brand{gap:11px}
+.dashboard-brand .premium-brand-mark{
+ position:relative;display:grid;place-items:center;width:40px;height:40px;border-radius:13px;
+ color:#fff;background:linear-gradient(145deg,#0b2b20 0%,#174c38 58%,#24664b 100%);
+ border:1px solid rgba(255,255,255,.28);
+ box-shadow:0 8px 22px rgba(18,57,45,.22),inset 0 1px 0 rgba(255,255,255,.18);
+ overflow:hidden;isolation:isolate;
+}
+.dashboard-brand .premium-brand-mark:before{
+ content:"";position:absolute;inset:1px;border-radius:12px;
+ background:linear-gradient(135deg,rgba(255,255,255,.16),transparent 42%,rgba(255,255,255,.04));
+ pointer-events:none;
+}
+.dashboard-brand .premium-brand-mark:after{
+ content:"";position:absolute;width:20px;height:20px;right:-7px;top:-8px;border-radius:50%;
+ background:rgba(255,255,255,.18);filter:blur(7px);pointer-events:none;
+}
+.dashboard-brand .premium-brand-mark svg{position:relative;z-index:2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.16))}
+.dashboard-brand .brand-wordmark{font-weight:950;letter-spacing:-.045em;color:#102f24}
+.dashboard-brand .brand-wordmark span{color:#2f7056}
+@media(max-width:800px){
+ .dashboard-brand .premium-brand-mark{width:38px;height:38px;border-radius:12px}
+ .dashboard-brand .premium-brand-mark:before{border-radius:11px}
+}
