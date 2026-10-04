@@ -64,7 +64,7 @@ const requirePlan = feature => async (req,res,next) => {
     const database=await db();
     const user=await database.collection('users').findOne({id:req.user.sub},{projection:{subscriptionPlan:1,subscriptionStatus:1,subscriptionExpiresAt:1}});
     const active = user?.subscriptionStatus === 'active' && user?.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
-    const plan = active ? (user.subscriptionPlan || 'Free') : 'Free';
+    const plan = active && PLANS[user?.subscriptionPlan] ? user.subscriptionPlan : 'Free';
     if (!PLANS[plan].features.includes(feature)) return res.status(402).json({error:'This feature requires a paid QuickCart plan.',code:'PLAN_REQUIRED',feature,plan});
     req.plan=plan;
     next();
