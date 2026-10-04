@@ -19,7 +19,7 @@ export const handler = router({
     const existing = await ownedStore(ctx.user!.userId);
     if (existing) return error('Store already exists.', 409);
     const slug = String(body.slug || body.storeName || 'my-store').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48) || `store-${ctx.user!.userId.slice(0, 8)}`;
-    const [id] = await db.add(tables.stores, [{ userId: ctx.user!.userId, storeName: String(body.storeName || 'My Store'), slug, tagline: String(body.tagline || 'Shop with us'), vendorPhone: String(body.vendorPhone || ''), deliveryFee: Number(body.deliveryFee || 0), primaryColor: String(body.primaryColor || '#12392d'), logo: String(body.logo || ''), paymentDetails: String(body.paymentDetails || ''), deliveryZones: [], discounts: [], createdAt: new Date().toISOString() }]);
+    const [id] = await db.add(tables.stores, [{ userId: ctx.user!.userId, storeName: String(body.storeName || 'My Store'), slug, tagline: String(body.tagline || 'Shop with us'), vendorPhone: String(body.vendorPhone || ''), deliveryFee: Number(body.deliveryFee || 0), primaryColor: String(body.primaryColor || '#12392d'), logo: String(body.logo || ''), paymentDetails: String(body.paymentDetails || ''), paymentQrUrl: String(body.paymentQrUrl || ''), deliveryZones: [], discounts: [], createdAt: new Date().toISOString() }]);
     if (!id) return error('Could not create store.', 500);
     const [store] = await db.get(tables.stores, [id]);
     return json({ store }, 201);
