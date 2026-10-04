@@ -22,32 +22,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
+          cache: npm
+
       - name: Install dependencies
-        run: npm install
-      - name: Build for GitHub Pages
+        run: npm install --no-audit --no-fund
+
+      - name: Build GitHub Pages bundle
         env:
           VITE_GITHUB_PAGES: 'true'
           VITE_BASE_PATH: /QuickCart/
         run: npm run build -- --base=/QuickCart/
-      - name: Verify Pages build
+
+      - name: Validate published bundle
+        shell: bash
         run: |
-          test -f dist/index.html
-          test -f dist/404.html || cp dist/index.html dist/404.html
-          grep -q '/QuickCart/assets/' dist/index.html
-          find dist -maxdepth 2 -type f | sort | head -80
-      - name: SPA fallback
-        run: cp dist/index.html dist/404.html
+          set -euo pipefail
+          test -s dist/index.html
+          test -d dist/assets
+          test -n "$(find dist/assets -maxdepth 1 -type f -print -quit)"
+          grep -Eq 'src="/QuickCart/assets/[^"]+\.js"' dist/index.html
+          grep -Eq 'href="/QuickCart/assets/[^"]+\.css"' dist/index.html
+          ! grep -qE '(src|href)="\./(src|assets)/' dist/index.html
+          test -f dist/quickcart-logo.svg
+          cp dist/index.html dist/404.html
+          printf '%s\n' "${GITHUB_SHA}" > dist/build-version.txt
+          echo "Published files:"
+          find dist -maxdepth 2 -type f | sort | head -120
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
