@@ -1,0 +1,18 @@
+{
+  "name": "QuickCart",
+  "short_name": "QuickCart",
+  "description": "Create and run your online store from one simple app.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7faf8",
+  "theme_color": "#12392d",
+  "icons": [
+    {"src":"./quickcart-logo-compact.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ],
+  "shortcuts": [
+    {"name":"Add product","short_name":"Add product","url":"./#/products"},
+    {"name":"Orders","short_name":"Orders","url":"./#/orders"},
+    {"name":"Analytics","short_name":"Analytics","url":"./#/analytics"}
+  ]
+}
