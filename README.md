@@ -34,3 +34,4 @@ npm run dev
 ```
 
 <!-- GitHub Pages deployment trigger: 2026-10-04 latest build. -->
+<!-- Pages source verified; trigger rebuild after switching to GitHub Actions. -->
