@@ -612,3 +612,60 @@ button,a{ -webkit-tap-highlight-color:transparent }
  .panel-head .link-btn{font-size:10px;padding:5px}
  .order-row>select{max-width:110px}
 }
+\n
+/* Banner flow fix: notifications stay in document flow and never cover controls. */
+.offline-banner,.online-banner{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  transform:none!important;
+  z-index:30!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:36px;
+  margin:0;
+  border-radius:0;
+  padding:8px 16px;
+}
+.install-banner,.sync-status{
+  position:relative!important;
+  top:auto!important;
+  left:auto!important;
+  right:auto!important;
+  transform:none!important;
+  z-index:25!important;
+  width:100%;
+  max-width:none;
+  margin:0;
+  border-radius:0;
+  text-align:center;
+}
+.install-banner{
+  display:block;
+  min-height:40px;
+  padding:9px 16px;
+  border:0;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+.sync-status{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:34px;
+  padding:8px 14px;
+  border-left:0;
+  border-right:0;
+  border-top:0;
+  border-radius:0;
+  box-shadow:none;
+}
+.dashboard-content{
+  padding-top:26px!important;
+}
+@media(max-width:700px){
+  .dashboard-content{padding-top:20px!important}
+  .offline-banner,.online-banner{padding:8px 12px;font-size:10px}
+  .install-banner{min-height:38px;padding:8px 12px}
+  .sync-status{min-height:34px;padding:8px 12px}
+}
