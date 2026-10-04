@@ -947,3 +947,58 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
     width:auto!important;
   }
 }
+
+/* Premium mobile trigger pair */
+@media (max-width:900px){
+  .dashboard-top-inner{
+    display:grid!important;
+    grid-template-columns:44px minmax(0,1fr) 44px!important;
+    align-items:center!important;
+    gap:10px!important;
+    padding-inline:14px!important;
+  }
+  .dashboard-brand{
+    justify-self:center!important;
+    min-width:0!important;
+    order:2!important;
+  }
+  .dashboard-brand .brand-mark{width:34px!important;height:34px!important}
+  .mobile-menu-btn,.mobile-actions-btn{
+    order:initial!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:44px!important;height:44px!important;min-width:44px!important;
+    padding:0!important;
+    border:1px solid rgba(18,48,37,.12)!important;
+    border-radius:14px!important;
+    background:rgba(255,255,255,.94)!important;
+    color:var(--ink)!important;
+    box-shadow:0 5px 16px rgba(16,43,33,.07), inset 0 1px 0 rgba(255,255,255,.9)!important;
+    -webkit-backdrop-filter:blur(10px);
+    backdrop-filter:blur(10px);
+    transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease!important;
+  }
+  .mobile-menu-btn{grid-column:1!important}
+  .mobile-actions-btn{grid-column:3!important}
+  .mobile-menu-btn:hover,.mobile-actions-btn:hover{
+    border-color:rgba(25,104,73,.25)!important;
+    box-shadow:0 7px 20px rgba(16,43,33,.10)!important;
+  }
+  .mobile-menu-btn:active,.mobile-actions-btn:active{transform:scale(.96)!important}
+  .mobile-menu-btn.is-open,.mobile-actions-btn.is-open{
+    background:#eef7f2!important;
+    color:var(--accent)!important;
+    border-color:#cfe3d8!important;
+    box-shadow:0 6px 18px rgba(25,104,73,.12),inset 0 1px 0 rgba(255,255,255,.9)!important;
+  }
+  .mobile-menu-btn svg,.mobile-actions-btn svg{display:block!important}
+  .mobile-menu-btn:focus-visible,.mobile-actions-btn:focus-visible{
+    outline:3px solid rgba(25,104,73,.18)!important;
+    outline-offset:2px!important;
+  }
+}
+@media (max-width:380px){
+  .dashboard-top-inner{grid-template-columns:42px minmax(0,1fr) 42px!important;gap:7px!important;padding-inline:10px!important}
+  .mobile-menu-btn,.mobile-actions-btn{width:42px!important;height:42px!important;min-width:42px!important;border-radius:13px!important}
+}
