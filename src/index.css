@@ -668,3 +668,25 @@ button,a{ -webkit-tap-highlight-color:transparent }
   .install-banner{min-height:38px;padding:8px 12px}
   .sync-status{min-height:34px;padding:8px 12px}
 }
+\n
+/* Final responsive shell: keep every dashboard section inside the viewport. */
+html,body,#root,.app-shell{width:100%;max-width:100%;overflow-x:hidden}
+.dashboard-layout{grid-template-columns:minmax(0,240px) minmax(0,1fr);width:100%;max-width:100%}
+.dashboard-content{min-width:0;width:100%;max-width:none}
+.dashboard-top-inner{width:100%;min-width:0}
+.dashboard-top-inner>*{min-width:0}
+.dashboard-actions{min-width:0;max-width:100%;flex-wrap:wrap}
+.panel,.stat,.tool,.order-row,.admin-row,.page-head,.page-navigation,.quick-actions,.analytics-grid,.advanced-grid,.plans{min-width:0;max-width:100%}
+img,svg,video,canvas{max-width:100%}
+.page-head>*,.panel-head>*,.quick-action,.tool,.order-row>*,.admin-row>*{min-width:0}
+@media(max-width:800px){
+  .dashboard-layout{display:block;width:100%}
+  .dashboard-content{width:100%;max-width:100%;overflow-x:hidden}
+  .dashboard-top-inner{padding-left:14px;padding-right:14px}
+  .dashboard-actions{width:100%}
+}
+@media(max-width:520px){
+  .dashboard-content{padding-left:12px!important;padding-right:12px!important}
+  .dashboard-top-inner{padding-left:12px;padding-right:12px}
+  .page-head h1{max-width:100%;overflow-wrap:anywhere}
+}
