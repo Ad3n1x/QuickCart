@@ -406,3 +406,13 @@ button,a,.panel,.plan-card,.tool,.nav,.public-product,.stat,.store-mini,.choice,
  html{scroll-behavior:auto}
  .modal-backdrop,.modal-card{animation:none!important}
 }
+
+/* Responsive dashboard quick actions and interaction polish */
+.quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0 4px}
+.quick-action{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:#234438;font-size:12px;font-weight:850;cursor:pointer;box-shadow:0 6px 18px rgba(16,43,33,.035)}
+.quick-action:hover{transform:translateY(-2px);border-color:#b9d0c4;background:#f8fbf9;box-shadow:0 10px 24px rgba(16,43,33,.07)}
+.quick-action:active{transform:translateY(0) scale(.985)}
+.quick-action:focus-visible,.range-switch button:focus-visible,.choice:focus-visible{outline:3px solid rgba(83,137,111,.25);outline-offset:2px}
+@media(max-width:800px){.quick-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.quick-action{min-height:46px}}
+@media(max-width:420px){.quick-actions{grid-template-columns:1fr 1fr}.quick-action{font-size:11px;padding:9px 7px}.quick-action svg{width:16px;height:16px}}
+@media(max-width:340px){.quick-actions{grid-template-columns:1fr}.quick-action{justify-content:flex-start;padding-left:14px}}
