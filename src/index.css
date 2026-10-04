@@ -1012,3 +1012,23 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
   .sidebar{z-index:13000!important;top:0!important;height:100dvh!important}
   .sidebar.mobile-open{transform:translateX(0)!important}
 }
+
+
+/* Final clean mobile dashboard navigation */
+@media (max-width:900px){
+  .dashboard-top{position:fixed!important;top:0!important;left:0!important;right:0!important;z-index:12000!important;height:68px!important;background:rgba(255,255,255,.96)!important;border-bottom:1px solid rgba(18,48,37,.08)!important;box-shadow:0 8px 24px rgba(16,43,33,.06)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important}
+  .dashboard-top-inner{height:68px!important;min-height:68px!important;max-width:none!important;padding:0 12px!important;grid-template-columns:44px minmax(0,1fr) 44px!important;gap:10px!important}
+  .dashboard-brand{justify-self:center!important;display:inline-flex!important;align-items:center!important;gap:8px!important;order:2!important;text-decoration:none!important}
+  .dashboard-brand .brand-mark{width:34px!important;height:34px!important}
+  .dashboard-brand .brand-wordmark{font-size:17px!important;letter-spacing:-.03em!important}
+  .mobile-menu-btn,.mobile-actions-btn{width:42px!important;height:42px!important;min-width:42px!important;border-radius:12px!important;border:1px solid rgba(18,48,37,.10)!important;background:#fff!important;box-shadow:0 4px 12px rgba(16,43,33,.055)!important}
+  .mobile-menu-btn{grid-column:1!important;order:1!important}
+  .mobile-actions-btn{grid-column:3!important;order:3!important}
+  .mobile-menu-btn.is-open,.mobile-actions-btn.is-open{background:#eef7f2!important;border-color:#cfe3d8!important;color:var(--accent)!important}
+  .dashboard-actions{top:calc(100% + 8px)!important;left:12px!important;right:12px!important;width:auto!important;border:1px solid rgba(18,48,37,.09)!important;border-radius:16px!important;padding:8px!important;background:rgba(255,255,255,.98)!important;box-shadow:0 18px 40px rgba(16,43,33,.14)!important}
+  .dashboard-layout{padding-top:68px!important}
+  .mobile-nav-backdrop{z-index:12500!important;background:rgba(7,25,18,.48)!important}
+  .sidebar{z-index:13000!important;top:0!important;height:100dvh!important;width:min(320px,88vw)!important;border-radius:0 22px 22px 0!important;box-shadow:18px 0 50px rgba(7,25,18,.22)!important}
+  .sidebar.mobile-open{transform:translateX(0)!important}
+}
+@media (min-width:901px){.dashboard-layout{padding-top:0!important}}
