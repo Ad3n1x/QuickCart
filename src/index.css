@@ -922,3 +922,28 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
     visibility:visible!important;
   }
 }
+
+/* Separate mobile sidebar trigger from account-action dropdown */
+.mobile-actions-btn{display:none}
+@media (max-width:900px){
+  .dashboard-top-inner{position:relative!important}
+  .mobile-menu-btn,.mobile-actions-btn{
+    width:42px!important;height:42px!important;min-width:42px!important;
+    flex:0 0 42px!important;align-items:center!important;justify-content:center!important;
+    border:1px solid var(--line)!important;border-radius:11px!important;
+    background:#fff!important;color:var(--ink)!important;cursor:pointer!important;
+    position:relative!important;z-index:12020!important;
+  }
+  .mobile-menu-btn{order:1!important}
+  .dashboard-brand{order:2!important;flex:1 1 auto!important}
+  .mobile-actions-btn{order:3!important}
+  .mobile-actions-btn span{
+    display:block;width:4px;height:4px;border-radius:50%;background:currentColor;margin:2px;
+  }
+  .mobile-menu-btn span{display:block!important;width:18px!important;height:2px!important;background:currentColor!important;margin:2px 0!important;border-radius:2px!important}
+  .dashboard-actions{
+    top:calc(100% + 6px)!important;
+    left:12px!important;right:12px!important;
+    width:auto!important;
+  }
+}
