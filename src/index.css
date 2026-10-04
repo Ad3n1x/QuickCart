@@ -510,3 +510,7 @@ button,a{ -webkit-tap-highlight-color:transparent }
   .public-store{padding-top:68px;}
   .offline-banner,.online-banner{top:70px!important;}
 }
+
+.receipt-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.receipt-options .receipt-upload{min-width:0}
+@media(max-width:520px){.receipt-options{grid-template-columns:1fr}}
