@@ -45,10 +45,23 @@ export const handler = router({
     const store = await ownedStore(ctx.user!.userId);
     if (!store) return error('Create your store first.', 400);
     const body = ctx.body as Record<string, unknown>;
-    const [id] = await db.add(tables.products, [{ storeId: store.id, name: String(body.name || 'Product'), price: Number(body.price || 0), description: String(body.description || ''), emoji: String(body.emoji || '🛍️'), stock: Number(body.stock ?? 0), active: body.active !== false, createdAt: new Date().toISOString() }]);
+    const [id] = await db.add(tables.products, [{ storeId: store.id, name: String(body.name || 'Product'), price: Number(body.price || 0), description: String(body.description || ''), emoji: String(body.emoji || '🛍️'), stock: Number(body.stock ?? 0), active: body.active !== false, imageUrl: String(body.imageUrl || ''), variants: Array.isArray(body.variants) ? body.variants.map(v => String(v)).slice(0, 20) : [], createdAt: new Date().toISOString() }]);
     if (!id) return error('Could not create product.', 500);
     const [product] = await db.get(tables.products, [id]);
     return json({ product }, 201);
+  }],
+  'PUT /api/products/:id': [requireAuth(), async (ctx) => {
+    const store = await ownedStore(ctx.user!.userId);
+    if (!store) return error('Store not found.', 404);
+    const [product] = await db.get(tables.products, [ctx.params.id]);
+    if (!product || product.storeId !== store.id) return error('Product not found.', 404);
+    const body = ctx.body as Record<string, unknown>;
+    const record = { ...product, name: String(body.name ?? product.name ?? 'Product'), price: Number(body.price ?? product.price ?? 0), description: String(body.description ?? product.description ?? ''), emoji: String(body.emoji ?? product.emoji ?? '🛍️'), stock: Number(body.stock ?? product.stock ?? 0), active: body.active !== false, imageUrl: String(body.imageUrl ?? product.imageUrl ?? ''), variants: Array.isArray(body.variants) ? body.variants.map(v => String(v)).slice(0, 20) : (product.variants || []), id: undefined } as Record<string, unknown>;
+    delete record.id;
+    const [ok] = await db.update(tables.products, [{ id: product.id, record }]);
+    if (!ok) return error('Could not update product.', 500);
+    const [updated] = await db.get(tables.products, [product.id]);
+    return json({ product: updated });
   }],
   'DELETE /api/products/:id': [requireAuth(), async (ctx) => {
     const store = await ownedStore(ctx.user!.userId);
