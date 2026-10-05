@@ -1511,3 +1511,98 @@ html[data-theme="dark"] .landing{background:radial-gradient(circle at 80% 10%,co
 html[data-theme="dark"] .public-store{background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 24%,transparent),transparent 34%),var(--page-tint)!important}
 html[data-theme="dark"] .color-setting{box-shadow:0 12px 35px rgba(0,0,0,.22)!important}
 .theme-tools{display:grid;grid-template-columns:1fr 1.5fr;gap:14px;margin-bottom:16px}.theme-tool{display:grid;gap:7px;padding:15px;border:1px solid var(--line-accent);border-radius:16px;background:var(--surface-accent)}.theme-tool strong{font-size:13px}.theme-tool small{font-size:11px;color:var(--accent-muted);line-height:1.45}.preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.theme-preset{min-width:0;border:1px solid var(--line-accent);background:var(--accent-faint);color:var(--accent-text);border-radius:10px;padding:8px;display:flex;align-items:center;gap:7px;text-align:left}.theme-preset:hover{background:var(--accent-soft);border-color:var(--accent)}.theme-preset span{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.8),0 2px 6px var(--accent-shadow)}.theme-preset b{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.contrast-card{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;padding:14px 16px;border:1px solid var(--line-accent);border-radius:16px;background:var(--surface-accent)}.contrast-card>div:first-child{display:grid;gap:4px}.contrast-card small{color:var(--accent-muted);font-size:11px;line-height:1.45}.contrast-preview{display:flex;align-items:center;gap:9px}.contrast-preview>span{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-weight:950;background:var(--accent)!important;color:var(--accent-contrast)!important}.contrast-preview>div{display:grid;gap:2px}.contrast-preview b{font-size:11px}.contrast-preview small{max-width:220px}@media(max-width:800px){.theme-tools{grid-template-columns:1fr}.contrast-card{align-items:flex-start;flex-direction:column}.preset-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.preset-grid{grid-template-columns:1fr 1fr}.theme-preset{padding:7px}}
+
+/* PALETTE LOCK: all visible typography, controls, surfaces, textures, borders, states and logo details derive from the selected palette. */
+:root{
+  --palette-ink:color-mix(in srgb,var(--accent) 72%,#10201b);
+  --palette-soft-ink:color-mix(in srgb,var(--accent) 46%,#718079);
+  --palette-faint-ink:color-mix(in srgb,var(--accent) 30%,#718079);
+  --palette-surface:color-mix(in srgb,var(--accent) 4%,white);
+  --palette-surface-2:color-mix(in srgb,var(--accent) 8%,white);
+  --palette-line:color-mix(in srgb,var(--accent) 18%,#e4ebe7);
+  --palette-shadow:color-mix(in srgb,var(--accent) 22%,transparent);
+}
+html[data-theme="dark"]{
+  --palette-ink:color-mix(in srgb,var(--accent) 38%,white);
+  --palette-soft-ink:color-mix(in srgb,var(--accent) 28%,#a9bbb2);
+  --palette-faint-ink:color-mix(in srgb,var(--accent) 20%,#a9bbb2);
+  --palette-surface:color-mix(in srgb,var(--accent) 10%,#14201b);
+  --palette-surface-2:color-mix(in srgb,var(--accent) 16%,#14201b);
+  --palette-line:color-mix(in srgb,var(--accent) 30%,#294038);
+  --palette-shadow:color-mix(in srgb,var(--accent) 30%,transparent);
+}
+/* Typography: even small labels, notes, helper copy and icon text inherit palette-derived tones. */
+body,button,input,select,textarea,a,option,label,small,strong,b,span,p,h1,h2,h3,h4,h5,h6,li,dt,dd,legend,summary,code,pre,caption,th,td{
+  color:var(--palette-ink);
+}
+small,.muted,.field>span,.field span,.auth-subtitle,.auth-trust,.ocr-note,.empty,.landing-hero p,.page-head p,.stat span,.order-row small,.admin-row small,.customer-row small,.plan-card>p,.premium-modal>p,.modal-heading p,.public-product p,.theme-tool small,.contrast-card small{
+  color:var(--palette-soft-ink)!important;
+}
+/* Palette-derived surfaces and texture layers. */
+*,*::before,*::after{border-color:var(--palette-line)}
+.panel,.stat,.tool,.feature-strip>div,.public-product,.public-checkout,.plan-card,.modal-card,.auth-modal,.theme-tool,.contrast-card,.color-setting{
+  background:var(--palette-surface)!important;
+}
+.store-mini,.store-switcher,.share-box,.product-icon,.product-art,.avatar,.payment-box,.settings-callout,.qr-preview,.modal-feature-grid span,.feature-icon,.file-upload,.upload-zone,.drag-zone{
+  background:var(--palette-surface-2)!important;
+}
+.landing,.public-store,.center-page,.app-shell,.dashboard-layout,.dashboard-content{
+  background:
+    radial-gradient(circle at 8% 12%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 28%),
+    radial-gradient(circle at 92% 88%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 30%),
+    var(--page-tint)!important;
+}
+.dashboard-top,.landing-nav,.public-nav,.sidebar,.footer,.site-footer{
+  background:color-mix(in srgb,var(--accent) 5%,white)!important;
+  border-color:var(--palette-line)!important;
+}
+html[data-theme="dark"] .dashboard-top,html[data-theme="dark"] .landing-nav,html[data-theme="dark"] .public-nav,html[data-theme="dark"] .sidebar,html[data-theme="dark"] .footer,html[data-theme="dark"] .site-footer{
+  background:color-mix(in srgb,var(--accent) 8%,#101914)!important;
+}
+/* Logo and wordmark: no fixed lime/white colors remain. */
+.brand-logo,.brand-mark,.premium-brand-mark{
+  color:var(--accent)!important;
+  background:var(--palette-surface-2)!important;
+  border:1px solid var(--palette-line)!important;
+  box-shadow:0 8px 24px var(--palette-shadow)!important;
+}
+.brand-logo svg,.brand-mark svg,.premium-brand-mark svg{color:var(--accent)!important;stroke:currentColor!important}
+.brand-wordmark,.brand-wordmark span,.brand>span:last-child{color:var(--palette-ink)!important}
+/* Every action/control follows the same accent family. */
+button,.ghost,.pill,.icon-btn,.link-btn,.choice,.quick-action,.filter-chip,.tab,.theme-preset,.qty-btn,.quantity-btn{
+  color:var(--palette-ink);
+  border-color:var(--palette-line)!important;
+}
+button:hover,.ghost:hover,.pill:hover,.icon-btn:hover,.link-btn:hover,.choice:hover,.quick-action:hover,.filter-chip:hover,.tab:hover,.theme-preset:hover,.qty-btn:hover,.quantity-btn:hover{
+  background:var(--palette-surface-2)!important;
+  color:var(--accent)!important;
+  border-color:color-mix(in srgb,var(--accent) 34%,var(--palette-line))!important;
+}
+.primary,.checkout-btn,.auth-submit,.help,.plan-badge{
+  background:var(--accent)!important;
+  color:var(--accent-contrast)!important;
+  border-color:var(--accent)!important;
+}
+.primary *,.checkout-btn *,.auth-submit *,.help *,.plan-badge *{color:var(--accent-contrast)!important}
+.status,.status-new,.status-delivered,.success,.success-message,.warning,.warning-message,.error{
+  background:color-mix(in srgb,var(--accent) 12%,var(--palette-surface))!important;
+  color:var(--palette-ink)!important;
+  border-color:var(--palette-line)!important;
+}
+.status-new,.status-delivered{color:var(--accent)!important}
+a{color:var(--accent)!important}
+input::placeholder,textarea::placeholder{color:var(--palette-faint-ink)!important}
+::selection{background:var(--accent)!important;color:var(--accent-contrast)!important}
+*:focus-visible{outline-color:color-mix(in srgb,var(--accent) 45%,transparent)!important}
+.tooltip,.popover,.dropdown-menu,.dropdown,.menu,.select-menu{
+  background:var(--palette-surface)!important;
+  color:var(--palette-ink)!important;
+  border-color:var(--palette-line)!important;
+  box-shadow:0 18px 50px var(--palette-shadow)!important;
+}
+.tooltip *,.popover *,.dropdown-menu *,.dropdown *,.menu *,.select-menu *{color:inherit}
+.loading,.skeleton,.skeleton-item{
+  background:linear-gradient(90deg,var(--palette-surface-2),var(--palette-surface),var(--palette-surface-2))!important;
+}
+*::-webkit-scrollbar-thumb{background:var(--accent)!important;border-color:var(--palette-surface-2)!important}
+*::-webkit-scrollbar-track{background:var(--palette-surface-2)!important}
