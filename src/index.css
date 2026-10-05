@@ -2626,3 +2626,93 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
     animation-duration:.001ms!important;
   }
 }
+
+
+/* Final fix: account actions are always visible on mobile */
+@media (max-width:900px){
+  .mobile-actions-btn{display:none!important}
+  .dashboard-top-inner{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    gap:8px!important;
+    height:auto!important;
+    min-height:68px!important;
+    padding:10px 12px!important;
+  }
+  .dashboard-brand{
+    order:1!important;
+    flex:1 1 auto!important;
+    justify-self:auto!important;
+  }
+  .mobile-menu-btn{
+    order:0!important;
+    flex:0 0 42px!important;
+  }
+  .dashboard-actions{
+    order:4!important;
+    position:static!important;
+    display:grid!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    transform:none!important;
+    width:100%!important;
+    flex:0 0 100%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    padding:8px 0 2px!important;
+    margin:0!important;
+    border:0!important;
+    border-top:1px solid var(--line)!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  .dashboard-actions>*{
+    width:100%!important;
+    min-height:42px!important;
+    justify-content:center!important;
+    margin:0!important;
+  }
+  .dashboard-actions .premium-chip{
+    background:#fff5d8!important;
+    color:#795e19!important;
+    border:1px solid #ead69d!important;
+  }
+  .dashboard-actions .nav-action.ghost{
+    background:#e8f2ed!important;
+    color:#12392d!important;
+    border:1px solid #b9d7c7!important;
+  }
+  .dashboard-actions .nav-action.primary{
+    background:var(--accent)!important;
+    color:var(--accent-contrast,#fff)!important;
+    border-color:var(--accent)!important;
+    box-shadow:0 8px 20px rgba(18,57,45,.16)!important;
+  }
+  .dashboard-actions .nav-action:last-child{
+    background:#f3f6f4!important;
+    color:#41564d!important;
+    border-color:#dce6e0!important;
+  }
+  .dashboard-layout{
+    margin-top:0!important;
+    padding-top:0!important;
+  }
+  .system-notices{
+    margin-top:0!important;
+  }
+}
+@media (max-width:520px){
+  .dashboard-actions{
+    grid-template-columns:1fr 1fr!important;
+  }
+  .dashboard-actions .premium-chip,
+  .dashboard-actions .nav-action{
+    font-size:11px!important;
+    padding:9px 8px!important;
+  }
+}
