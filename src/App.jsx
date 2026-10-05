@@ -24,7 +24,7 @@ const defaultProducts = [{ name: 'Classic Tee', price: 12000, description: 'Ever
 export class AppErrorBoundary extends Component {
  state={error:null};
  static getDerivedStateFromError(error){return {error};}
- componentDidCatch(error,info){console.error('QuickCart dashboard error:',error,info);}
+ componentDidCatch(error,info){try{const payload={message:String(error?.message||error),stack:String(error?.stack||''),componentStack:String(info?.componentStack||''),url:window.location.href,at:new Date().toISOString()};localStorage.setItem('quickcart_last_error',JSON.stringify(payload));window.dispatchEvent(new CustomEvent('quickcart-runtime-error',{detail:payload}));}catch{}console.error('QuickCart dashboard error:',error,info);}
  render(){
   if(this.state.error)return <main className="landing"><section className="landing-hero"><span className="eyebrow-dark">QUICKCART ERROR</span><h1>Something went wrong.</h1><p>The dashboard hit an unexpected error. Your session is still safe.</p><div className="panel" style={{maxWidth:680,margin:'24px auto',textAlign:'left'}}><strong>{this.state.error?.message||'Unknown dashboard error'}</strong></div><button className="primary big" onClick={()=>window.location.reload()}>Reload QuickCart</button></section></main>;
   return this.props.children;
