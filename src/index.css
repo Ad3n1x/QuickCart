@@ -1384,3 +1384,78 @@ body,.shell,.app-shell,.dashboard-layout,.dashboard-content,.center-page{backgro
 .landing{background:radial-gradient(circle at 80% 12%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 30%),radial-gradient(circle at 10% 40%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 28%),var(--page-tint)!important}
 .public-store{background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 14%,transparent) 0,transparent 34%),var(--page-tint)!important}
 .public-hero{box-shadow:0 24px 70px color-mix(in srgb,var(--accent) 18%,transparent)!important}
+
+/* Dynamic accent: every visual detail follows the selected QuickCart UI color */
+:root{
+ --accent-contrast:#fff;
+ --accent-soft:color-mix(in srgb,var(--accent) 12%,white);
+ --accent-faint:color-mix(in srgb,var(--accent) 6%,white);
+ --accent-border:color-mix(in srgb,var(--accent) 20%,#e4ebe7);
+ --accent-text:color-mix(in srgb,var(--accent) 82%,#10201b);
+ --accent-muted:color-mix(in srgb,var(--accent) 42%,#718079);
+ --accent-shadow:color-mix(in srgb,var(--accent) 18%,transparent);
+ --surface-accent:color-mix(in srgb,var(--accent) 4%,white);
+ --surface-accent-strong:color-mix(in srgb,var(--accent) 9%,white);
+ --page-tint:color-mix(in srgb,var(--accent) 3%,#f7faf8);
+ --line-accent:color-mix(in srgb,var(--accent) 16%,#e4ebe7);
+}
+html,body,#root{background:var(--page-tint)!important;color:var(--accent-text)}
+body,.shell,.app-shell,.dashboard-layout,.dashboard-content,.center-page{background:var(--page-tint)!important}
+.dashboard-top,.landing-nav,.public-nav{background:color-mix(in srgb,var(--accent) 3%,white)!important;border-color:var(--line-accent)!important}
+.sidebar{background:color-mix(in srgb,var(--accent) 4%,white)!important;border-color:var(--line-accent)!important}
+.brand,.page-head h1,.panel h2,.panel-head h2,.stat strong,.public-product h3,.total-line strong,.auth-modal h2,.modal-heading h2,.plan-card h2,.plan-price,.premium-modal h2,.landing-hero h1{color:var(--accent-text)}
+.brand-logo,.brand-mark{box-shadow:0 8px 24px var(--accent-shadow)!important}
+.landing{background:radial-gradient(circle at 80% 10%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 27%),radial-gradient(circle at 10% 45%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 30%),var(--page-tint)!important}
+.landing-hero h1 span,.link-btn,.share-box code{color:var(--accent)!important}
+.eyebrow-dark,.section-kicker,.color-kicker,.page-head p,.landing-hero p,.feature-strip span,.stat span,.order-row small,.admin-row small,.field span,.onboarding p,.empty,.public-product p,.premium-modal>p,.plan-card>p,.auth-subtitle,.auth-trust,.modal-heading p{color:var(--accent-muted)!important}
+.primary,.help,.plan-badge{background:var(--accent)!important;color:var(--accent-contrast)!important;border-color:var(--accent)!important}
+.primary:hover{box-shadow:0 14px 30px var(--accent-shadow)!important}
+.ghost,.pill,.icon-btn,.link-btn,.close{background:var(--surface-accent)!important;border-color:var(--line-accent)!important;color:var(--accent-text)}
+.ghost:hover,.pill:hover,.icon-btn:hover,.close:hover{background:var(--accent-soft)!important;color:var(--accent)!important;border-color:color-mix(in srgb,var(--accent) 28%,#e4ebe7)!important}
+.feature-strip{background:var(--line-accent)!important}
+.feature-strip>div,.panel,.stat,.tool,.public-product,.public-checkout,.plan-card,.store-switcher,.help,.modal-card,.auth-modal{background:var(--surface-accent)!important;border-color:var(--line-accent)!important}
+.feature-strip>div:hover,.panel:hover,.stat:hover,.tool:hover,.public-product:hover,.plan-card:hover{border-color:color-mix(in srgb,var(--accent) 25%,#e4ebe7)}
+.store-mini,.store-switcher,.share-box,.product-icon,.product-art,.avatar,.payment-account-card,.payment-box,.settings-callout,.qr-preview,.modal-feature-grid span{background:var(--accent-faint)!important;border-color:var(--line-accent)!important}
+.nav{color:var(--accent-muted)!important}
+.nav:hover,.store-option:hover,.store-option.active,.nav.active{background:var(--accent-soft)!important;color:var(--accent)!important}
+.nav.active{box-shadow:inset 3px 0 0 var(--accent)}
+.help span{color:color-mix(in srgb,var(--accent-contrast) 76%,var(--accent))!important}
+.field input,.auth-modal input,.public-checkout input,.color-name-input,.otp-input,.search-input,.store-search input,.discount-input,.choice{background:var(--surface-accent)!important;color:var(--accent-text)!important;border-color:var(--line-accent)!important}
+.field input::placeholder,.auth-modal input::placeholder,.public-checkout input::placeholder,.store-search input::placeholder{color:color-mix(in srgb,var(--accent-muted) 72%,white)}
+.field input:focus,.auth-modal input:focus,.public-checkout input:focus,.color-name-input:focus,.otp-input:focus,.store-search input:focus,.discount-input:focus,.choice:focus{border-color:var(--accent)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent)!important}
+.tool:hover{background:var(--accent-faint)!important;border-color:color-mix(in srgb,var(--accent) 25%,#e4ebe7)!important}
+.order-row,.admin-row,.customer-row,.cart-line{border-color:var(--line-accent)!important}
+.order-row:hover,.admin-row:hover{background:var(--accent-faint)!important}
+.status{background:var(--accent-faint)!important;color:var(--accent)!important}
+.status-new{background:color-mix(in srgb,#ffd66b 28%,var(--accent-faint))!important;color:#765900!important}
+.status-delivered{background:color-mix(in srgb,#73d694 25%,var(--accent-faint))!important;color:#21663a!important}
+.product-icon,.product-art{color:var(--accent)!important}
+.public-store{background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 14%,transparent),transparent 34%),var(--page-tint)!important}
+.public-hero{background:var(--accent)!important;box-shadow:0 24px 70px var(--accent-shadow)!important}
+.public-hero p{color:color-mix(in srgb,var(--accent-contrast) 78%,var(--accent))!important}
+.public-checkout{box-shadow:0 18px 50px var(--accent-shadow)!important}
+.choice.active,.quick-action.active,.filter-chip.active,.tab.active{background:var(--accent)!important;color:var(--accent-contrast)!important;border-color:var(--accent)!important}
+.choice:hover,.quick-action:hover,.filter-chip:hover,.tab:hover{background:var(--accent-soft)!important;color:var(--accent)!important}
+.checkout-choice,.payment-box,.receipt-ocr,.ocr-result,.settings-callout,.qr-preview{border-color:var(--line-accent)!important}
+.total-line{border-color:var(--line-accent)!important}
+.checkout-btn.disabled{background:color-mix(in srgb,var(--accent) 30%,#b8c2bd)!important;color:var(--accent-contrast)!important;opacity:.65}
+.premium-chip,.premium-label,.locked-pill{background:color-mix(in srgb,var(--accent) 8%,#fff5d8)!important;border-color:color-mix(in srgb,var(--accent) 18%,#ead69d)!important;color:var(--accent-text)!important}
+.upgrade-banner{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 72%,#10201b))!important;box-shadow:0 14px 35px var(--accent-shadow)!important}
+.upgrade-banner p{color:color-mix(in srgb,var(--accent-contrast) 82%,var(--accent))!important}
+.bar{background:var(--accent)!important}
+.feature-icon{background:var(--accent-soft)!important;color:var(--accent)!important}
+.modal-backdrop{background:color-mix(in srgb,var(--accent) 55%,#06150f)!important}
+.modal-card,.auth-modal{box-shadow:0 30px 90px var(--accent-shadow)!important}
+.close{color:var(--accent)!important}
+.spinner,.loading-spinner{border-color:var(--accent-faint)!important;border-top-color:var(--accent)!important}
+progress{accent-color:var(--accent)}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--accent)}
+::selection{background:var(--accent);color:var(--accent-contrast)}
+*{scrollbar-color:var(--accent) var(--accent-faint)}
+*::-webkit-scrollbar-thumb{background:var(--accent)}
+*::-webkit-scrollbar-track{background:var(--accent-faint)}
+a{color:var(--accent)}
+button:disabled{filter:saturate(.55);}
+.toast-container .Toastify__toast{background:var(--surface-accent)!important;color:var(--accent-text)!important;border:1px solid var(--line-accent)!important;box-shadow:0 14px 40px var(--accent-shadow)!important}
+.Toastify__progress-bar{background:var(--accent)!important}
+@media(max-width:800px){.dashboard-content{background:var(--page-tint)!important}.feature-strip>div{background:var(--surface-accent)!important}}
