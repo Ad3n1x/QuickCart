@@ -1992,3 +1992,40 @@ button,.primary,.ghost,.pill,.icon-btn,.link-btn{max-width:100%}
  .dashboard-top{padding-inline:10px!important}
  .modal-card,.modal-card.wide{padding:16px}
 }
+
+
+/* Mobile usability polish — solid, high-contrast controls */
+.landing-nav{
+  background:var(--surface)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  border-bottom:1px solid var(--line)!important;
+  box-shadow:0 4px 18px rgba(16,43,33,.06);
+}
+.landing-nav .auth-nav-actions .ghost{
+  background:var(--surface)!important;
+  color:var(--ink)!important;
+  border:1px solid #cbd9d2!important;
+  box-shadow:0 2px 8px rgba(16,43,33,.05);
+}
+.landing-nav .auth-nav-actions .primary{
+  background:var(--accent)!important;
+  color:var(--accent-contrast,#fff)!important;
+  border:1px solid var(--accent)!important;
+  box-shadow:0 6px 16px rgba(18,57,45,.16);
+}
+.landing-nav .auth-nav-actions .ghost:hover,
+.landing-nav .auth-nav-actions .primary:hover{
+  transform:translateY(-1px);
+}
+.feature-strip>div{
+  background:var(--surface)!important;
+  opacity:1!important;
+}
+@media(max-width:480px){
+  .landing-nav .auth-nav-actions .ghost,
+  .landing-nav .auth-nav-actions .primary{
+    opacity:1!important;
+    box-shadow:0 3px 10px rgba(16,43,33,.08);
+  }
+}
