@@ -1204,3 +1204,10 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
 .notice-popup-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 .notice-popup-actions>*{justify-content:center}
 @media(max-width:480px){.notice-popup{padding:23px!important}.notice-popup-actions{display:grid}.notice-popup-actions>*{width:100%}}
+
+/* Center all QuickCart popups in the viewport, never below the search/navigation area. */
+.modal-backdrop,.notice-popup-backdrop{position:fixed!important;inset:0!important;width:100vw;height:100dvh;z-index:5000;display:flex!important;align-items:center!important;justify-content:center!important;padding:clamp(16px,4vw,28px)!important;overflow:auto!important;box-sizing:border-box;}
+.notice-popup-backdrop{z-index:5100;}
+.notice-popup,.modal-card,.auth-modal{margin:auto;max-height:calc(100dvh - 32px);max-width:100%;}
+.notice-popup{position:relative;width:min(460px,100%);box-sizing:border-box;}
+@media(max-width:600px){.modal-backdrop,.notice-popup-backdrop{padding:14px!important}.notice-popup,.modal-card,.auth-modal{max-height:calc(100dvh - 28px);width:100%;}.notice-popup{border-radius:16px}.modal-card{padding:20px;}}
