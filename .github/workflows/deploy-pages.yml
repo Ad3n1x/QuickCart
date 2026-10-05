@@ -77,3 +77,5 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # Deployment trigger verification: main push
+
+# Force deployment after UI cleanup
