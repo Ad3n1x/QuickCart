@@ -1966,7 +1966,7 @@ button,.primary,.ghost,.pill,.icon-btn,.link-btn{max-width:100%}
  .landing-nav .brand{font-size:16px}
  .landing-nav .auth-nav-actions{display:flex!important;gap:3px!important}
  .landing-nav .auth-nav-actions .ghost,.landing-nav .auth-nav-actions .primary{display:inline-flex!important;padding:7px 8px!important;font-size:10px!important;min-height:34px!important}
- .landing-nav .auth-nav-actions .ghost:first-child{display:none!important}
+ 
  .landing-hero{padding:42px 14px 50px!important;margin:0 auto!important}
  .landing-hero h1{font-size:clamp(36px,12vw,52px)!important}
  .landing-hero p{font-size:15px;line-height:1.6}
