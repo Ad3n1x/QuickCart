@@ -1652,3 +1652,6 @@ input::placeholder,textarea::placeholder{color:var(--palette-faint-ink)!importan
 .Toastify__toast-container .Toastify__close-button{color:var(--accent)!important}
 .Toastify__toast-container .Toastify__progress-bar{background:var(--accent)!important}
 .Toastify__toast-container .Toastify__toast-icon svg{color:var(--accent)!important;fill:var(--accent)!important}
+
+/* Dashboard header separator: use the selected palette instead of the old fixed green. */
+.dashboard-top{border-bottom:2px solid var(--accent)!important;box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 10%,transparent)!important}
