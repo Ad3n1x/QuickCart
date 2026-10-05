@@ -2168,3 +2168,69 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  .landing-hero>p{font-size:15px}
  .landing-proof span{width:100%}
 }
+
+/* Final landing nav fix — keep logo and auth buttons visible on narrow phones */
+@media(max-width:480px){
+  .landing-nav{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center!important;
+    gap:8px!important;
+    padding:10px 12px!important;
+    min-height:64px!important;
+  }
+  .landing-nav .brand{
+    grid-column:1;
+    min-width:0!important;
+    overflow:visible!important;
+    flex:none!important;
+  }
+  .landing-nav .brand svg,
+  .landing-nav .brand .brand-logo{
+    width:32px!important;
+    height:32px!important;
+    min-width:32px!important;
+    flex:none!important;
+    display:block!important;
+  }
+  .landing-nav .brand span{
+    display:inline!important;
+    white-space:nowrap!important;
+  }
+  .landing-nav .auth-nav-actions{
+    grid-column:2;
+    width:auto!important;
+    min-width:0!important;
+    display:grid!important;
+    grid-template-columns:auto auto;
+    gap:5px!important;
+    margin:0!important;
+  }
+  .landing-nav .auth-nav-actions .ghost,
+  .landing-nav .auth-nav-actions .primary{
+    display:inline-flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:auto!important;
+    min-width:0!important;
+    padding:8px 9px!important;
+    min-height:38px!important;
+    font-size:11px!important;
+  }
+  .landing-nav .auth-nav-actions .nav-install{
+    display:none!important;
+  }
+}
+@media(max-width:360px){
+  .landing-nav .brand span{display:none!important}
+  .landing-nav .brand svg,
+  .landing-nav .brand .brand-logo{
+    width:32px!important;
+    height:32px!important;
+  }
+  .landing-nav .auth-nav-actions .ghost,
+  .landing-nav .auth-nav-actions .primary{
+    padding:8px 8px!important;
+    font-size:10px!important;
+  }
+}
