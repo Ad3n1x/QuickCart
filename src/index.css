@@ -1371,3 +1371,16 @@ select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2
 .icon-btn:hover,.tool:hover{border-color:color-mix(in srgb,var(--accent) 28%,var(--line))!important;background:color-mix(in srgb,var(--accent) 5%,#fff)!important}
 .field input:focus,.auth-modal input:focus,.public-checkout input:focus{border-color:color-mix(in srgb,var(--accent) 62%,#fff)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 12%,transparent)!important}
 .landing-hero h1 span{color:var(--accent)!important}.color-kicker{color:var(--accent)!important}.primary{box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 22%,transparent)!important}.product-icon,.avatar{background:color-mix(in srgb,var(--accent) 10%,#fff)!important;color:var(--accent)!important}.catalog-filter.active{background:var(--accent)!important;color:var(--accent-contrast)!important}.status-delivered,.stock-pill{background:color-mix(in srgb,var(--accent) 12%,#fff)!important;color:var(--accent)!important}
+
+/* THEME SURFACES: selected QuickCart UI color also controls page backgrounds and soft surfaces. */
+html,body,#root{background:var(--bg)!important;color:var(--ink)}
+:root{--page-tint:color-mix(in srgb,var(--accent) 4%,#f7faf8);--surface-tint:color-mix(in srgb,var(--accent) 3%,#fff);--surface-accent:color-mix(in srgb,var(--accent) 8%,#fff);--line-accent:color-mix(in srgb,var(--accent) 14%,var(--line))}
+body,.shell,.app-shell,.dashboard-layout,.dashboard-content,.center-page{background:var(--page-tint)!important}
+.dashboard-top,.sidebar{background:color-mix(in srgb,var(--accent) 2%,#fff)!important}
+.panel,.stat,.tool,.feature-strip>div,.product-summary-card,.product-catalog-panel,.product-list-item,.public-product,.public-checkout,.plan-card{background:var(--surface-tint)!important}
+.store-mini,.store-switcher,.share-box,.product-icon,.avatar,.catalog-product-image,.image-upload-field{background:var(--surface-accent)!important}
+.order-row:hover,.admin-row:hover{background:color-mix(in srgb,var(--accent) 4%,#fff)!important}
+.feature-strip,.catalog-toolbar,.bar-chart{border-color:var(--line-accent)!important}
+.landing{background:radial-gradient(circle at 80% 12%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 30%),radial-gradient(circle at 10% 40%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 28%),var(--page-tint)!important}
+.public-store{background:radial-gradient(circle at 50% 0,color-mix(in srgb,var(--accent) 14%,transparent) 0,transparent 34%),var(--page-tint)!important}
+.public-hero{box-shadow:0 24px 70px color-mix(in srgb,var(--accent) 18%,transparent)!important}
