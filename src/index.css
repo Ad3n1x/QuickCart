@@ -1655,3 +1655,47 @@ input::placeholder,textarea::placeholder{color:var(--palette-faint-ink)!importan
 
 /* Dashboard header separator: use the selected palette instead of the old fixed green. */
 .dashboard-top{border-bottom:2px solid var(--accent)!important;box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 10%,transparent)!important}
+
+
+/* Palette enforcement: every UI accent, tint, highlight, status, line and control is derived from the selected UI palette. */
+:root{
+  --palette-white:color-mix(in srgb,var(--accent) 0%,white);
+  --palette-faint:color-mix(in srgb,var(--accent) 4%,white);
+  --palette-soft:color-mix(in srgb,var(--accent) 9%,white);
+  --palette-light:color-mix(in srgb,var(--accent) 16%,white);
+  --palette-mid:color-mix(in srgb,var(--accent) 42%,white);
+  --palette-deep:color-mix(in srgb,var(--accent) 82%,black);
+  --palette-line:color-mix(in srgb,var(--accent) 14%,#e4ebe7);
+  --palette-muted:color-mix(in srgb,var(--accent) 42%,#66776f);
+  --palette-shadow:color-mix(in srgb,var(--accent) 18%,transparent);
+  --palette-warning-bg:color-mix(in srgb,var(--accent) 11%,white);
+  --palette-warning-fg:color-mix(in srgb,var(--accent) 72%,black);
+  --palette-danger-bg:color-mix(in srgb,var(--accent) 9%,white);
+  --palette-danger-fg:color-mix(in srgb,var(--accent) 72%,black);
+}
+body{background:var(--bg);color:var(--ink)}
+button,input,select,textarea{accent-color:var(--accent)}
+.dashboard-top,.sidebar,.panel,.tool,.feature-strip>div,.primary,.ghost,.pill,.icon-btn,.link-btn,.public-product,.public-checkout,.modal-card,.auth-modal,.loading-card,.color-setting,.plan-card,.payment-account-card,.share-preview,.share-box,.store-switcher,.status-select,.store-search,.payment-box,.payment-confirmed-card{--component-accent:var(--accent)}
+.nav.active,.nav:hover,.store-option.active,.store-option:hover,.choice.active,.catalog-filter.active{background:var(--palette-soft)!important;color:var(--accent)!important}
+.nav,.store-option,.store-add,.field span,.auth-field>span,.section-kicker,.eyebrow-dark,.page-head p,.stat span,.order-row small,.admin-row small,.empty,.onboarding p,.public-product p,.password-meter small,.auth-trust,.color-kicker,.color-setting-head small,.palette-label small{color:var(--palette-muted)}
+.primary,.help,.upgrade-banner,.plan-badge,.payment-account-number{background:var(--accent)!important;border-color:var(--accent)!important;color:var(--accent-contrast)!important}
+.primary:hover{background:var(--accent-dark)!important;border-color:var(--accent-dark)!important}
+.primary:focus-visible,.choice:focus-visible,.nav:focus-visible,.tool:focus-visible,.icon-btn:focus-visible{outline-color:color-mix(in srgb,var(--accent) 35%,transparent)}
+.primary,.ghost,.pill,.icon-btn,.link-btn,.tool,.field input,.auth-modal input,.public-checkout input,.status-select,.store-search,.receipt-upload,.choice,.mobile-menu-btn,.mobile-actions-btn{border-color:var(--palette-line)}
+.tool:hover,.icon-btn:hover,.receipt-upload:hover,.choice:hover{background:var(--palette-faint)!important;border-color:color-mix(in srgb,var(--accent) 30%,var(--line))!important}
+.panel,.stat,.public-product,.public-checkout,.plan-card{border-color:var(--palette-line)!important;box-shadow:0 12px 38px var(--palette-shadow)}
+.store-mini,.share-box,.store-switcher,.modal-feature-grid span,.icon-grid,.payment-box,.payment-confirmed-card,.payment-tip{background:var(--palette-faint)!important;border-color:var(--palette-line)!important}
+.product-icon,.avatar,.feature-icon,.share-preview-icon{background:var(--palette-soft)!important;color:var(--accent)!important}
+.order-row,.admin-row,.cart-line,.total-line{border-color:var(--palette-line)!important}
+.status,.stock-pill{background:var(--palette-soft)!important;color:var(--accent)!important}
+.status-new,.premium-label,.premium-chip,.locked-pill,.payment-tip{background:var(--palette-warning-bg)!important;color:var(--palette-warning-fg)!important;border-color:var(--palette-line)!important}
+.status-delivered,.payment-success-icon,.ocr-result.match{background:var(--palette-soft)!important;color:var(--accent)!important}
+.error,.payment-failed-icon,.ocr-result.mismatch{background:var(--palette-danger-bg)!important;color:var(--palette-danger-fg)!important}
+.password-meter span.on,.bar,.pulse-dot{background:var(--accent)!important}
+.loading-spinner{border-top-color:var(--accent)!important}
+.sync-status,.system-notices .sync-status{background:var(--palette-soft)!important;color:var(--accent)!important;border-color:var(--palette-line)!important}
+.notification-panel,.notice-popup,.offline-notice,.online-notice,.install-notice{border-color:var(--palette-line)!important}
+.notification-panel .progress,.notice-popup .progress,.notice-progress,.notification-progress{background:var(--accent)!important}
+.mobile-nav-backdrop{background:color-mix(in srgb,var(--accent) 38%,transparent)!important}
+.modal-backdrop,.global-loading{background:color-mix(in srgb,var(--accent) 48%,transparent)!important}
+
