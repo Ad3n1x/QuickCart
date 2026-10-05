@@ -73,7 +73,7 @@ function AdvancedAnalytics({orders,customers,plan}){const[range,setRange]=useSta
 
 function PasswordField({value,onChange,name,label="Password",placeholder="Enter your password",autoComplete="current-password"}) {
  const [show,setShow]=useState(false);
- return <label className="field"><span>{label}</span><div className="password-field-wrap"><input type={show?"text":"password"} name={name} value={value} onChange={onChange} placeholder={placeholder} autoComplete={autoComplete} required /><button type="button" className="password-toggle" onClick={()=>setShow(v=>!v)} aria-label={show?"Hide password":"Show password"}>{show?<EyeOff size={17}/>:<Eye size={17}/>}</button></div></label>;
+ return <label className="field"><span>{label}</span><div className="password-field-wrap"><input type={show?"text":"password"} name={name} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoComplete={autoComplete} required /><button type="button" className="password-toggle" onClick={()=>setShow(v=>!v)} aria-label={show?"Hide password":"Show password"}>{show?<EyeOff size={17}/>:<Eye size={17}/>}</button></div></label>;
 }
 function OtpModal({open,otp,setOtp,email,message,loading,resendCooldown,onVerify,onResend,onClose}) {
  if(!open) return null;
