@@ -82,5 +82,3 @@ jobs:
 # Deployment trigger verification: main push
 
 # Force deployment after UI cleanup
-
-# deployment trigger
