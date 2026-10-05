@@ -1637,3 +1637,18 @@ input::placeholder,textarea::placeholder{color:var(--palette-faint-ink)!importan
 .settings-form .field>span::first-letter{ text-transform:uppercase }
 /* Keep actual words in normal title/sentence case instead of all-caps presentation. */
 .settings-form .premium-label,.settings-form .color-kicker,.settings-form .eyebrow-dark{letter-spacing:.08em}
+
+/* Notification panel: every green detail follows the selected palette. */
+.Toastify__toast-container .Toastify__toast,
+.Toastify__toast-container .Toastify__toast-theme--light,
+.Toastify__toast-container .Toastify__toast-theme--dark{
+  background:var(--palette-surface)!important;
+  color:var(--palette-ink)!important;
+  border:1px solid var(--palette-line)!important;
+  box-shadow:0 14px 40px var(--palette-shadow)!important;
+}
+.Toastify__toast-container .Toastify__toast-body,
+.Toastify__toast-container .Toastify__toast-body *{color:var(--palette-ink)!important}
+.Toastify__toast-container .Toastify__close-button{color:var(--accent)!important}
+.Toastify__toast-container .Toastify__progress-bar{background:var(--accent)!important}
+.Toastify__toast-container .Toastify__toast-icon svg{color:var(--accent)!important;fill:var(--accent)!important}
