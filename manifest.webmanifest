@@ -1,0 +1,11 @@
+{
+  "name":"QuickCart",
+  "short_name":"QuickCart",
+  "description":"QuickCart helps small businesses create an online store, share one link, and take customer orders.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f7faf8",
+  "theme_color":"#12392d",
+  "orientation":"portrait-primary"
+}
