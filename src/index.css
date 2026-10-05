@@ -1626,3 +1626,14 @@ input::placeholder,textarea::placeholder{color:var(--palette-faint-ink)!importan
 .theme-toggle-track i{display:block;width:18px;height:18px;border-radius:50%;
   background:var(--accent)!important;transition:transform .2s ease}
 .theme-toggle.dark .theme-toggle-track i{transform:translateX(18px)}
+
+
+/* Final palette lock for underline rules and separators */
+.underline,.under-line,.green-line,.accent-line,.section-line,.title-line,.page-head:after,.settings-form:after{border-color:var(--accent)!important;background-color:var(--accent)!important;color:var(--accent)!important}
+.settings-form .field input,.settings-form .field select,.settings-form .field textarea{border-color:var(--palette-line)!important}
+
+/* Proper title case for store settings labels and visible UI copy */
+.settings-form .field>span,.settings-form .color-kicker,.settings-form .palette-label>span,.settings-form .palette-label>small,.settings-form .premium-label,.settings-form .theme-tool>strong,.settings-form .theme-tool>small,.settings-form .contrast-card strong,.settings-form .contrast-card small,.settings-form .settings-callout strong,.settings-form .settings-callout span,.settings-form .share-box strong,.settings-form .share-box code,.settings-form .color-setting-head strong,.settings-form .color-setting-head small{ text-transform:none!important }
+.settings-form .field>span::first-letter{ text-transform:uppercase }
+/* Keep actual words in normal title/sentence case instead of all-caps presentation. */
+.settings-form .premium-label,.settings-form .color-kicker,.settings-form .eyebrow-dark{letter-spacing:.08em}
