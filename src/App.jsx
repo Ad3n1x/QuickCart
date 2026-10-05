@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 const API_BASE = import.meta.env.VITE_API_URL || 'https://quickcart-api-f7x7.onrender.com';
 const money = n => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n);
 const resetProductForm = () => ({name:'',price:'',description:'',emoji:'🛍️',stock:'',imageUrl:'',variants:''});
-const safeJsonStringify = value => safeJsonStringify(value, (key, current) => {
+const safeJsonStringify = value => JSON.stringify(value, (key, current) => {
   if (current && typeof current === 'object') {
     if (typeof Element !== 'undefined' && current instanceof Element) return typeof current.value === 'string' ? current.value : undefined;
     if (typeof Event !== 'undefined' && current instanceof Event) return current.target && typeof current.target.value === 'string' ? current.target.value : undefined;
