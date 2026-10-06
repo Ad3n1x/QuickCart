@@ -2633,3 +2633,18 @@ button:active{transform:translateY(1px)}
   .notice-popup-actions>*{width:100%;justify-content:center}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* QUICKCART NAV — PROFESSIONAL CLEANUP */
+.dashboard-top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;min-height:64px;padding:10px clamp(14px,2.5vw,28px);background:rgba(255,255,255,.94);border-bottom:1px solid var(--qc-line,#e1e9e5);box-shadow:0 6px 24px rgba(16,43,33,.045);backdrop-filter:blur(14px)}
+.dashboard-top .brand,.dashboard-top .brand-logo{flex:0 0 auto}
+.dashboard-top .nav{display:flex;align-items:center;gap:4px;min-width:0;flex:1;padding:4px;background:#f5f8f6;border:1px solid #e1e9e5;border-radius:14px}
+.dashboard-top .nav button,.dashboard-top .nav a{min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:8px 12px;border:0;border-radius:10px;background:transparent;color:#66776f;font-size:12px;font-weight:800;white-space:nowrap;text-decoration:none;transition:all .16s ease}
+.dashboard-top .nav button:hover,.dashboard-top .nav a:hover{background:#fff;color:var(--ink,#10231c);box-shadow:0 3px 10px rgba(16,43,33,.06)}
+.dashboard-top .nav button.active,.dashboard-top .nav a.active{background:#fff;color:var(--accent,#176b57);box-shadow:0 4px 12px rgba(16,43,33,.07)}
+.dashboard-top .nav svg{flex:0 0 auto}
+.dashboard-top .nav-action{min-height:40px!important;padding:9px 13px!important;border-radius:11px!important;font-size:12px!important;font-weight:800!important;white-space:nowrap}
+.dashboard-top .icon-btn{width:40px;height:40px;min-width:40px;display:grid;place-items:center;padding:0}
+.dashboard-top .mobile-nav-toggle{display:none}
+@media(max-width:900px){.dashboard-top{min-height:60px;padding:9px 12px}.dashboard-top .nav{display:none}.dashboard-top .mobile-nav-toggle{display:grid}.dashboard-top .nav-action{padding:9px 11px!important}}
+@media(max-width:640px){.dashboard-top{gap:8px;padding:8px 10px}.dashboard-top .nav-action{font-size:11px!important}.dashboard-top .nav-action.install-app-btn{display:none}.dashboard-top .brand-logo{width:34px!important;height:34px!important}}
