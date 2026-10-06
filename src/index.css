@@ -3355,3 +3355,17 @@ html[data-theme="dark"] .landing-dropdown-item{color:var(--foreground)!important
 @media(prefers-reduced-motion:reduce){
   .landing-redesign *, .landing-redesign *::before, .landing-redesign *::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+
+/* Landing navigation: smooth in-page transitions, never jump/redirect */
+html:has(.landing-redesign){scroll-behavior:smooth!important;scroll-padding-top:82px!important}
+.landing-redesign{scroll-behavior:smooth!important}
+.landing-redesign section{scroll-margin-top:82px!important}
+.landing-redesign .landing-nav-links button,
+.landing-redesign .landing-brand,
+.landing-redesign .landing-feature-grid article>button,
+.landing-redesign .landing-hero-actions button{
+  -webkit-tap-highlight-color:transparent!important;
+}
+@media(prefers-reduced-motion:reduce){
+  html:has(.landing-redesign),.landing-redesign{scroll-behavior:auto!important}
+}
