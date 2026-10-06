@@ -16,7 +16,11 @@ function body(v){return JSON.stringify(v)}
 async function api(path,options={}){
   const method=String(options.method||"GET").toUpperCase(),controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
   try{
-    const token=localStorage.getItem("quickcart_token"),storeId=localStorage.getItem("quickcart_store_id");
+    // Public storefront requests must stay completely separate from seller-session state.
+    // This prevents a customer opening a store link from inheriting seller credentials.
+    const isPublicStorefront=path.startsWith("/api/storefront/");
+    const token=isPublicStorefront?null:localStorage.getItem("quickcart_token");
+    const storeId=isPublicStorefront?null:localStorage.getItem("quickcart_store_id");
     const r=await fetch(API+path,{...options,signal:controller.signal,headers:{Accept:"application/json","Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...(storeId?{"X-Store-Id":storeId}:{}),...(options.headers||{})}});
     const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
     if(!r.ok){const e=new Error(data.error||"Request failed.");e.status=r.status;e.code=data.code;e.retryAfterSeconds=data.retryAfterSeconds;throw e}
