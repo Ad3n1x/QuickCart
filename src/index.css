@@ -3026,7 +3026,33 @@ body{font-family:var(--font-display);letter-spacing:-.008em}
 @media(max-width:820px){.dashboard-layout{display:block!important}.sidebar{position:fixed!important;left:0;top:72px;bottom:0;height:calc(100dvh - 72px)!important;width:min(310px,88vw);z-index:1400;transform:translateX(-105%);transition:transform .22s ease;box-shadow:var(--shadow-lg)!important}.sidebar.mobile-open{transform:none}.dashboard-content{padding:24px 16px!important}.theme-tools{grid-template-columns:1fr}.page-head{align-items:flex-start!important}.page-head .primary{width:auto}.mobile-nav-backdrop{position:fixed!important;inset:72px 0 0;background:var(--overlay)!important;z-index:1300!important;backdrop-filter:blur(4px)}.qc-account-label{display:none}}
 @media(max-width:560px){.dashboard-top{height:64px!important}.dashboard-top-inner{padding:0 12px!important}.sidebar{top:64px;height:calc(100dvh - 64px)!important}.dashboard-content{padding:20px 12px!important}.page-head{gap:14px!important}.page-head .primary{width:100%;justify-content:center}.stats-grid{grid-template-columns:1fr 1fr!important}.form-grid{grid-template-columns:1fr!important}.settings-form{padding:16px!important}.public-hero{padding-top:48px}.public-grid{padding:12px}.public-checkout{position:static!important}.product-grid{grid-template-columns:1fr!important}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
-\n/* Centered dashboard navigation: sidebar toggle left of centered brand, account menu right */\n.qc-navbar.dashboard-top{position:sticky;top:0;z-index:1200;}\n.dashboard-top-inner{position:relative!important;display:grid!important;grid-template-columns:1fr auto 1fr!important;align-items:center!important;min-height:68px!important;padding:0 22px!important;}\n.qc-nav-left{grid-column:1;display:flex!important;align-items:center!important;justify-content:flex-end!important;padding-right:clamp(14px,2vw,28px)!important;}\n.dashboard-brand{grid-column:2!important;grid-row:1!important;justify-self:center!important;margin:0!important;}\n.qc-account-dropdown{grid-column:3!important;grid-row:1!important;justify-self:end!important;}\n.dashboard-top-inner>.qc-navbar-spacer{display:none!important;}\n.dashboard-top-inner>.install-app-btn{display:none!important;}\n.qc-nav-left .mobile-menu-btn{display:inline-flex!important;margin:0!important;flex:0 0 auto!important;}\n@media(max-width:800px){\n .dashboard-top-inner{min-height:64px!important;padding:0 12px!important;}\n .qc-nav-left{padding-right:10px!important;}\n .dashboard-brand{font-size:18px!important;}\n .dashboard-brand .brand-mark{width:36px!important;height:36px!important;}\n .qc-account-toggle{padding:6px 9px!important;}\n .qc-account-label{display:none!important;}\n .qc-chevron{display:none!important;}\n .qc-account-avatar{width:30px!important;height:30px!important;}\n}\n@media(max-width:420px){\n .dashboard-top-inner{padding:0 9px!important;}\n .qc-nav-left{padding-right:6px!important;}\n .dashboard-brand .brand-wordmark{font-size:17px!important;}\n .qc-nav-left .mobile-menu-btn{width:38px!important;height:38px!important;}\n .qc-account-toggle{min-height:38px!important;}\n}
+
+/* Centered dashboard navigation: sidebar toggle left of centered brand, account menu right */
+.qc-navbar.dashboard-top{position:sticky;top:0;z-index:1200;}
+.dashboard-top-inner{position:relative!important;display:grid!important;grid-template-columns:1fr auto 1fr!important;align-items:center!important;min-height:68px!important;padding:0 22px!important;}
+.qc-nav-left{grid-column:1;display:flex!important;align-items:center!important;justify-content:flex-end!important;padding-right:clamp(14px,2vw,28px)!important;}
+.dashboard-brand{grid-column:2!important;grid-row:1!important;justify-self:center!important;margin:0!important;}
+.qc-account-dropdown{grid-column:3!important;grid-row:1!important;justify-self:end!important;}
+.dashboard-top-inner>.qc-navbar-spacer{display:none!important;}
+.dashboard-top-inner>.install-app-btn{display:none!important;}
+.qc-nav-left .mobile-menu-btn{display:inline-flex!important;margin:0!important;flex:0 0 auto!important;}
+@media(max-width:800px){
+ .dashboard-top-inner{min-height:64px!important;padding:0 12px!important;}
+ .qc-nav-left{padding-right:10px!important;}
+ .dashboard-brand{font-size:18px!important;}
+ .dashboard-brand .brand-mark{width:36px!important;height:36px!important;}
+ .qc-account-toggle{padding:6px 9px!important;}
+ .qc-account-label{display:none!important;}
+ .qc-chevron{display:none!important;}
+ .qc-account-avatar{width:30px!important;height:30px!important;}
+}
+@media(max-width:420px){
+ .dashboard-top-inner{padding:0 9px!important;}
+ .qc-nav-left{padding-right:6px!important;}
+ .dashboard-brand .brand-wordmark{font-size:17px!important;}
+ .qc-nav-left .mobile-menu-btn{width:38px!important;height:38px!important;}
+ .qc-account-toggle{min-height:38px!important;}
+}
 /* Password visibility control: keep the eye button inside the input without clipping */
 .password-field-wrap{position:relative!important;width:100%!important;display:block!important;}
 .password-field-wrap input{width:100%!important;box-sizing:border-box!important;padding-right:52px!important;}
