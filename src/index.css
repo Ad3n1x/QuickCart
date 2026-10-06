@@ -977,3 +977,13 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .payment-copy{margin-top:8px!important;min-height:32px!important;padding:6px 9px!important;font-size:11px!important}
 .payment-copy svg{flex:none}
 @media(max-width:760px){.payment-account strong{font-size:19px!important}.payment-copy{width:max-content}}
+
+/* Payment popup */
+.payment-modal-backdrop{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:20px;background:rgba(10,20,16,.46);backdrop-filter:blur(6px)}
+.payment-modal{position:relative;width:min(520px,100%);max-height:min(720px,calc(100vh - 40px));overflow:auto;padding:28px;border:1px solid var(--border);border-radius:22px;background:var(--surface);box-shadow:0 24px 70px rgba(10,20,16,.22);animation:paymentPop .18s ease-out}
+.payment-modal h2{margin:6px 36px 8px 0}.payment-modal>p{margin:0 0 20px;color:var(--muted);line-height:1.5}.payment-modal-close{position:absolute;top:16px;right:16px;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--muted)}
+.payment-account-focus{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:20px;margin:0 0 16px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:16px;background:var(--accent-soft)}
+.payment-account-focus strong{font-size:25px!important;letter-spacing:.06em;overflow-wrap:anywhere}.payment-account-focus .payment-copy{margin-top:2px!important}
+.payment-modal .payment-details-grid{margin-bottom:18px}.payment-modal .modal-actions{display:flex;flex-wrap:wrap;gap:8px}.payment-modal .modal-actions .primary-button{flex:1 1 180px}.payment-modal .danger-button{margin-left:auto}
+@keyframes paymentPop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:600px){.payment-modal-backdrop{padding:12px}.payment-modal{padding:22px;border-radius:18px;max-height:calc(100vh - 24px)}.payment-account-focus strong{font-size:22px!important}.payment-modal .modal-actions>*{width:100%}.payment-modal .danger-button{margin-left:0}}
