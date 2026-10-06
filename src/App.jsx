@@ -14,7 +14,12 @@ function getRoute(){const p=cleanPath();let m=p.match(/^\/store\/([^/]+)\/?$/);i
 function go(path,replace=false){const url=(BASE||"")+path;(replace?history.replaceState:history.pushState).call(history,{}, "",url);dispatchEvent(new PopStateEvent("popstate"))}
 function body(v){return JSON.stringify(v)}
 async function api(path,options={}){
-  const method=String(options.method||"GET").toUpperCase(),controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+  const method=String(options.method||"GET").toUpperCase();
+  // Render can take a while to wake the free API after inactivity. Keep auth/session
+  // requests alive long enough for the cold start instead of aborting at 15 seconds.
+  const isAuthRequest=/^\/api\/auth\//.test(path)||path==="/api/me";
+  const timeoutMs=isAuthRequest?60000:(path.startsWith("/api/storefront/")?20000:45000);
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
     // Public storefront requests must stay completely separate from seller-session state.
     // This prevents a customer opening a store link from inheriting seller credentials.
@@ -27,6 +32,13 @@ async function api(path,options={}){
     return data
   }catch(e){
     if(method==="GET"&&path.startsWith("/api/storefront/")){try{const c=JSON.parse(localStorage.getItem("qc_public_"+path)||"null");if(c?.data)return c.data}catch{}}
+    if(e?.name==="AbortError"){
+      const timeoutError=new Error(isAuthRequest
+        ?"The server is taking longer than usual to wake up. Please try signing in again in a moment."
+        :"The request took too long to complete. Please try again.");
+      timeoutError.code="REQUEST_TIMEOUT";
+      throw timeoutError;
+    }
     throw e
   }finally{clearTimeout(timer)}
 }
