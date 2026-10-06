@@ -333,3 +333,10 @@ textarea{resize:vertical}
     min-width:0!important;
   }
 }
+
+/* Mobile navigation layering */
+@media(max-width:760px){
+  .app-topbar{z-index:100!important}
+  .mobile-nav-backdrop{z-index:110!important}
+  .app-sidebar{z-index:120!important}
+}
