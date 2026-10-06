@@ -349,3 +349,37 @@ textarea{resize:vertical}
   .app-sidebar *{pointer-events:auto!important}
   .app-sidebar.open{overscroll-behavior:contain!important}
 }
+
+
+/* UI polish pass — visual only, preserves existing interactions */
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 32%,transparent);outline-offset:2px}
+button,a,input,textarea,select{ -webkit-tap-highlight-color:transparent }
+.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.app-nav button{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease}
+.primary-button:active:not(:disabled),.ghost-button:active:not(:disabled),.danger-button:active:not(:disabled),.icon-button:active:not(:disabled),.menu-button:active:not(:disabled),.account-button:active:not(:disabled){transform:translateY(0) scale(.985)}
+.panel,.stats-grid>div,.quick-action-grid button,.product-card-new,.plan-card,.settings-grid>.panel{overflow:hidden}
+.panel-head,.page-head,.toolbar{min-width:0}
+.page-head>div,.panel-head>div{min-width:0}
+.page-head h1,.page-head p,.panel h2,.panel p,.product-card-body h3,.product-card-body p{overflow-wrap:anywhere}
+.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-wrap table{width:100%;border-collapse:separate;border-spacing:0}
+.qc-modal-backdrop{overscroll-behavior:contain}
+.qc-modal{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.qc-modal-body{min-width:0}
+.form-error,.form-success,.form-note{overflow-wrap:anywhere}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.78}
+input:disabled,textarea:disabled,select:disabled{background:var(--surface-2)}
+@media(max-width:760px){
+  .page-actions{gap:7px}
+  .page-actions>*{min-height:42px}
+  .panel-head{flex-wrap:wrap}
+  .panel-head .page-actions{width:100%}
+  .store-link-card{min-width:0}
+  .store-link-card code{font-size:10px}
+  .modal-actions{gap:7px}
+  .qc-notice{padding:11px 12px}
+}
+@media(max-width:420px){
+  .page-head h1{letter-spacing:-.035em}
+  .panel{border-radius:14px}
+  .primary-button,.ghost-button,.danger-button{padding-left:12px;padding-right:12px}
+}
