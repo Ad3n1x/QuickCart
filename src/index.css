@@ -340,3 +340,12 @@ textarea{resize:vertical}
   .mobile-nav-backdrop{z-index:110!important}
   .app-sidebar{z-index:120!important}
 }
+
+/* Strict sidebar/nav interaction isolation */
+@media(max-width:760px){
+  .app-topbar{z-index:100!important;pointer-events:auto!important}
+  .mobile-nav-backdrop{z-index:110!important;pointer-events:auto!important;touch-action:none!important}
+  .app-sidebar{z-index:120!important;pointer-events:auto!important;isolation:isolate!important;touch-action:pan-y!important}
+  .app-sidebar *{pointer-events:auto!important}
+  .app-sidebar.open{overscroll-behavior:contain!important}
+}
