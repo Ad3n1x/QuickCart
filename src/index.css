@@ -987,3 +987,18 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .payment-modal .payment-details-grid{margin-bottom:18px}.payment-modal .modal-actions{display:flex;flex-wrap:wrap;gap:8px}.payment-modal .modal-actions .primary-button{flex:1 1 180px}.payment-modal .danger-button{margin-left:auto}
 @keyframes paymentPop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:600px){.payment-modal-backdrop{padding:12px}.payment-modal{padding:22px;border-radius:18px;max-height:calc(100vh - 24px)}.payment-account-focus strong{font-size:22px!important}.payment-modal .modal-actions>*{width:100%}.payment-modal .danger-button{margin-left:0}}
+
+
+/* Receipt tools */
+.receipt-tool-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px}
+.receipt-drop{position:relative;min-height:230px;display:grid;place-items:center;text-align:center;border:1px dashed color-mix(in srgb,var(--accent) 30%,var(--border));border-radius:16px;background:var(--accent-faint);overflow:hidden}
+.receipt-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;z-index:2}
+.receipt-drop label{display:grid;place-items:center;gap:8px;padding:30px;color:var(--accent);pointer-events:none}
+.receipt-drop strong{font-size:16px}.receipt-drop span{font-size:12px;color:var(--muted)}
+.receipt-preview{width:100%;max-height:430px;object-fit:contain;margin-top:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2)}
+.receipt-raw{margin-top:14px}.receipt-note{margin-top:14px}
+.receipt-paper{width:min(430px,100%);margin:auto;padding:25px 22px;background:#fff;color:#15221c;border:1px solid #ddd;border-radius:4px;box-shadow:0 14px 40px rgba(0,0,0,.1);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.receipt-brand{display:flex;align-items:center;gap:9px;padding-bottom:14px;border-bottom:1px dashed #aaa}.receipt-brand strong,.receipt-brand small{display:block}.receipt-brand small{color:#68736e;font-size:10px;margin-top:2px}
+.receipt-meta,.receipt-customer{display:grid;gap:4px;padding:12px 0;border-bottom:1px dashed #aaa;font-size:11px}.receipt-meta{display:flex;justify-content:space-between;gap:8px}.receipt-customer strong{font-size:12px}.receipt-lines{padding:8px 0}.receipt-lines>div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:11px}.receipt-lines>div span{min-width:0}.receipt-total{display:flex;justify-content:space-between;padding:13px 0;border-top:2px solid #15221c;font-size:15px}.receipt-foot{text-align:center;padding-top:12px;border-top:1px dashed #aaa;color:#68736e;font-size:9px;line-height:1.55}.receipt-actions{justify-content:flex-end;margin-top:14px}.receipt-small{min-height:34px;padding:6px 9px;font-size:11px}
+@media(max-width:760px){.receipt-tool-grid{grid-template-columns:1fr}.receipt-drop{min-height:190px}.receipt-actions>*{flex:1}.receipt-actions{width:100%}}
+@media print{body *{visibility:hidden!important}.receipt-paper,.receipt-paper *{visibility:visible!important}.receipt-paper{position:absolute;left:0;top:0;width:80mm;margin:0;box-shadow:none;border:0;border-radius:0}.qc-modal-backdrop{position:static!important;background:#fff!important;padding:0!important}.qc-modal{box-shadow:none!important;border:0!important;width:auto!important;max-width:none!important}.qc-modal>header,.receipt-actions{display:none!important}.qc-modal-body{padding:0!important}}
