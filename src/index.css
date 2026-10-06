@@ -2955,3 +2955,45 @@ a{color:inherit}
   .public-product>.primary{grid-column:1/-1!important;width:100%!important;justify-content:center!important}
 }
 @media(prefers-reduced-motion:reduce){button,.stat,.panel,.product-card,.tool{transition:none!important}.stat:hover,.panel:hover{transform:none!important}}
+
+
+/* QUICKCART DESIGN SYSTEM V2 — semantic themes + accessible contrast */
+:root{
+ --background:#f6f8fb;--surface:#ffffff;--surface-2:#f8fafc;--surface-3:#eef2f7;
+ --foreground:#111827;--foreground-2:#334155;--muted:#64748b;--faint:#94a3b8;
+ --border:#dbe2ea;--border-strong:#c5d0dc;--accent:#4f46e5;--accent-2:#7c3aed;--accent-soft:#eef2ff;--accent-contrast:#ffffff;
+ --success:#166534;--success-soft:#dcfce7;--warning:#854d0e;--warning-soft:#fef3c7;--danger:#991b1b;--danger-soft:#fee2e2;
+ --focus:#4f46e5;--overlay:rgba(15,23,42,.58);--shadow-sm:0 6px 18px rgba(15,23,42,.06);--shadow-md:0 18px 48px rgba(15,23,42,.10);--shadow-lg:0 30px 90px rgba(15,23,42,.18);
+ --radius-sm:9px;--radius-md:13px;--radius-lg:18px;--radius-xl:24px;
+ color-scheme:light;
+}
+:root[data-theme="dark"]{--background:#090d16;--surface:#111827;--surface-2:#172033;--surface-3:#202a3d;--foreground:#f8fafc;--foreground-2:#e2e8f0;--muted:#cbd5e1;--faint:#94a3b8;--border:#334155;--border-strong:#475569;--accent:#818cf8;--accent-2:#a78bfa;--accent-soft:#25274b;--accent-contrast:#090d16;--success:#86efac;--success-soft:#123524;--warning:#fde68a;--warning-soft:#3a2d0d;--danger:#fca5a5;--danger-soft:#3b1717;--focus:#a5b4fc;--overlay:rgba(0,0,0,.72);--shadow-sm:0 6px 18px rgba(0,0,0,.22);--shadow-md:0 18px 48px rgba(0,0,0,.3);--shadow-lg:0 30px 90px rgba(0,0,0,.5);color-scheme:dark}
+:root[data-theme="contrast"]{--background:#000;--surface:#050505;--surface-2:#0b0b0b;--surface-3:#151515;--foreground:#fff;--foreground-2:#fff;--muted:#fff;--faint:#f0f0f0;--border:#fff;--border-strong:#fff;--accent:#00e5ff;--accent-2:#ffea00;--accent-soft:#062b30;--accent-contrast:#000;--success:#00ff66;--success-soft:#002b12;--warning:#ffea00;--warning-soft:#332f00;--danger:#ff5c5c;--danger-soft:#330000;--focus:#ffea00;--overlay:rgba(0,0,0,.86);--shadow-sm:none;--shadow-md:none;--shadow-lg:none;color-scheme:dark}
+html,body,#root{min-height:100%;background:var(--background)!important;color:var(--foreground)!important}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+button,input,textarea,select{font:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--focus)!important;outline-offset:2px!important}
+.app-shell,.dashboard-content,.landing,.public-store{background:var(--background)!important;color:var(--foreground)!important}
+.qc-navbar,.sidebar,.panel,.stat,.tool,.product-card,.modal-card,.notice-popup,.public-checkout,.public-product,.landing-nav,.feature-strip>div,.plan-card,.tier-gate,.upgrade-banner{background:color-mix(in srgb,var(--surface) 94%,transparent)!important;color:var(--foreground)!important;border-color:var(--border)!important;box-shadow:var(--shadow-sm)!important}
+.qc-navbar{backdrop-filter:blur(18px)!important}
+.sidebar{background:color-mix(in srgb,var(--surface) 96%,transparent)!important}
+.dashboard-content h1,.dashboard-content h2,.dashboard-content h3,.panel h2,.product-card h3,.stat strong{color:var(--foreground)!important}
+.dashboard-content p,.panel p,.field span,.stat span,.order-row small,.admin-row small,.analytics-count,.analytics-row>div:first-child span,.tier-gate p{color:var(--muted)!important}
+.quickcart-side-nav .nav-link{color:var(--muted)!important}.quickcart-side-nav .nav-link:hover{background:var(--surface-3)!important;color:var(--foreground)!important}.quickcart-side-nav .nav-link.active{background:var(--accent-soft)!important;color:var(--accent)!important;border-color:var(--border)!important}
+.field input,.field textarea,.field select,.auth-modal input,.public-checkout input{background:var(--surface)!important;color:var(--foreground)!important;border-color:var(--border-strong)!important}.field input::placeholder,.field textarea::placeholder{color:var(--faint)!important}
+.ghost,.link-btn,.icon-btn{background:var(--surface)!important;color:var(--foreground-2)!important;border-color:var(--border)!important}.ghost:hover{background:var(--surface-2)!important}.primary{background:var(--accent)!important;color:var(--accent-contrast)!important;border-color:var(--accent)!important}
+.status-new{background:var(--warning-soft)!important;color:var(--warning)!important}.status-delivered{background:var(--success-soft)!important;color:var(--success)!important}
+.analytics-bar{background:var(--surface-3)!important}.analytics-bar i,.trend-col span{background:var(--accent)!important}
+
+/* Overlay root / modal primitives */
+#modal-root{position:relative;z-index:10000}
+.qc-overlay{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:16px;background:var(--overlay);backdrop-filter:blur(8px)}
+.qc-dialog{width:min(620px,100%);max-height:min(88vh,820px);overflow:auto;background:var(--surface);color:var(--foreground);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:24px;animation:qc-dialog-in .18s ease-out}
+@keyframes qc-dialog-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+.qc-popover{position:fixed;z-index:10001;min-width:220px;background:var(--surface);color:var(--foreground);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);padding:6px;animation:qc-pop-in .14s ease-out}
+@keyframes qc-pop-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.qc-toast-stack{position:fixed;right:18px;bottom:18px;z-index:10002;display:grid;gap:8px;width:min(380px,calc(100vw - 36px))}
+.qc-toast{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--surface);color:var(--foreground);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);animation:qc-toast-in .2s ease-out}
+@keyframes qc-toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:640px){.qc-overlay{padding:10px}.qc-dialog{padding:18px;max-height:calc(100dvh - 20px);border-radius:16px}.qc-toast-stack{right:10px;bottom:10px;width:calc(100vw - 20px)}}
