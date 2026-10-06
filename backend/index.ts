@@ -76,7 +76,20 @@ export const handler = router({
     const store = items[0];
     if (!store) return error('Store not found.', 404);
     const { items: products } = await db.list(tables.products, { filter: { storeId: store.id, active: true }, limit: 100 });
-    return json({ store, products });
+    const publicStore = {
+      id: store.id,
+      storeName: store.storeName,
+      slug: store.slug,
+      tagline: store.tagline,
+      vendorPhone: store.vendorPhone,
+      deliveryFee: store.deliveryFee,
+      primaryColor: store.primaryColor,
+      logo: store.logo,
+      paymentDetails: store.paymentDetails,
+      paymentQrUrl: store.paymentQrUrl,
+      deliveryZones: store.deliveryZones,
+    };
+    return json({ store: publicStore, products });
   }],
   'POST /api/orders': [async (ctx) => {
     const body = ctx.body as Record<string, unknown>;
