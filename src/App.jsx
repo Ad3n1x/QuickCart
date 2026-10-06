@@ -40,7 +40,7 @@ function PortalDropdown({open,anchorRef,children,align='right',onClose}) {
       const openUp=roomBelow<280&&roomAbove>roomBelow;
       let left=align==='left'?rect.left:rect.right-width;
       left=Math.max(12,Math.min(left,window.innerWidth-width-12));
-      const top=openUp?Math.max(12,rect.top-8-260):Math.min(window.innerHeight-12,rect.bottom+8);
+      const estimatedHeight=children?.props?.children ? 220 : 220; const top=openUp?Math.max(12,rect.top-8-estimatedHeight):Math.min(window.innerHeight-estimatedHeight-12,rect.bottom+8);
       setStyle({position:'fixed',left,top,width,transform:openUp?'translateY(-100%)':'none'});
     };
     update(); window.addEventListener('resize',update); window.addEventListener('scroll',update,true);
@@ -55,15 +55,15 @@ const QuickCartLogo = ({className='brand-logo', size=36}) => <span className={cl
 function NoticePopup({notice,canInstall,onInstall,onClose}) {
   if (!notice) return null;
   if (notice==='install' && localStorage.getItem('quickcart_install_popup_shown')==='1') return null;
-  const offline=notice==='offline';
-  const title=offline?'You are offline':'Back online';
-  const message=offline?'Your changes are being saved on this device and will sync automatically when your connection returns.':'Your connection is restored and QuickCart is ready to sync.';
+  if(notice!=='install') return null;
+  const title='Install QuickCart';
+  const message='Add QuickCart to your home screen for faster access.';
   const root=document.getElementById('modal-root')||document.body;
   return createPortal(<div className="qc-overlay" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)onClose?.()}}>
-    <div className={`notice-popup ${offline?'is-offline':'is-online'} qc-dialog`} role="dialog" aria-live="polite" aria-label={title}>
+    <div className="notice-popup qc-dialog" role="dialog" aria-live="polite" aria-label={title}>
       <button type="button" className="notice-popup-close" onClick={onClose} aria-label="Close notification"><X size={17}/></button>
       <div className="notice-popup-icon">{offline?<ShoppingBag size={20}/>:<Check size={20}/>}</div>
-      <div className="notice-popup-copy"><span className="notice-popup-kicker">{offline?'CONNECTION':'CONNECTION RESTORED'}</span><h2>{title}</h2><p>{message}</p></div>
+      <div className="notice-popup-copy"><span className="notice-popup-kicker">INSTALL QUICKCART</span><h2>{title}</h2><p>{message}</p></div>
       <div className="notice-popup-actions">
         {canInstall&&<button type="button" className="primary" onClick={onInstall}><Download size={16}/> Install app</button>}
         <button type="button" className="ghost" onClick={onClose}>Dismiss</button>
