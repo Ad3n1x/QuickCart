@@ -251,3 +251,22 @@ textarea{resize:vertical}
   .panel{padding:14px}
   .table-wrap table{min-width:620px}
 }
+
+
+/* Mobile width correction — prevent dashboard pages from collapsing */
+@media(max-width:760px){
+  .app-shell{width:100%;min-width:0;overflow-x:hidden}
+  .app-content{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;padding:0!important}
+  .content-inner{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:22px 14px 52px!important}
+  .page-head,.settings-grid,.settings-grid>.panel,.settings-grid .form-grid-2{width:100%!important;max-width:none!important;min-width:0!important}
+  .settings-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  .settings-grid .form-grid-2{display:grid!important;grid-template-columns:minmax(0,1fr)!important}
+  .settings-grid .qc-field{width:100%!important;min-width:0!important}
+  .settings-grid input,.settings-grid textarea,.settings-grid select{width:100%!important;max-width:none!important;min-width:0!important}
+  .page-head>div{min-width:0!important;max-width:none!important}
+  .page-head h1{max-width:none!important;overflow-wrap:normal!important}
+}
+@media(min-width:761px) and (max-width:1180px){
+  .app-content{width:100%!important;max-width:none!important}
+  .content-inner{width:100%!important;max-width:1380px!important}
+}
