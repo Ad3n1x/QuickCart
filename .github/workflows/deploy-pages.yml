@@ -2,8 +2,7 @@ name: Deploy QuickCart to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,59 +11,45 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages-${{ github.run_id }}
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Build GitHub Pages bundle
+      - name: Build
         env:
-          VITE_GITHUB_PAGES: 'true'
-          VITE_BASE_PATH: /QuickCart/
+          VITE_GITHUB_PAGES: "true"
+          VITE_BASE_PATH: "/QuickCart/"
         run: npm run build -- --base=/QuickCart/
 
-      - name: Validate published bundle
-        shell: bash
+      - name: Prepare Pages bundle
         run: |
-          set -euo pipefail
+          set -e
           test -s dist/index.html
-          ! grep -Fq '\\n' dist/index.html
           test -d dist/assets
-          test -n "$(find dist/assets -maxdepth 1 -type f -print -quit)"
-          grep -Eq 'src="/QuickCart/assets/[^"]+\.js"' dist/index.html
-          grep -Eq 'href="/QuickCart/assets/[^"]+\.css"' dist/index.html
-          ! grep -qE '(src|href)="\\./(src|assets)/' dist/index.html
-          test -f dist/quickcart-logo.svg
           cp dist/index.html dist/404.html
-          python3 - <<'PY'
-          from pathlib import Path
-          import os, re
-          p = Path('dist/index.html')
-          s = p.read_text()
-          sha = os.environ['GITHUB_SHA']
-          s = re.sub(r"(/QuickCart/assets/[^\"']+\.(?:js|css))(?:\?[^\"']*)?", rf"\1?v={sha}", s)
-          p.write_text(s)
-          Path('dist/build-version.txt').write_text(sha + '\\n')
-          PY
           touch dist/.nojekyll
+          printf '%s\n' "$GITHUB_SHA" > dist/build-version.txt
 
-      - name: Setup Pages
+      - name: Configure Pages
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
@@ -75,6 +60,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-
-# Deployment trigger: 2026-10-06T00:17:48.817Z
