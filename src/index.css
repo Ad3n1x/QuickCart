@@ -3369,3 +3369,12 @@ html:has(.landing-redesign){scroll-behavior:smooth!important;scroll-padding-top:
 @media(prefers-reduced-motion:reduce){
   html:has(.landing-redesign),.landing-redesign{scroll-behavior:auto!important}
 }
+
+/* Dedicated authentication pages */
+.auth-page{min-height:100dvh;display:grid;place-items:center;padding:24px 16px;background:var(--bg);color:var(--foreground)}
+.auth-page-shell{width:min(100%,460px);display:grid;gap:14px}
+.auth-page-card{width:100%!important;max-height:none!important;overflow:visible!important;padding:30px!important;border:1px solid var(--border)!important;box-shadow:0 24px 70px rgba(18,57,45,.10)!important}
+.auth-back{justify-self:start;border:0;background:transparent;color:var(--muted);padding:7px 2px;display:inline-flex;align-items:center;gap:7px;font-weight:650;cursor:pointer}
+.auth-back:hover{color:var(--accent)}
+.auth-page-card .auth-brand{margin-bottom:8px}
+@media(max-width:520px){.auth-page{padding:14px 10px}.auth-page-card{padding:24px 18px!important}.auth-page-shell{width:100%}}
