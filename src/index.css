@@ -195,3 +195,59 @@ textarea{resize:vertical}
   .app-nav button.active:before{left:-14px}
   .store-switch{margin-bottom:20px!important}
 }
+
+
+/* Layout breathing room + anti-squeeze pass */
+.app-content{min-width:0;width:auto}
+.content-inner{width:100%;min-width:0}
+@media(max-width:1180px) and (min-width:761px){
+  .app-sidebar{
+    width:min(300px,86vw)!important;
+    transform:translateX(-105%);
+    transition:transform .2s ease;
+    box-shadow:22px 0 55px rgba(0,0,0,.16)!important;
+  }
+  .app-sidebar.open{transform:translateX(0)!important}
+  .app-content{margin-left:0!important}
+  .mobile-nav-backdrop{display:block!important;inset:64px 0 0}
+  .sidebar-close{display:grid;position:absolute;right:4px;top:0;width:36px;height:36px;place-items:center;border-radius:9px;background:var(--surface-2)}
+  .content-inner{max-width:1380px;padding:32px clamp(18px,3vw,38px) 65px}
+  .top-loading-line{margin:-32px clamp(-38px,-3vw,-18px) 28px}
+  .quick-action-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .quick-action-grid,.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dashboard-grid-2,.settings-grid{grid-template-columns:1fr}
+  .product-grid{grid-template-columns:1fr}
+  .plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form-grid-4,.form-grid-2{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .content-inner{width:100%;max-width:none;padding:22px 14px 52px}
+  .page-head{gap:14px;margin-bottom:18px}
+  .page-head h1{font-size:clamp(28px,9vw,36px)}
+  .page-actions{width:100%;flex-wrap:wrap}
+  .page-actions>*{flex:1 1 150px;min-width:0}
+  .quick-action-grid,.stats-grid,.plan-grid{grid-template-columns:1fr 1fr}
+  .form-grid-4,.form-grid-2{grid-template-columns:1fr}
+  .panel{padding:16px}
+  .panel-head{gap:10px}
+  .toolbar{gap:9px}
+  .product-card-new{grid-template-columns:92px minmax(0,1fr)}
+  .product-card-art{min-height:145px}
+}
+@media(max-width:480px){
+  .topbar-inner{padding:0 8px}
+  .content-inner{padding-left:11px;padding-right:11px}
+  .quick-action-grid,.stats-grid,.plan-grid{grid-template-columns:1fr}
+  .quick-action-grid button{min-height:68px}
+  .product-card-new{grid-template-columns:78px minmax(0,1fr)}
+  .product-card-art{min-height:125px}
+  .product-card-body{padding:13px}
+  .product-card-body h3{font-size:16px}
+  .product-actions{flex-wrap:wrap}
+  .product-actions>*{flex:1 1 110px}
+  .panel{padding:14px}
+  .table-wrap table{min-width:620px}
+}
