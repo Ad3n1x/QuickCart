@@ -3,6 +3,7 @@ import React,{useEffect,useMemo,useRef,useState} from "react";
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X} from "lucide-react";
 
 const API=import.meta.env.VITE_API_URL||"https://quickcart-api-f7x7.onrender.com";
+// Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
 const BASE=(import.meta.env.BASE_URL||"/").replace(/\/$/,"");
 const fmt=n=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(n)||0);
 const slugify=v=>String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48);
