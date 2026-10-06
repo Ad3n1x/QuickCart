@@ -37,6 +37,7 @@ jobs:
         env:
           VITE_GITHUB_PAGES: "true"
           VITE_BASE_PATH: "/QuickCart/"
+          VITE_API_URL: "https://quickcart-api-f7x7.onrender.com"
         run: npm run build -- --base=/QuickCart/
 
       - name: Prepare Pages bundle
