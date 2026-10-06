@@ -3034,3 +3034,77 @@ body{font-family:var(--font-display);letter-spacing:-.008em}
 .password-field-wrap .password-toggle:hover{background:var(--accent-soft)!important;color:var(--accent)!important;transform:translateY(-50%)!important;}
 .password-field-wrap .password-toggle:focus-visible{outline:2px solid var(--accent)!important;outline-offset:1px!important;}
 @media(max-width:520px){.password-field-wrap input{padding-right:50px!important}.password-field-wrap .password-toggle{right:5px!important;width:36px!important;height:36px!important;min-height:36px!important;}}
+
+/* UI hardening pass — eliminate clipping, overflow and theme inconsistencies */
+*{box-sizing:border-box}
+img,svg{max-width:100%}
+button,input,select,textarea{font:inherit}
+button{touch-action:manipulation}
+.auth-modal{position:relative!important;max-height:min(760px,calc(100dvh - 28px))!important;overflow:auto!important;overscroll-behavior:contain!important}
+.auth-modal .close{position:absolute!important;top:16px!important;right:16px!important;z-index:4!important;display:grid!important;place-items:center!important;padding:0!important;min-width:34px!important}
+.auth-brand{min-width:0!important;padding-right:42px!important}
+.auth-brand>div{min-width:0!important}
+.auth-brand h2{overflow-wrap:anywhere!important}
+.auth-field{min-width:0!important}
+.auth-field input,.auth-field textarea,.auth-field select{width:100%!important;max-width:100%!important;min-width:0!important}
+.error,.auth-error{width:100%!important;overflow-wrap:anywhere!important}
+.modal-backdrop{overflow:auto!important;overscroll-behavior:contain!important}
+.modal-card,.modal-content,.premium-modal,.share-store-modal,.product-modal{max-width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;overflow:auto!important;overscroll-behavior:contain!important}
+.qc-dropdown-item{min-width:0!important}
+.qc-dropdown-item>span{min-width:0!important;overflow:hidden!important}
+.qc-dropdown-item small,.qc-dropdown-item b{overflow-wrap:anywhere!important}
+.sidebar{min-width:0!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+.sidebar .nav{min-width:0!important}
+.sidebar .nav span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+.dashboard-content{min-width:0!important;overflow-x:hidden!important}
+.panel,.stat,.product-card,.tool,.plan-card{min-width:0!important}
+.panel-head{min-width:0!important}
+.panel-head h2,.page-head h1{overflow-wrap:anywhere!important}
+.form-grid{min-width:0!important}
+.form-grid .field{min-width:0!important}
+.form-grid input,.form-grid textarea,.form-grid select{width:100%!important;min-width:0!important}
+.preview-body,.preview-main,.preview-order,.preview-order-row,.preview-stats,.preview-welcome{min-width:0}
+.preview-order-row span{min-width:0}
+.preview-order-row span small,.preview-order-row span b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+.public-products{min-width:0!important}
+.public-product{min-width:0!important}
+.public-product>div{min-width:0}
+.public-product h3,.public-product p{overflow-wrap:anywhere}
+.cart-line{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-width:0!important}
+.cart-line>span{min-width:0!important;overflow-wrap:anywhere!important}
+.cart-controls{display:flex!important;align-items:center!important;gap:8px!important;flex:0 0 auto!important}
+.cart-controls button{width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;display:grid!important;place-items:center!important}
+.receipt-camera{width:100%!important;max-width:100%!important}
+.dropdown-menu{z-index:3000}
+html[data-theme="dark"] .auth-modal,
+html[data-theme="dark"] .modal-card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .premium-modal,
+html[data-theme="dark"] .share-store-modal,
+html[data-theme="dark"] .notice-popup{background:var(--surface)!important;color:var(--foreground)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .auth-field>span,
+html[data-theme="dark"] .auth-subtitle,
+html[data-theme="dark"] .auth-trust{color:var(--muted)!important}
+html[data-theme="dark"] .auth-modal .close{background:var(--surface-2)!important;color:var(--foreground-2)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .password-field-wrap .password-toggle{color:var(--muted)!important}
+html[data-theme="dark"] .landing-action-menu{background:var(--surface)!important;border-color:var(--border)!important}
+html[data-theme="dark"] .landing-dropdown-item{color:var(--foreground)!important}
+@media(max-width:1000px){
+ .sidebar{top:64px!important;height:calc(100dvh - 64px)!important}
+}
+@media(max-width:800px){
+ .auth-modal{width:min(460px,calc(100vw - 18px))!important;padding:22px 18px!important}
+ .auth-modal .close{top:12px!important;right:12px!important}
+ .auth-brand{padding-right:40px!important}
+ .modal-actions{grid-template-columns:1fr!important}
+ .modal-actions>*{min-width:0!important}
+ .public-grid{grid-template-columns:1fr!important}
+ .public-checkout{position:static!important}
+ .cart-line{align-items:flex-start!important}
+ .cart-controls{gap:5px!important}
+}
+@media(max-width:420px){
+ .auth-modal{width:calc(100vw - 12px)!important;padding:20px 14px!important}
+ .auth-brand h2{font-size:23px!important}
+ .modal-backdrop{padding:6px!important}
+}
