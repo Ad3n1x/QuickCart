@@ -3108,3 +3108,22 @@ html[data-theme="dark"] .landing-dropdown-item{color:var(--foreground)!important
  .auth-brand h2{font-size:23px!important}
  .modal-backdrop{padding:6px!important}
 }
+
+/* Simple, friendly dashboard navigation */
+.qc-navbar.dashboard-top{position:sticky!important;top:0!important;z-index:1200!important;background:var(--surface)!important;border-bottom:1px solid var(--border)!important;box-shadow:none!important}
+.dashboard-top-inner{display:grid!important;grid-template-columns:1fr auto 1fr!important;align-items:center!important;min-height:64px!important;padding:0 16px!important;gap:12px!important}
+.qc-nav-left{display:flex!important;justify-content:flex-start!important;align-items:center!important}
+.qc-nav-left .mobile-menu-btn{display:inline-flex!important;width:40px!important;height:40px!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface-2)!important;color:var(--foreground)!important}
+.qc-nav-left .mobile-menu-btn:hover{background:var(--accent-soft)!important;color:var(--accent)!important}
+.dashboard-brand{grid-column:2!important;justify-self:center!important;margin:0!important;gap:8px!important;text-decoration:none!important}
+.dashboard-brand .brand-mark{width:34px!important;height:34px!important}
+.dashboard-brand .brand-wordmark{font-size:18px!important;font-weight:750!important}
+.qc-account-dropdown{grid-column:3!important;justify-self:end!important}
+.qc-account-toggle{min-height:40px!important;padding:5px 10px!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface-2)!important;color:var(--foreground)!important;box-shadow:none!important;gap:7px!important}
+.qc-account-toggle:hover,.qc-account-toggle.show{background:var(--accent-soft)!important;color:var(--accent)!important}
+.qc-account-avatar{width:28px!important;height:28px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:var(--surface)!important}
+.qc-account-label{font-size:14px!important;font-weight:650!important}
+.qc-chevron{font-size:15px!important;line-height:1!important}
+.qc-popover{border:1px solid var(--border)!important;box-shadow:0 14px 34px rgba(15,23,42,.12)!important;border-radius:12px!important;padding:6px!important}
+@media(max-width:800px){.dashboard-top-inner{min-height:60px!important;padding:0 10px!important}.dashboard-brand .brand-wordmark{font-size:17px!important}.dashboard-brand .brand-mark{width:32px!important;height:32px!important}.qc-account-label,.qc-chevron{display:none!important}.qc-account-toggle{width:40px!important;height:40px!important;padding:5px!important;justify-content:center!important}.qc-account-avatar{width:28px!important;height:28px!important}.qc-nav-left .mobile-menu-btn{width:40px!important;height:40px!important}}
+@media(max-width:380px){.dashboard-brand .brand-wordmark{display:none!important}.dashboard-top-inner{padding:0 8px!important}}
