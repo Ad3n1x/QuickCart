@@ -145,7 +145,7 @@ function OtpModal({open,otp,setOtp,email,message,loading,resendCooldown,onVerify
  </div>;
 }
 function Landing({ openAuth, closeAuth, authOpen, mode, setMode, form, setForm, error, loading, onSubmit, otpOpen, otp, setOtp, otpEmail, otpMessage, otpLoading, otpResendCooldown, onVerifyOtp, onResendOtp, onCloseOtp, onInstall, installDismissed, standaloneMode }) {
- const scrollTo=(id)=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
+ const scrollTo=(id)=>{const el=document.getElementById(id);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'start'});window.history.replaceState(null,'',`#${id}`);};
  return <main className="landing-redesign">
   <nav className="landing-nav landing-redesign-nav">
    <button type="button" className="landing-brand" onClick={()=>scrollTo('landing-top')}><QuickCartLogo size={38}/><span>QuickCart</span></button>
