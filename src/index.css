@@ -3127,3 +3127,5 @@ html[data-theme="dark"] .landing-dropdown-item{color:var(--foreground)!important
 .qc-popover{border:1px solid var(--border)!important;box-shadow:0 14px 34px rgba(15,23,42,.12)!important;border-radius:12px!important;padding:6px!important}
 @media(max-width:800px){.dashboard-top-inner{min-height:60px!important;padding:0 10px!important}.dashboard-brand .brand-wordmark{font-size:17px!important}.dashboard-brand .brand-mark{width:32px!important;height:32px!important}.qc-account-label,.qc-chevron{display:none!important}.qc-account-toggle{width:40px!important;height:40px!important;padding:5px!important;justify-content:center!important}.qc-account-avatar{width:28px!important;height:28px!important}.qc-nav-left .mobile-menu-btn{width:40px!important;height:40px!important}}
 @media(max-width:380px){.dashboard-brand .brand-wordmark{display:none!important}.dashboard-top-inner{padding:0 8px!important}}
+
+/* Deployment trigger: 2026-10-06T01:47:01.684Z */
