@@ -17,10 +17,20 @@ const safeJsonStringify = value => JSON.stringify(value, (key, current) => {
 const QuickCartLogo = ({className='brand-logo', size=36}) => <span className={className} aria-label="QuickCart" role="img"><ShoppingBag size={Math.round(size*.56)} strokeWidth={2.4}/></span>;
 function NoticePopup({notice,canInstall,onInstall,onClose}) {
   if (!notice) return null;
-  const isInstall=false;
-  const title=notice==='offline'?'You are offline':'You are back online';
-  const message=notice==='offline'?'Changes you make while offline are saved and will sync automatically when you reconnect.':'Your connection is restored.';
-  return <div className="notice-popup" role="dialog" aria-live="polite" aria-label={title}><div className="notice-popup-icon"><ShoppingBag size={18}/></div><div className="notice-popup-copy"><strong>{title}</strong><span>{message}</span></div><div className="notice-popup-actions">{isInstall&&canInstall&&<button type="button" className="primary" onClick={onInstall}><Download size={16}/> Install app</button>}<button type="button" className="ghost" onClick={onClose}>Close</button></div></div>;
+  const offline=notice==='offline';
+  const title=offline?'You are offline':'Back online';
+  const message=offline?'Your changes are being saved on this device and will sync automatically when your connection returns.':'Your connection is restored and QuickCart is ready to sync.';
+  return <div className="notice-popup-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)onClose?.()}}>
+    <div className={`notice-popup ${offline?'is-offline':'is-online'}`} role="dialog" aria-live="polite" aria-label={title}>
+      <button type="button" className="notice-popup-close" onClick={onClose} aria-label="Close notification"><X size={17}/></button>
+      <div className="notice-popup-icon">{offline?<ShoppingBag size={20}/>:<Check size={20}/>}</div>
+      <div className="notice-popup-copy"><span className="notice-popup-kicker">{offline?'CONNECTION':'CONNECTION RESTORED'}</span><h2>{title}</h2><p>{message}</p></div>
+      <div className="notice-popup-actions">
+        {canInstall&&<button type="button" className="primary" onClick={onInstall}><Download size={16}/> Install app</button>}
+        <button type="button" className="ghost" onClick={onClose}>Dismiss</button>
+      </div>
+    </div>
+  </div>;
 }
 function InstallAppButton({onInstall,hidden=false}) { if(hidden)return null; return <button type="button" className="nav-action install-app-btn" onClick={onInstall}><Download size={16}/> Install app</button>; }
 
