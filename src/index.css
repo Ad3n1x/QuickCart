@@ -398,3 +398,73 @@ input:disabled,textarea:disabled,select:disabled{background:var(--surface-2)}
   .mobile-nav-backdrop{z-index:90!important}
   .app-content{padding-top:60px}
 }
+
+
+/* Refined add-product modal */
+.product-modal{
+  width:min(640px,calc(100vw - 28px));
+  height:min(72dvh,680px);
+  max-height:72dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-radius:18px;
+}
+.product-modal>header{
+  flex:0 0 auto;
+  padding:17px 20px 13px;
+}
+.product-modal>header h2{font-size:20px}
+.product-modal .qc-modal-body{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:14px 16px 8px;
+  scrollbar-gutter:stable;
+}
+.product-form{gap:10px}
+.product-form-section{
+  padding:12px;
+  border-radius:14px;
+  background:color-mix(in srgb,var(--surface-2) 72%,var(--surface));
+}
+.product-section-heading{margin-bottom:9px}
+.product-section-icon{width:28px;height:28px}
+.product-form .form-grid-2{gap:10px}
+.product-form .qc-field input,
+.product-form .qc-field textarea{min-height:40px}
+.product-form textarea{min-height:72px}
+.product-upload{min-height:82px}
+.product-image-preview-wrap{margin-top:8px}
+.product-image-preview-wrap img{height:105px}
+.product-visibility{padding:10px 12px}
+.product-modal-actions{
+  flex:0 0 auto;
+  position:sticky;
+  bottom:0;
+  margin:0;
+  padding:10px 16px 14px;
+  border-top:1px solid var(--border);
+  background:color-mix(in srgb,var(--surface) 96%,transparent);
+  backdrop-filter:blur(10px);
+}
+.product-modal-actions button{min-height:40px}
+@media(max-width:560px){
+  .product-modal{
+    width:calc(100vw - 20px);
+    height:72dvh;
+    max-height:72dvh;
+    border-radius:16px;
+  }
+  .product-modal>header{padding:14px 15px 11px}
+  .product-modal .qc-modal-body{padding:10px 11px 4px}
+  .product-form-section{padding:10px}
+  .product-form-section .form-grid-2{grid-template-columns:1fr 1fr;gap:8px}
+  .product-modal-actions{padding:9px 11px 11px}
+  .product-modal-actions button{flex:1;min-height:42px}
+}
+@media(max-width:380px){
+  .product-form-section .form-grid-2{grid-template-columns:1fr}
+  .product-modal{height:74dvh;max-height:74dvh}
+}
