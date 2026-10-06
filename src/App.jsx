@@ -1,4 +1,4 @@
-import { Component, useEffect, useMemo, useState, useRef } from 'react';
+import React, { Component, useEffect, useMemo, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { BarChart3, Check, Copy, Crown, Eye, EyeOff, ExternalLink, LogIn, LogOut, MessageCircle, Package, Plus, Save, Settings, ShoppingBag, Store, Trash2, TrendingUp, UserRound, Users, Tag, X, Edit3, Download, Search, Truck, Share2, ScanLine, FileText, Menu, MoreHorizontal } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
