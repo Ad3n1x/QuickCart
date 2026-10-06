@@ -970,3 +970,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .search-clear:hover{background:var(--accent-soft);color:var(--accent)}
 .search-count{white-space:nowrap;font-size:11px;font-weight:700;color:var(--muted)}
 @media(max-width:760px){.toolbar{gap:8px}.search-box{height:46px}.search-count{padding-left:2px}}
+
+/* Payment account emphasis */
+.payment-account{position:relative;grid-column:span 1}
+.payment-account strong{font-size:20px!important;letter-spacing:.04em;overflow-wrap:anywhere}
+.payment-copy{margin-top:8px!important;min-height:32px!important;padding:6px 9px!important;font-size:11px!important}
+.payment-copy svg{flex:none}
+@media(max-width:760px){.payment-account strong{font-size:19px!important}.payment-copy{width:max-content}}
