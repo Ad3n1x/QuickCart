@@ -613,3 +613,103 @@ input:disabled,textarea:disabled,select:disabled{background:var(--surface-2)}
   .product-modal-actions{padding:8px 10px 10px!important}
   .product-modal-actions button{min-height:41px!important}
 }
+
+
+/* Global button + file-picker visual system */
+:where(.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.sidebar-close,.product-modal-actions button){
+  -webkit-appearance:none;
+  appearance:none;
+  border-radius:11px;
+  font-weight:750;
+  letter-spacing:-.01em;
+}
+:where(.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.sidebar-close){
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+:where(.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.sidebar-close)::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 48%);
+  opacity:0;
+  transition:opacity .16s ease;
+}
+:where(.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.sidebar-close):hover::after{opacity:1}
+.primary-button{min-height:42px;padding:10px 15px}
+.ghost-button{min-height:42px;padding:10px 15px}
+.danger-button{min-height:42px;padding:10px 15px}
+.icon-button,.menu-button,.sidebar-close{width:40px;height:40px;padding:0}
+:where(.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.sidebar-close):active:not(:disabled){
+  transform:translateY(1px) scale(.985);
+}
+:where(.primary-button,.ghost-button,.danger-button,.icon-button,.menu-button,.account-button,.store-switch>button,.sidebar-close):focus-visible{
+  outline:3px solid color-mix(in srgb,var(--accent) 22%,transparent);
+  outline-offset:2px;
+}
+.product-modal-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+}
+.product-modal-actions .ghost-button,
+.product-modal-actions .primary-button{
+  min-width:104px!important;
+}
+
+/* Beautiful custom Choose File control */
+.product-upload{
+  position:relative!important;
+  overflow:hidden!important;
+  cursor:pointer!important;
+}
+.product-upload input[type="file"]{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  opacity:0!important;
+  cursor:pointer!important;
+  z-index:3!important;
+  display:block!important;
+}
+.product-upload-content{
+  position:relative!important;
+  z-index:2!important;
+  pointer-events:none!important;
+}
+.product-upload-content::after{
+  content:"Choose file";
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:31px;
+  margin-top:3px;
+  padding:6px 11px;
+  border-radius:8px;
+  background:var(--accent);
+  color:var(--accent-contrast);
+  font-size:10px;
+  font-weight:800;
+  box-shadow:0 5px 13px color-mix(in srgb,var(--accent) 17%,transparent);
+}
+.product-upload:hover .product-upload-content::after{
+  box-shadow:0 7px 17px color-mix(in srgb,var(--accent) 24%,transparent);
+}
+.product-upload:focus-within{
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent)!important;
+}
+.product-upload:has(input[type="file"]:disabled){
+  opacity:.6;
+  cursor:not-allowed!important;
+}
+@media(max-width:560px){
+  :where(.primary-button,.ghost-button,.danger-button){min-height:43px}
+  .product-modal-actions .ghost-button,
+  .product-modal-actions .primary-button{min-width:0!important;flex:1}
+}
