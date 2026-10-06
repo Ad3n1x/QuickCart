@@ -272,6 +272,12 @@ textarea{resize:vertical}
 }
 
 
+
+/* Sidebar interaction isolation */
+.mobile-nav-backdrop{touch-action:none!important;overscroll-behavior:contain!important;-webkit-tap-highlight-color:transparent!important}
+.app-sidebar.open{overscroll-behavior:contain!important;touch-action:pan-y!important}
+.app-sidebar.open *{touch-action:inherit}
+
 /* Final mobile sidebar cleanup */
 .app-sidebar,
 .app-sidebar *{box-sizing:border-box}
