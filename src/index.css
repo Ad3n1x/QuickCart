@@ -270,3 +270,60 @@ textarea{resize:vertical}
   .app-content{width:100%!important;max-width:none!important}
   .content-inner{width:100%!important;max-width:1380px!important}
 }
+
+
+/* Final mobile sidebar cleanup */
+.app-sidebar,
+.app-sidebar *{box-sizing:border-box}
+@media(max-width:760px){
+  .app-sidebar{
+    left:0!important;
+    top:60px!important;
+    bottom:0!important;
+    width:min(320px,84vw)!important;
+    max-width:320px!important;
+    min-width:0!important;
+    padding:16px 13px 22px!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+  .app-sidebar nav,
+  .app-sidebar .app-nav{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:18px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .app-sidebar .app-nav>div{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:3px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .app-sidebar .app-nav>div>span{
+    display:block!important;
+    width:100%!important;
+    white-space:normal!important;
+  }
+  .app-sidebar .app-nav button{
+    display:grid!important;
+    grid-template-columns:20px minmax(0,1fr) auto!important;
+    width:100%!important;
+    min-width:0!important;
+    align-items:center!important;
+  }
+  .app-sidebar .app-nav button em{
+    min-width:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    font-style:normal!important;
+  }
+  .app-sidebar .store-switch,
+  .app-sidebar .store-switch>button{
+    width:100%!important;
+    min-width:0!important;
+  }
+}
