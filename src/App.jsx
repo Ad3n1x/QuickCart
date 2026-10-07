@@ -147,6 +147,27 @@ export default function App(){
  useEffect(()=>{(async()=>{if(!publicStore)await load(false);setBoot(false)})()},[publicStore]);
  useEffect(()=>{if(route.type==="store"){api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{try{localStorage.setItem("qc_public_/api/storefront/"+route.slug,JSON.stringify({data:d}))}catch{}}).catch(()=>{})}},[route.type,route.slug]);
  const[publicData,setPublicData]=useState(null),[publicError,setPublicError]=useState("");useEffect(()=>{if(route.type!=="store"){setPublicData(null);setPublicError("");return}let on=true;setPublicData(null);setPublicError("");api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{if(on)setPublicData(d)}).catch(e=>{if(on)setPublicError(e.message||"This storefront could not be loaded.")});return()=>{on=false}},[route.type,route.slug]);
+ useEffect(()=>{
+   if(route.type!=="store"){
+     document.title="QuickCart — Social commerce made simple";
+     const desc="QuickCart helps small businesses create an online store, share one link, and take customer orders.";
+     let m=document.querySelector('meta[name="description"]');if(m)m.setAttribute("content",desc);
+     return;
+   }
+   const s=publicData?.store||publicData?.storefront||{};
+   const name=String(s.name||s.storeName||route.slug.replace(/-/g," ")).trim();
+   const desc=String(s.tagline||("Shop "+name+" online with QuickCart.")).trim().slice(0,160);
+   document.title=name+" — Online Store | QuickCart";
+   let m=document.querySelector('meta[name="description"]');
+   if(!m){m=document.createElement("meta");m.name="description";document.head.appendChild(m)}
+   m.setAttribute("content",desc);
+   let canonical=document.querySelector('link[rel="canonical"]');
+   if(!canonical){canonical=document.createElement("link");canonical.rel="canonical";document.head.appendChild(canonical)}
+   canonical.href=window.location.href.split("?")[0];
+   let ld=document.getElementById("quickcart-store-jsonld");
+   if(!ld){ld=document.createElement("script");ld.id="quickcart-store-jsonld";ld.type="application/ld+json";document.head.appendChild(ld)}
+   ld.textContent=JSON.stringify({"@context":"https://schema.org","@type":"Store","name":name,"url":window.location.href.split("?")[0],"description":desc});
+ },[route.type,route.slug,publicData]);
  useEffect(()=>{if(route.type==="app"&&!boot&&!user)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user]);
  useEffect(()=>{if(!store)return;const apply=()=>{const c=localStorage.getItem("quickcart_ui_color:"+store.id)||store.primaryColor||"#12392d";document.documentElement.style.setProperty("--accent",c);document.documentElement.style.setProperty("--accent-2",c);document.documentElement.dataset.theme=localStorage.getItem("quickcart_theme_mode:"+store.id)||"light"};apply();addEventListener("qc-theme",apply);return()=>removeEventListener("qc-theme",apply)},[store?.id,store?.primaryColor]);
  useEffect(()=>{const f=e=>{e.preventDefault();setInstall(e)};addEventListener("beforeinstallprompt",f);return()=>removeEventListener("beforeinstallprompt",f)},[]);
