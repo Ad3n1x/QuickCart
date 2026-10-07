@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
