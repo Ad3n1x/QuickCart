@@ -282,6 +282,8 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
 function PublicStore({data,customer,onLogin}){
  const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false);
 
+ useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
+
  useEffect(()=>{
    if(!data?.store)return;
    setFul(prev=>prev||"pickup");
@@ -297,14 +299,14 @@ function PublicStore({data,customer,onLogin}){
      setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[]);
    }catch{setCustomerOrders([])}
    setCustomerOrdersHydrated(true);
- },[data?.store?.id,customer.phone]);
+ },[data?.store?.id,customerForm.phone]);
 
  useEffect(()=>{
    const storeId=data?.store?.id;
-   const phone=String(customer.phone||"").replace(/\\D/g,"");
+   const phone=String(customerForm.phone||"").replace(/\\D/g,"");
    if(!storeId||!phone||!customerOrdersHydrated)return;
    try{localStorage.setItem("qc_customer_orders:"+storeId+":"+phone,JSON.stringify(customerOrders.slice(0,10)))}catch{}
- },[data?.store?.id,customer.phone,customerOrdersHydrated,customerOrders]);
+ },[data?.store?.id,customerForm.phone,customerOrdersHydrated,customerOrders]);
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
@@ -393,7 +395,7 @@ function PublicStore({data,customer,onLogin}){
          customerName:customerForm.name.trim(),
          customerPhone:customerForm.phone.trim(),
          customerEmail:customer?.email||"",
-         address:ful==="delivery"?customer.address.trim():"Pickup from store",
+         address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
          fulfillment:ful,
          paymentMethod:pay,
          discountCode:disc?.code||code.trim(),
@@ -411,9 +413,9 @@ function PublicStore({data,customer,onLogin}){
        total:Number(order.total??total),
        status:"new",
        createdAt:new Date().toISOString(),
-       customerName:customer.name.trim(),
-       customerPhone:customer.phone.trim(),
-       address:ful==="delivery"?customer.address.trim():"Pickup from store",
+       customerName:customerForm.name.trim(),
+       customerPhone:customerForm.phone.trim(),
+       address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
        paymentMethod:pay,
        items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),
        receiptData
@@ -430,10 +432,10 @@ function PublicStore({data,customer,onLogin}){
        ].filter(Boolean):[];
      const text=[
        "🛍️ NEW ORDER — "+s.storeName,"",
-       "Customer: "+customer.name,
-       "Phone: "+customer.phone,
+       "Customer: "+customerForm.name,
+       "Phone: "+customerForm.phone,
        "Fulfillment: "+(ful==="delivery"?"Delivery":"Pickup"),
-       ful==="delivery"?"Address: "+customer.address:"Address: Pickup from store",
+       ful==="delivery"?"Address: "+customerForm.address:"Address: Pickup from store",
        "Payment: "+(pay==="bank_transfer"?"Bank transfer":"Pay on delivery"),
        "",
        ...items.map(x=>x.quantity+"x "+x.name+" — "+fmt(x.price*x.quantity)),
@@ -485,7 +487,7 @@ function PublicStore({data,customer,onLogin}){
       <Logo size={40}/>
       <div><b>{s.storeName}</b><small>{s.tagline||"Shop directly from this store"}</small></div>
     </div>
-    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={()=>{localStorage.removeItem("quickcart_customer_token");localStorage.removeItem("quickcart_customer");window.location.reload()}}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<span className="public-store-badge">QuickCart storefront</span></div>
+    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customerForm.name}</span><button className="public-nav-link" type="button" onClick={()=>{localStorage.removeItem("quickcart_customer_token");localStorage.removeItem("quickcart_customer");window.location.reload()}}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<span className="public-store-badge">QuickCart storefront</span></div>
   </header>
   <section className="public-store-hero">
     <div className="public-store-hero-copy">
@@ -531,20 +533,20 @@ function PublicStore({data,customer,onLogin}){
    {items.length>0&&(
    <aside id="public-checkout" className="panel public-checkout">
     <div className="checkout-heading"><span className="eyebrow">YOUR CART</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
-    {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your cart is saved.</strong><span>Sign in to continue with your order and keep your order history together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:
-    {items.length?items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>):<p className="muted">Your cart is empty.</p>}
-    <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
-    <Field label="Your name" value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
-    <PhoneField label="Phone" value={customer.phone} onChange={v=>setCustomer({...customer,phone:v})} required/>
-    {ful==="delivery"&&<Field label="Delivery address" value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
-    <div className="choice-block"><b>Payment</b><div className="choice-grid"><button type="button" className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button type="button" className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div>
-    <div className="discount-row"><input value={code} onChange={e=>{setCode(e.target.value.toUpperCase());setDisc(null)}} placeholder="Discount code" aria-label="Discount code"/><button type="button" className="ghost-button" disabled={!code.trim()||!items.length} onClick={apply}>Apply</button></div>
-    {msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"} role="status">{msg}</div>}
-    <CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/>
-    <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
-    <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
-    {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>
-    </div>}
+    {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your cart is saved.</strong><span>Sign in to continue with your order and keep your order history together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
+      {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
+      <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
+      <Field label="Your name" value={customerForm.name} onChange={e=>setCustomerForm({...customerForm,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
+      <PhoneField label="Phone" value={customerForm.phone} onChange={v=>setCustomerForm({...customerForm,phone:v})} required/>
+      {ful==="delivery"&&<Field label="Delivery address" value={customerForm.address} onChange={e=>setCustomerForm({...customerForm,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
+      <div className="choice-block"><b>Payment</b><div className="choice-grid"><button type="button" className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button type="button" className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div>
+      <div className="discount-row"><input value={code} onChange={e=>{setCode(e.target.value.toUpperCase());setDisc(null)}} placeholder="Discount code" aria-label="Discount code"/><button type="button" className="ghost-button" disabled={!code.trim()||!items.length} onClick={apply}>Apply</button></div>
+      {msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"} role="status">{msg}</div>}
+      <CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/>
+      <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
+      <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
+      {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
+    </>}
    </aside>
    )}</div>
    {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
