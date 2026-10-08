@@ -46,20 +46,24 @@ jobs:
           test -s dist/index.html
           test -d dist/assets
 
-          # Vite copies public/ files to the root of dist/.
+          # Copy SEO files explicitly so they are guaranteed to be at the Pages site root.
+          cp public/sitemap.xml dist/sitemap.xml
+          cp public/robots.txt dist/robots.txt
+
           test -s dist/sitemap.xml
           test -s dist/robots.txt
 
-          # Validate that robots.txt points to the deployed sitemap.
+          # robots.txt must point to the exact public Pages sitemap.
           grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
 
-          # Basic sitemap validation.
-          grep -Fq '<urlset' dist/sitemap.xml
+          # Validate sitemap structure and canonical URLs.
+          grep -Fq '<?xml version="1.0" encoding="UTF-8"?>' dist/sitemap.xml
+          grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
           grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
 
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
-          printf '%s\\n' "$GITHUB_SHA" > dist/build-version.txt
+          printf '%s\n' "$GITHUB_SHA" > dist/build-version.txt
 
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
