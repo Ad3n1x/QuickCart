@@ -54,7 +54,7 @@ jobs:
           grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
 
           # Validate the sitemap as XML before publishing it.
-          xmllint --noout dist/sitemap.xml
+          python3 -c "import xml.etree.ElementTree as ET; ET.parse('dist/sitemap.xml')"
           grep -Fq '<?xml version="1.0" encoding="UTF-8"?>' dist/sitemap.xml
           grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
           grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
