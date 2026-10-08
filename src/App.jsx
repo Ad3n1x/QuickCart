@@ -280,9 +280,10 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data,customer,onLogin}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false);
+ const[q,setQ]=useState(""),[cart,setCart]=useState(()=>{try{const id=data?.store?.id;return id?JSON.parse(localStorage.getItem("qc_cart:"+id)||"{}"):{} }catch{return {}}}),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
+ useEffect(()=>{if(!data?.store?.id)return;try{localStorage.setItem("qc_cart:"+data.store.id,JSON.stringify(cart))}catch{}},[data?.store?.id,cart]);
 
  useEffect(()=>{
    if(!data?.store)return;
