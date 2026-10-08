@@ -1936,3 +1936,30 @@ button{white-space:normal;line-height:1.25}
  .customer-pickup-ready-note,.customer-pickup-wait-note{font-size:11px}
  .pickup-confirm-button{width:100%;min-width:0}
 }
+
+/* Premium Customer Order Tracking */
+.customer-status-title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.customer-live-indicator{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--border));border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:9px;font-weight:900;letter-spacing:.08em}
+.customer-live-indicator i,.customer-order-passive-status i{display:block;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.customer-status-head-actions{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.customer-last-checked{font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap}
+.customer-order-status-card{background:linear-gradient(180deg,var(--surface),var(--surface-2));box-shadow:0 8px 28px rgba(0,0,0,.035)}
+.customer-order-status-card:hover{border-color:color-mix(in srgb,var(--accent) 24%,var(--border));box-shadow:0 12px 32px rgba(0,0,0,.06)}
+.customer-order-type{display:inline-flex!important;width:max-content;padding:3px 7px;border-radius:6px;background:var(--accent-soft);color:var(--accent)!important;font-size:9px!important;font-weight:900!important;letter-spacing:.08em;text-transform:uppercase}
+.customer-order-top>div>strong{font-size:16px}
+.customer-order-message{display:grid;gap:3px}
+.customer-order-message strong{font-size:12px;color:var(--ink);text-transform:uppercase;letter-spacing:.03em}
+.customer-order-message span{color:var(--muted)}
+.customer-order-passive-status{display:inline-flex;align-items:center;gap:9px;min-height:44px;padding:0 13px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--muted);font-size:12px;font-weight:850}
+.customer-order-status-card.is-ready .customer-order-passive-status{border-color:color-mix(in srgb,var(--accent) 35%,var(--border))}
+.customer-order-status-card.is-ready .customer-status-pill{box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 15%,transparent)}
+.customer-order-status-card.is-complete{background:linear-gradient(180deg,var(--surface),var(--accent-soft));}
+@media(max-width:700px){
+ .customer-status-head-actions{width:100%;justify-content:space-between}
+ .customer-last-checked{font-size:9px}
+ .customer-status-refresh{width:auto!important;min-width:100px}
+}
+@media(max-width:600px){
+ .customer-order-top>div>strong{font-size:15px}
+ .customer-order-passive-status{width:100%;justify-content:center}
+}
