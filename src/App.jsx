@@ -280,19 +280,23 @@ function PublicStore({data}){
  },[data?.store?.id,data?.store?.deliveryEnabled]);
 
  useEffect(()=>{
-   if(!data?.store?.id){setCustomerOrders([]);setCustomerOrdersHydrated(false);return}
+   const storeId=data?.store?.id;
+   const phone=String(customer.phone||"").replace(/\\D/g,"");
+   if(!storeId||!phone){setCustomerOrders([]);setCustomerOrdersHydrated(false);return}
    setCustomerOrdersHydrated(false);
    try{
-     const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+data.store.id)||"[]");
+     const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+phone)||"[]");
      setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[]);
    }catch{setCustomerOrders([])}
    setCustomerOrdersHydrated(true);
- },[data?.store?.id]);
+ },[data?.store?.id,customer.phone]);
 
  useEffect(()=>{
-   if(!data?.store?.id||!customerOrdersHydrated)return;
-   try{localStorage.setItem("qc_customer_orders:"+data.store.id,JSON.stringify(customerOrders.slice(0,10)))}catch{}
- },[data?.store?.id,customerOrdersHydrated,customerOrders]);
+   const storeId=data?.store?.id;
+   const phone=String(customer.phone||"").replace(/\\D/g,"");
+   if(!storeId||!phone||!customerOrdersHydrated)return;
+   try{localStorage.setItem("qc_customer_orders:"+storeId+":"+phone,JSON.stringify(customerOrders.slice(0,10)))}catch{}
+ },[data?.store?.id,customer.phone,customerOrdersHydrated,customerOrders]);
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
