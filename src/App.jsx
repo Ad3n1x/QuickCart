@@ -516,7 +516,7 @@ function PublicStore({data}){
         <button className="primary-button" disabled={stock<=0||qty>=stock} onClick={()=>updateCart(x.id,qty+1)}>{stock>0?(qty?"Add another":"Add to cart"):"Sold out"} {stock>0&&<Plus size={15}/>}</button>
        </div>
       </article>
-    }):<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
+    })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
    {items.length>0&&(
    <aside id="public-checkout" className="panel public-checkout">
