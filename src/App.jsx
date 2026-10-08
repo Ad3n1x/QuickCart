@@ -272,7 +272,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customer,setCustomer]=useState({name:"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[completedOrder,setCompletedOrder]=useState(null);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customer,setCustomer]=useState({name:"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[completedOrder,setCompletedOrder]=useState(null);
 
  useEffect(()=>{
    if(!data?.store)return;
@@ -280,17 +280,19 @@ function PublicStore({data}){
  },[data?.store?.id,data?.store?.deliveryEnabled]);
 
  useEffect(()=>{
-   if(!data?.store?.id)return;
+   if(!data?.store?.id){setCustomerOrders([]);setCustomerOrdersHydrated(false);return}
+   setCustomerOrdersHydrated(false);
    try{
      const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+data.store.id)||"[]");
-     if(Array.isArray(saved))setCustomerOrders(saved.slice(0,10));
-   }catch{}
+     setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[]);
+   }catch{setCustomerOrders([])}
+   setCustomerOrdersHydrated(true);
  },[data?.store?.id]);
 
  useEffect(()=>{
-   if(!data?.store?.id)return;
+   if(!data?.store?.id||!customerOrdersHydrated)return;
    try{localStorage.setItem("qc_customer_orders:"+data.store.id,JSON.stringify(customerOrders.slice(0,10)))}catch{}
- },[data?.store?.id,customerOrders]);
+ },[data?.store?.id,customerOrdersHydrated,customerOrders]);
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
