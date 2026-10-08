@@ -316,6 +316,23 @@ function PublicStore({data}){
    });
  },[data?.store?.id,p.map(x=>x.id+":"+x.stock).join("|")]);
 
+ useEffect(()=>{
+   if(!data?.store?.id||!customerOrders.length)return;
+   const refresh=async()=>{
+     const updates=await Promise.all(customerOrders.map(async o=>{
+       try{
+         const token=localStorage.getItem("qc_order_token:"+o.id);
+         if(!token)return o;
+         const d=await api("/api/orders/"+o.id+"/customer-status",{method:"POST",body:body({confirmationToken:token})});
+         return {...o,status:d.status||o.status,updatedAt:d.updatedAt||o.updatedAt};
+       }catch{return o}
+     }));
+     setCustomerOrders(updates);
+   };
+   const timer=window.setInterval(refresh,10000);
+   return()=>window.clearInterval(timer);
+ },[data?.store?.id,customerOrders.map(o=>o.id+":"+o.status).join("|")]);
+
  if(!s)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
 
  const updateCart=(id,next)=>{
@@ -433,12 +450,6 @@ function PublicStore({data}){
    }));
    setCustomerOrders(updates);
  };
- useEffect(()=>{
-   if(!customerOrders.length)return;
-   const timer=window.setInterval(()=>{refreshOrders()},10000);
-   return()=>window.clearInterval(timer);
- },[customerOrders.map(o=>o.id+":"+o.status).join("|")]);
-
  return <main className="public-store-page">
   {completedOrder&&<Modal title="Order confirmed" subtitle={"Order #"+String(completedOrder.id).slice(0,12)} onClose={()=>setCompletedOrder(null)}>
     <div className="form-success">Your order was created successfully. Keep this page open to track the status and confirm pickup or delivery when it is ready.</div>
