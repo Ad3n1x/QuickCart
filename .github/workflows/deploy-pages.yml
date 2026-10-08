@@ -84,7 +84,7 @@ jobs:
             robots_code=$(curl -L -sS -o /tmp/robots.txt -w "%{http_code}" --retry 2 --retry-delay 3 "https://ad3n1x.github.io/QuickCart/robots.txt" || true)
             content_type=$(awk -F': ' 'tolower($1)=="content-type" {print tolower($2)}' /tmp/sitemap.headers | tr -d '\r' | tail -1)
 
-            if [ "$sitemap_headers" = "200" ] && [ "$robots_code" = "200" ] &&                echo "$content_type" | grep -Eq '^(application/xml|text/xml)(;|$)' &&                xmllint --noout /tmp/sitemap.xml &&                grep -Fq 'Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml' /tmp/robots.txt; then
+            if [ "$sitemap_headers" = "200" ] && [ "$robots_code" = "200" ] &&                echo "$content_type" | grep -Eq '^(application/xml|text/xml)(;|$)' &&                python3 -c "import xml.etree.ElementTree as ET; ET.parse('/tmp/sitemap.xml')" &&                grep -Fq 'Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml' /tmp/robots.txt; then
               echo "GitHub Pages sitemap.xml and robots.txt are live, valid XML, and served with an XML content type."
               exit 0
             fi
