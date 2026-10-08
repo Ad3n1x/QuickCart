@@ -1871,3 +1871,50 @@ button{white-space:normal;line-height:1.25}
  .receipt-upload-zone strong,.receipt-physical-note strong{font-size:15px}
  .receipt-upload-zone span,.receipt-physical-note span{font-size:12px}
 }
+
+
+/* Customer Order / Pickup Tracking */
+.customer-order-status{overflow:hidden}
+.customer-order-status-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.customer-order-status-head>div{min-width:0;flex:1}
+.customer-status-refresh{flex:0 0 auto;min-height:42px;white-space:nowrap}
+.customer-order-list{display:grid;gap:12px;margin-top:16px}
+.customer-order-status-card{min-width:0;padding:16px;border:1px solid var(--border);border-radius:14px;background:var(--surface-2)}
+.customer-order-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.customer-order-top>div{display:grid;gap:4px;min-width:0}
+.customer-order-top strong{font-size:14px;letter-spacing:.02em}
+.customer-order-top span{color:var(--muted);font-size:13px}
+.customer-status-pill{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:5px 9px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-size:11px;font-weight:850;text-align:center}
+.customer-status-pill.stage-1{color:var(--accent)}
+.customer-status-pill.stage-2{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 35%,var(--border));background:var(--accent-soft)}
+.customer-status-pill.stage-3{color:var(--ink);background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 40%,var(--border))}
+.customer-status-track{display:grid;grid-template-columns:38px minmax(18px,1fr) 38px minmax(18px,1fr) 38px;align-items:start;gap:7px;margin:18px 4px 12px}
+.customer-status-track>div{display:grid;justify-items:center;gap:6px;text-align:center}
+.customer-status-track span{display:grid;place-items:center;width:30px;height:30px;border:2px solid var(--border);border-radius:50%;background:var(--surface);color:var(--muted);font-size:12px;font-weight:900}
+.customer-status-track small{color:var(--muted);font-size:9px;font-weight:800;line-height:1.25}
+.customer-status-track i{height:2px;margin-top:14px;background:var(--border);border-radius:99px}
+.customer-status-track>div.active span{border-color:var(--accent);background:var(--accent);color:var(--surface)}
+.customer-status-track>div.active small{color:var(--ink)}
+.customer-status-track i.active{background:var(--accent)}
+.customer-order-message{padding:11px 12px;border-left:3px solid var(--accent);border-radius:8px;background:var(--surface);color:var(--muted);font-size:13px;line-height:1.55}
+.customer-order-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.customer-order-actions .primary-button{min-height:44px}
+.customer-confirmed{font-size:13px;color:var(--accent)}
+.customer-order-actions .customer-receipt-card{flex:1 1 100%;min-width:0}
+@media(max-width:600px){
+ .customer-order-status-head{display:grid;grid-template-columns:1fr;gap:10px}
+ .customer-status-refresh{width:100%}
+ .customer-order-status-card{padding:13px}
+ .customer-order-top{display:grid;grid-template-columns:minmax(0,1fr) auto}
+ .customer-status-pill{max-width:145px}
+ .customer-status-track{grid-template-columns:34px minmax(12px,1fr) 34px minmax(12px,1fr) 34px;gap:4px;margin-left:0;margin-right:0}
+ .customer-status-track span{width:28px;height:28px}
+ .customer-status-track small{font-size:8px}
+ .customer-order-actions .primary-button{width:100%}
+}
+@media(max-width:380px){
+ .customer-order-top{grid-template-columns:1fr}
+ .customer-status-pill{justify-self:start;max-width:none}
+ .customer-status-track{grid-template-columns:30px minmax(8px,1fr) 30px minmax(8px,1fr) 30px}
+ .customer-status-track small{font-size:7px}
+}
