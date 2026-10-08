@@ -1506,3 +1506,34 @@ button{white-space:normal;line-height:1.25}
   .public-product-actions{padding:9px 11px 11px}
   .public-qty-control button{width:28px}
 }
+
+/* Accessibility/readability pass for customer storefront */
+.public-store-page{font-size:16px}
+.public-store-page .eyebrow{font-size:12px;font-weight:850;letter-spacing:.08em}
+.public-store-page p,.public-store-page .muted,.public-store-page small{font-size:15px;line-height:1.65}
+.public-store-page button,.public-store-page input,.public-store-page select,.public-store-page textarea{font-size:15px}
+.public-store-page button{min-height:46px}
+.public-store-page input,.public-store-page select,.public-store-page textarea{min-height:46px}
+.public-store-page .public-product-card .product-info h3{font-size:18px}
+.public-store-page .public-product-card .product-info p{font-size:14px;line-height:1.6;min-height:44px}
+.public-store-page .public-product-card .product-price{font-size:19px}
+.public-store-page .checkout-line{font-size:15px;line-height:1.55}
+.public-store-page .checkout-line small{display:block;font-size:14px;margin-top:4px}
+.public-store-page .customer-receipt-card summary{font-size:16px;min-height:48px}
+.public-store-page .customer-receipt-paper{padding:24px!important}
+.public-store-page .customer-receipt-paper .receipt-brand strong{font-size:19px}
+.public-store-page .customer-receipt-paper .receipt-brand small{font-size:14px}
+.public-store-page .customer-receipt-paper .receipt-meta,
+.public-store-page .customer-receipt-paper .receipt-line{font-size:16px;line-height:1.55}
+.public-store-page .customer-receipt-paper .receipt-total{font-size:18px}
+.public-store-page .customer-receipt-paper .receipt-total strong{font-size:24px}
+.public-store-page .customer-receipt-paper .receipt-foot{font-size:14px;line-height:1.55}
+.public-store-page .customer-receipt-paper .receipt-actions button{font-size:15px;font-weight:800}
+.public-store-page :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:560px){
+ .public-store-page{font-size:16px}
+ .public-store-page p,.public-store-page .muted,.public-store-page small{font-size:15px}
+ .public-store-page .public-product-card .product-info h3{font-size:17px}
+ .public-store-page .public-product-card .product-info p{font-size:14px}
+ .public-store-page .customer-receipt-paper{padding:20px!important}
+}
