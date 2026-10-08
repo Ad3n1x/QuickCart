@@ -433,18 +433,19 @@ function PublicStore({data}){
        ...receiptLines
      ].join("\n");
      const phoneDigits=String(s.vendorPhone||"").replace(/\D/g,"");
+     if(!phoneDigits){
+       throw new Error("This store has no valid WhatsApp Business number configured.");
+     }
      const encodedText=encodeURIComponent(text);
-     // Prefer the WhatsApp app/deep link, then fall back to the universal WhatsApp URL.
-     // This works for both regular WhatsApp and WhatsApp Business without requiring a separate integration.
-     const whatsappAppUrl="whatsapp://send?phone="+phoneDigits+"&text="+encodedText;
-     const whatsappWebUrl="https://wa.me/"+phoneDigits+"?text="+encodedText;
+     // Use WhatsApp's official click-to-chat URL. It works with WhatsApp Business
+     // and regular WhatsApp, and lets the device/browser choose the installed app.
+     // Avoid whatsapp:// deep links because they can target the wrong WhatsApp app
+     // or fail on some Android browsers.
+     const whatsappUrl="https://wa.me/"+phoneDigits+"?text="+encodedText;
      if(whatsappWindow&&!whatsappWindow.closed){
-       whatsappWindow.location.href=whatsappAppUrl;
-       window.setTimeout(()=>{
-         try{if(!whatsappWindow.closed)whatsappWindow.location.href=whatsappWebUrl}catch{}
-       },900);
+       whatsappWindow.location.replace(whatsappUrl);
      }else{
-       window.location.href=whatsappWebUrl;
+       window.location.assign(whatsappUrl);
      }
      setMsg("Order created. WhatsApp checkout opened.");
      setCart({});
