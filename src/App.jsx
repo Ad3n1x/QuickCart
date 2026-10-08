@@ -171,12 +171,205 @@ function CustomerReceiptCard({order}){const print=()=>printReceiptDocument(order
 function CustomerOrderStatus({orders,onRefresh}){const[busy,setBusy]=useState("");const[msg,setMsg]=useState("");const confirm=async order=>{setBusy(order.id);setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed.":"Delivery confirmed.");onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("")}};if(!orders.length)return null;return <section className="panel customer-order-status"><div className="panel-head"><div><span className="eyebrow">YOUR ORDERS</span><h2>Track your order</h2><p className="muted">Recent orders stay on this device. Pickup can be confirmed when the seller marks it ready; delivery can be confirmed after it is shipped.</p></div></div>{orders.map(o=>{const pickupReady=o.fulfillment==="pickup"&&o.status==="ready";const deliveryReady=o.fulfillment==="delivery"&&o.status==="shipped";const done=["picked_up","delivered"].includes(o.status);return <div className="checkout-line" key={o.id}><span><b>#{String(o.id).slice(0,8)}</b> · {o.fulfillment==="pickup"?"Pickup":"Delivery"} · {fmt(o.total)}<small className="muted">Status: {String(o.status||"new").replaceAll("_"," ")}</small></span>{done?<strong>Confirmed ✓</strong>:<button className="primary-button" disabled={busy===o.id||!(pickupReady||deliveryReady)} onClick={()=>confirm(o)}>{busy===o.id?"Confirming…":pickupReady?"I picked it up":deliveryReady?"I received it":o.fulfillment==="pickup"?"Waiting for pickup":"Waiting for delivery"}</button>}<CustomerReceiptCard order={o}/></div>})}{msg&&<div className="form-success">{msg}</div>}</section>}
 function PublicStore({data}){
  const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customer,setCustomer]=useState({name:"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[completedOrder,setCompletedOrder]=useState(null);
- useEffect(()=>{if(data?.store)setFul(data.store.deliveryEnabled===false?"pickup":"delivery")},[data?.store?.id,data?.store?.deliveryEnabled]); useEffect(()=>{if(!data?.store?.id)return;try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+data.store.id)||"[]");if(Array.isArray(saved))setCustomerOrders(saved.slice(0,10))}catch{}},[data?.store?.id]); useEffect(()=>{if(!data?.store?.id)return;try{localStorage.setItem("qc_customer_orders:"+data.store.id,JSON.stringify(customerOrders.slice(0,10)))}catch{}},[data?.store?.id,customerOrders]);
- if(!data)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
- const s=data.store,p=data.products||[],deliveryEnabled=s.deliveryEnabled!==false,visible=p.filter(x=>!q||String(x.name).toLowerCase().includes(q.toLowerCase())),items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:cart[x.id]})),subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0),delivery=ful==="delivery"&&deliveryEnabled?Number(s.deliveryFee||0):0,discount=disc?.amount||0,total=Math.max(0,subtotal+delivery-discount),ready=items.length&&customer.name.trim()&&customer.phone.trim()&&(ful==="pickup"||customer.address.trim())&&s.vendorPhone;
- const apply=async()=>{setMsg("");setDisc(null);if(!code.trim())return;try{setDisc(await api("/api/discounts/validate",{method:"POST",body:body({storeId:s.id,code,subtotal})}))}catch(e){setMsg(e.message||"Invalid discount.")}};
- const checkout=async()=>{if(!ready||busy)return;setBusy(true);setMsg("");try{const clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);const order=await api("/api/orders",{method:"POST",body:body({storeId:s.id,clientOrderId,customerName:customer.name.trim(),customerPhone:customer.phone.trim(),address:ful==="delivery"?customer.address.trim():"Pickup from store",fulfillment:ful,paymentMethod:pay,discountCode:disc?.code||code.trim(),receiptData,items:items.map(x=>({id:x.id,quantity:x.quantity}))})});localStorage.setItem("qc_order_token:"+order.orderId,order.confirmationToken);;const savedOrder={id:order.orderId,storeName:s.storeName,storeId:s.id,fulfillment:ful,total:order.total,status:"new",createdAt:new Date().toISOString(),customerName:customer.name.trim(),customerPhone:customer.phone.trim(),address:ful==="delivery"?customer.address.trim():"Pickup from store",paymentMethod:pay,items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),receiptData};setCustomerOrders(xs=>[savedOrder,...xs.filter(x=>x.id!==savedOrder.id)].slice(0,10));setCompletedOrder(savedOrder);const receiptLines=(receiptData.merchant||receiptData.total||receiptData.receiptNo)?["","PAYMENT RECEIPT",receiptData.merchant?"Merchant: "+receiptData.merchant:"",receiptData.date?"Date: "+receiptData.date:"",receiptData.total?"Receipt amount: "+receiptData.total:"",receiptData.tax?"Tax/VAT: "+receiptData.tax:"",receiptData.receiptNo?"Receipt/reference: "+receiptData.receiptNo:""].filter(Boolean):[];const text=["🛍️ NEW ORDER — "+s.storeName,"","Customer: "+customer.name,"Phone: "+customer.phone,"Fulfillment: "+(ful==="delivery"?"Delivery":"Pickup"),ful==="delivery"?"Address: "+customer.address:"Address: Pickup from store","Payment: "+(pay==="bank_transfer"?"Bank transfer":"Pay on delivery"),"",...items.map(x=>x.quantity+"x "+x.name+" — "+fmt(x.price*x.quantity)),"","TOTAL: "+fmt(total),"Order ID: "+order.orderId,...receiptLines].join("\n");window.open("https://wa.me/"+String(s.vendorPhone||"").replace(/\D/g,"")+"?text="+encodeURIComponent(text),"_blank","noopener,noreferrer");setMsg("Order created. WhatsApp checkout opened.");setCart({})}catch(e){setMsg(e.message||"Could not create the order.")}finally{setBusy(false)}};
- return <main className="public-store-page">{completedOrder&&<Modal title="Order confirmed" subtitle={"Order #"+String(completedOrder.id).slice(0,12)} onClose={()=>setCompletedOrder(null)}><div className="form-success">Your order was created successfully. Keep this page open to track the status and confirm pickup or delivery when it is ready.</div><CustomerReceiptCard order={completedOrder}/><div className="modal-actions"><button className="primary-button" onClick={()=>setCompletedOrder(null)}>Continue shopping</button></div></Modal>}<header className="public-store-nav"><div className="public-brand"><Logo size={36}/><div><b>{s.storeName}</b><small>{s.tagline}</small></div></div></header><section className="public-store-hero"><span className="eyebrow">OFFICIAL STOREFRONT</span><h1>{s.storeName}</h1><p>{s.tagline}</p><div className="public-search"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products"/></div></section><div className="public-store-grid"><section className="public-catalog">{visible.length?visible.map(x=><article className="public-product-card" key={x.id}><div className="public-product-art">{x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}</div><div><h3>{x.name}</h3><p>{x.description}</p><strong>{fmt(x.price)}</strong></div><button className="primary-button" disabled={Number(x.stock)<=0} onClick={()=>setCart(c=>({...c,[x.id]:Math.min(Number(x.stock)||0,(c[x.id]||0)+1)}))}>{Number(x.stock)>0?<><Plus size={16}/> Add</>:"Sold out"}</button></article>):<Empty title="No products found" text="Try another search."/>}</section><aside className="panel public-checkout"><span className="eyebrow">CHECKOUT</span><h2>Your order</h2>{items.length?items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button onClick={()=>setCart(c=>({...c,[x.id]:Math.max(0,(c[x.id]||0)-1)}))}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button onClick={()=>setCart(c=>({...c,[x.id]:Math.min(Number(x.stock)||0,(c[x.id]||0)+1)}))}>+</button></div></div>):<p className="muted">Your cart is empty.</p>}<div className="choice-block"><b>Fulfilment</b><div className="choice-grid">{deliveryEnabled&&<button className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div><Field label="Your name" value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})} placeholder="Full name"/><PhoneField label="Phone" value={customer.phone} onChange={v=>setCustomer({...customer,phone:v})} required/>{ful==="delivery"&&<Field label="Delivery address" value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Full address"/>}<div className="choice-block"><b>Payment</b><div className="choice-grid"><button className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div><div className="discount-row"><input value={code} onChange={e=>setCode(e.target.value.toUpperCase())} placeholder="Discount code"/><button className="ghost-button" onClick={apply}>Apply</button></div>{msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"}>{msg}</div>}<CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/><CustomerOrderStatus orders={customerOrders} onRefresh={async()=>{const updates=await Promise.all(customerOrders.map(async o=>{try{const token=localStorage.getItem("qc_order_token:"+o.id);if(!token)return o;const d=await api("/api/orders/"+o.id+"/customer-status",{method:"POST",body:body({confirmationToken:token})});return {...o,status:d.status||o.status,updatedAt:d.updatedAt||o.updatedAt}}catch{return o}}));setCustomerOrders(updates)}}/><div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div><button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button></aside></div></main>
+
+ useEffect(()=>{
+   if(!data?.store)return;
+   setFul(data.store.deliveryEnabled===false?"pickup":"delivery");
+ },[data?.store?.id,data?.store?.deliveryEnabled]);
+
+ useEffect(()=>{
+   if(!data?.store?.id)return;
+   try{
+     const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+data.store.id)||"[]");
+     if(Array.isArray(saved))setCustomerOrders(saved.slice(0,10));
+   }catch{}
+ },[data?.store?.id]);
+
+ useEffect(()=>{
+   if(!data?.store?.id)return;
+   try{localStorage.setItem("qc_customer_orders:"+data.store.id,JSON.stringify(customerOrders.slice(0,10)))}catch{}
+ },[data?.store?.id,customerOrders]);
+
+ if(!data?.store)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
+
+ const s=data.store,p=Array.isArray(data.products)?data.products:[],deliveryEnabled=s.deliveryEnabled!==false;
+ const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
+ const items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:Math.min(Number(x.stock)||0,Math.max(0,Number(cart[x.id])||0))})).filter(x=>x.quantity>0);
+ const subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0);
+ const delivery=ful==="delivery"&&deliveryEnabled?Number(s.deliveryFee||0):0;
+ const discount=Number(disc?.amount||0);
+ const total=Math.max(0,subtotal+delivery-discount);
+ const ready=Boolean(items.length&&customer.name.trim()&&customer.phone.trim()&&(ful==="pickup"||customer.address.trim())&&s.vendorPhone);
+
+ useEffect(()=>{
+   setCart(prev=>{
+     const next={};
+     let changed=false;
+     for(const x of p){
+       const wanted=Number(prev[x.id]||0);
+       const stock=Math.max(0,Number(x.stock)||0);
+       const qty=Math.min(wanted,stock);
+       if(qty>0)next[x.id]=qty;
+       if(qty!==wanted)changed=true;
+     }
+     const oldKeys=Object.keys(prev);
+     if(oldKeys.length!==Object.keys(next).length)changed=true;
+     return changed?next:prev;
+   });
+ },[data?.store?.id,p.map(x=>x.id+":"+x.stock).join("|")]);
+
+ const updateCart=(id,next)=>{
+   setCart(prev=>{
+     const value=Math.max(0,Number(next)||0);
+     const product=p.find(x=>x.id===id);
+     const stock=Math.max(0,Number(product?.stock)||0);
+     const qty=Math.min(value,stock);
+     const nextCart={...prev};
+     if(qty)nextCart[id]=qty;else delete nextCart[id];
+     return nextCart;
+   });
+   setDisc(null);
+   setMsg("");
+ };
+
+ const apply=async()=>{
+   setMsg("");setDisc(null);
+   const normalized=code.trim().toUpperCase();
+   if(!normalized)return;
+   if(!items.length){setMsg("Add an item before applying a discount.");return}
+   try{
+     const result=await api("/api/discounts/validate",{method:"POST",body:body({storeId:s.id,code:normalized,subtotal})});
+     setDisc(result);
+   }catch(e){setMsg(e.message||"Invalid discount.")}
+ };
+
+ const checkout=async()=>{
+   if(!ready||busy)return;
+   setBusy(true);setMsg("");
+   let whatsappWindow=null;
+   try{
+     // Open synchronously from the button click so mobile browsers do not block WhatsApp later.
+     whatsappWindow=window.open("about:blank","_blank","noopener,noreferrer");
+     const clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+     const order=await api("/api/orders",{
+       method:"POST",
+       body:body({
+         storeId:s.id,
+         clientOrderId,
+         customerName:customer.name.trim(),
+         customerPhone:customer.phone.trim(),
+         address:ful==="delivery"?customer.address.trim():"Pickup from store",
+         fulfillment:ful,
+         paymentMethod:pay,
+         discountCode:disc?.code||code.trim(),
+         receiptData,
+         items:items.map(x=>({id:x.id,quantity:x.quantity}))
+       })
+     });
+     localStorage.setItem("qc_order_token:"+order.orderId,order.confirmationToken);
+     const savedOrder={
+       id:order.orderId,
+       storeName:s.storeName,
+       storeId:s.id,
+       fulfillment:ful,
+       total:Number(order.total??total),
+       status:"new",
+       createdAt:new Date().toISOString(),
+       customerName:customer.name.trim(),
+       customerPhone:customer.phone.trim(),
+       address:ful==="delivery"?customer.address.trim():"Pickup from store",
+       paymentMethod:pay,
+       items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),
+       receiptData
+     };
+     setCustomerOrders(xs=>[savedOrder,...xs.filter(x=>x.id!==savedOrder.id)].slice(0,10));
+     setCompletedOrder(savedOrder);
+
+     const receiptLines=(receiptData.merchant||receiptData.total||receiptData.receiptNo)
+       ?["","PAYMENT RECEIPT",
+         receiptData.merchant?"Merchant: "+receiptData.merchant:"",
+         receiptData.date?"Date: "+receiptData.date:"",
+         receiptData.total?"Receipt amount: "+receiptData.total:"",
+         receiptData.tax?"Tax/VAT: "+receiptData.tax:"",
+         receiptData.receiptNo?"Receipt/reference: "+receiptData.receiptNo:""
+       ].filter(Boolean):[];
+     const text=[
+       "🛍️ NEW ORDER — "+s.storeName,"",
+       "Customer: "+customer.name,
+       "Phone: "+customer.phone,
+       "Fulfillment: "+(ful==="delivery"?"Delivery":"Pickup"),
+       ful==="delivery"?"Address: "+customer.address:"Address: Pickup from store",
+       "Payment: "+(pay==="bank_transfer"?"Bank transfer":"Pay on delivery"),
+       "",
+       ...items.map(x=>x.quantity+"x "+x.name+" — "+fmt(x.price*x.quantity)),
+       "",
+       "TOTAL: "+fmt(Number(order.total??total)),
+       "Order ID: "+order.orderId,
+       ...receiptLines
+     ].join("\n");
+     const whatsappUrl="https://wa.me/"+String(s.vendorPhone||"").replace(/\D/g,"")+"?text="+encodeURIComponent(text);
+     if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.location.href=whatsappUrl;
+     else window.location.href=whatsappUrl;
+     setMsg("Order created. WhatsApp checkout opened.");
+     setCart({});
+     setDisc(null);
+     setCode("");
+     setReceiptData({merchant:"",date:"",total:"",tax:"",receiptNo:""});
+   }catch(e){
+     if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
+     setMsg(e.message||"Could not create the order.");
+   }finally{setBusy(false)}
+ };
+
+ const refreshOrders=async()=>{
+   const updates=await Promise.all(customerOrders.map(async o=>{
+     try{
+       const token=localStorage.getItem("qc_order_token:"+o.id);
+       if(!token)return o;
+       const d=await api("/api/orders/"+o.id+"/customer-status",{method:"POST",body:body({confirmationToken:token})});
+       return {...o,status:d.status||o.status,updatedAt:d.updatedAt||o.updatedAt};
+     }catch{return o}
+   }));
+   setCustomerOrders(updates);
+ };
+
+ return <main className="public-store-page">
+  {completedOrder&&<Modal title="Order confirmed" subtitle={"Order #"+String(completedOrder.id).slice(0,12)} onClose={()=>setCompletedOrder(null)}>
+    <div className="form-success">Your order was created successfully. Keep this page open to track the status and confirm pickup or delivery when it is ready.</div>
+    <CustomerReceiptCard order={completedOrder}/>
+    <div className="modal-actions"><button className="primary-button" onClick={()=>setCompletedOrder(null)}>Continue shopping</button></div>
+  </Modal>}
+  <header className="public-store-nav"><div className="public-brand"><Logo size={36}/><div><b>{s.storeName}</b><small>{s.tagline}</small></div></div></header>
+  <section className="public-store-hero"><span className="eyebrow">OFFICIAL STOREFRONT</span><h1>{s.storeName}</h1><p>{s.tagline}</p><div className="public-search"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products" aria-label="Search products"/></div></section>
+  <div className="public-store-grid">
+   <section className="public-catalog">
+    {visible.length?visible.map(x=>{
+      const stock=Math.max(0,Number(x.stock)||0);
+      return <article className="public-product-card" key={x.id}>
+       <div className="public-product-art">{x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}</div>
+       <div><h3>{x.name}</h3><p>{x.description}</p><strong>{fmt(x.price)}</strong></div>
+       <button className="primary-button" disabled={stock<=0} onClick={()=>updateCart(x.id,(cart[x.id]||0)+1)}>{stock>0?<><Plus size={16}/> Add</>:"Sold out"}</button>
+      </article>
+    }):<Empty title="No products found" text="Try another search."/>}
+   </section>
+   <aside className="panel public-checkout">
+    <span className="eyebrow">CHECKOUT</span><h2>Your order</h2>
+    {items.length?items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>):<p className="muted">Your cart is empty.</p>}
+    <div className="choice-block"><b>Fulfilment</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
+    <Field label="Your name" value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
+    <PhoneField label="Phone" value={customer.phone} onChange={v=>setCustomer({...customer,phone:v})} required/>
+    {ful==="delivery"&&<Field label="Delivery address" value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
+    <div className="choice-block"><b>Payment</b><div className="choice-grid"><button type="button" className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button type="button" className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div>
+    <div className="discount-row"><input value={code} onChange={e=>{setCode(e.target.value.toUpperCase());setDisc(null)}} placeholder="Discount code" aria-label="Discount code"/><button type="button" className="ghost-button" disabled={!code.trim()||!items.length} onClick={apply}>Apply</button></div>
+    {msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"} role="status">{msg}</div>}
+    <CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/>
+    <CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders}/>
+    <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
+    <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
+    {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
+   </aside>
+  </div>
+ </main>
 }
 
 export default function App(){
