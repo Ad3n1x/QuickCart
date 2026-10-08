@@ -1,7 +1,7 @@
 {
   "name":"QuickCart",
   "short_name":"QuickCart",
-  "description":"QuickCart helps small businesses create an online store, share one link, and take customer orders.",
+  "description":"QuickCart — online storefronts for small businesses. Designed and developed by AD3N1X.",
   "start_url":"./",
   "scope":"./",
   "display":"standalone",
