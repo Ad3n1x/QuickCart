@@ -45,6 +45,18 @@ jobs:
           set -e
           test -s dist/index.html
           test -d dist/assets
+
+          # Vite copies public/ files to the root of dist/.
+          test -s dist/sitemap.xml
+          test -s dist/robots.txt
+
+          # Validate that robots.txt points to the deployed sitemap.
+          grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
+
+          # Basic sitemap validation.
+          grep -Fq '<urlset' dist/sitemap.xml
+          grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
+
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
           printf '%s\\n' "$GITHUB_SHA" > dist/build-version.txt
@@ -62,4 +74,3 @@ jobs:
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
 
       # Deployment trigger verification: keep this workflow commit-based.
-
