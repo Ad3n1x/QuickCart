@@ -396,12 +396,10 @@ function PublicStore({data,customer,onLogin}){
    if(sessionStorage.getItem(checkoutLockKey)==="1")return;
    sessionStorage.setItem(checkoutLockKey,"1");
    setBusy(true);setMsg("");
-   setBusy(true);setMsg("");
    let whatsappWindow=null;
    try{
      // Open synchronously from the button click so mobile browsers do not block WhatsApp later.
      whatsappWindow=window.open("about:blank","_blank","noopener,noreferrer");
-     const clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);
      const order=await api("/api/orders",{
        method:"POST",
        headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
