@@ -1,4 +1,5 @@
 name: Deploy QuickCart to GitHub Pages
+# Trigger a fresh Pages deployment.
 
 on:
   push:
