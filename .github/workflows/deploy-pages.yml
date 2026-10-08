@@ -46,17 +46,12 @@ jobs:
           test -s dist/index.html
           test -d dist/assets
 
-          # Copy SEO files explicitly so they are guaranteed to be at the Pages site root.
           cp public/sitemap.xml dist/sitemap.xml
           cp public/robots.txt dist/robots.txt
 
           test -s dist/sitemap.xml
           test -s dist/robots.txt
-
-          # robots.txt must point to the exact public Pages sitemap.
           grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
-
-          # Validate sitemap structure and canonical URLs.
           grep -Fq '<?xml version="1.0" encoding="UTF-8"?>' dist/sitemap.xml
           grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
           grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
@@ -77,4 +72,18 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
 
-      # Deployment trigger verification: keep this workflow commit-based.
+      - name: Verify live SEO files
+        run: |
+          set -e
+          for i in {1..12}; do
+            sitemap_code=$(curl -L -sS -o /tmp/sitemap.xml -w "%{http_code}" --retry 2 --retry-delay 3 "https://ad3n1x.github.io/QuickCart/sitemap.xml" || true)
+            robots_code=$(curl -L -sS -o /tmp/robots.txt -w "%{http_code}" --retry 2 --retry-delay 3 "https://ad3n1x.github.io/QuickCart/robots.txt" || true)
+            if [ "$sitemap_code" = "200" ] && [ "$robots_code" = "200" ] && grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' /tmp/sitemap.xml && grep -Fq 'Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml' /tmp/robots.txt; then
+              echo "GitHub Pages SEO files are live and valid."
+              exit 0
+            fi
+            echo "Waiting for GitHub Pages propagation (attempt $i/12): sitemap=$sitemap_code robots=$robots_code"
+            sleep 10
+          done
+          echo "GitHub Pages did not serve sitemap.xml and robots.txt correctly after deployment."
+          exit 1
