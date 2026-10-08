@@ -1176,3 +1176,157 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .phone-input{grid-template-columns:100px minmax(0,1fr)}
   .phone-input select{font-size:11px}
 }
+
+
+
+/* Readability & layout clarity pass — prevents cramped content and preserves full visibility */
+html,body,#root{max-width:100%;overflow-x:hidden}
+body{line-height:1.55}
+h1,h2,h3,h4,p,small,span,button,label{overflow-wrap:anywhere}
+button{white-space:normal;line-height:1.25}
+.primary-button,.ghost-button,.danger-button{min-height:44px;padding:10px 14px}
+.content-inner{width:100%;min-width:0}
+.content-inner>div{width:100%;min-width:0}
+.page-head{align-items:flex-start}
+.page-head>div:first-child{min-width:0;flex:1}
+.page-actions{min-width:0}
+.page-actions>*{max-width:100%}
+.panel,.table-card,.settings-card,.plan-card-new,.product-card-new,.stats-grid>div{min-width:0;overflow-wrap:anywhere}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.panel-head>div{min-width:0;flex:1}
+.dashboard-grid-2,.settings-grid,.plan-grid,.receipt-tool-grid{align-items:stretch;min-width:0}
+.dashboard-grid-2>*,.settings-grid>* ,.plan-grid>*{min-width:0}
+.form-grid-2,.form-grid-4{align-items:start}
+.form-grid-2>*,.form-grid-4>*{min-width:0}
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-wrap table{min-width:640px}
+.table-wrap th,.table-wrap td{vertical-align:top;white-space:normal;overflow-wrap:anywhere}
+.toolbar{width:100%;align-items:stretch}
+.toolbar>*{min-width:0}
+.search-box{flex:1 1 280px;min-width:min(100%,220px)}
+.product-grid{min-width:0}
+.product-card-new{min-width:0}
+.product-card-body{min-width:0}
+.product-card-body h3,.product-card-body p{overflow-wrap:anywhere}
+.product-actions{display:flex;gap:8px;flex-wrap:wrap}
+.product-actions>*{flex:1 1 110px;min-width:0}
+.stats-grid{min-width:0}
+.stats-grid>div{min-width:0}
+.stats-grid strong{overflow-wrap:anywhere}
+.segmented{overflow-x:auto}
+.segmented button{white-space:nowrap}
+.choice-block{min-width:0}
+.choice-block>*{min-width:0}
+.modal-body,.qc-modal-body{overflow-y:auto;overflow-x:hidden}
+.qc-modal,.modal{max-width:calc(100vw - 24px)}
+.qc-modal-header,.modal-header{min-width:0}
+.qc-modal-header>div,.modal-header>div{min-width:0}
+.qc-modal-actions,.modal-actions{display:flex;flex-wrap:wrap;align-items:center}
+.qc-modal-actions>* ,.modal-actions>*{flex:1 1 150px;min-width:0}
+.customer-receipt-paper,.customer-order-status{min-width:0}
+.receipt-actions{justify-content:flex-start}
+.receipt-actions>*{min-width:150px}
+.public-store-page,.public-store-grid,.public-products,.public-checkout{min-width:0}
+.public-store-grid{align-items:start}
+.public-checkout{min-width:0}
+.public-product-card{min-width:0}
+.public-product-card>*{min-width:0}
+.feature-promo-copy{overflow-wrap:anywhere}
+.landing-redesign,.landing-hero,.landing-section{min-width:0}
+.landing-hero>*{min-width:0}
+.landing-nav-links{min-width:0}
+.landing-copy h1{overflow-wrap:normal}
+.auth-shell,.auth-card{min-width:0}
+.phone-input{min-width:0}
+.phone-input select,.phone-input input{min-width:0}
+
+/* Desktop: use available width instead of squeezing four-column controls */
+@media(min-width:1001px){
+  .content-inner{max-width:1320px}
+  .form-grid-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+/* Tablet: turn dense layouts into readable two-column blocks */
+@media(max-width:1000px){
+  .landing-hero{grid-template-columns:1fr;min-height:auto}
+  .landing-preview{max-width:760px;width:100%;margin:auto}
+  .form-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .feature-grid article:nth-child(3n){border-right:1px solid var(--border)}
+  .feature-grid article:nth-child(2n){border-right:0}
+  .feature-grid article:nth-last-child(-n+3){border-bottom:1px solid var(--border)}
+  .feature-grid article:nth-last-child(-n+2){border-bottom:0}
+  .faq-grid{grid-template-columns:1fr}
+  .landing-cta{padding:36px;align-items:flex-start;flex-direction:column}
+}
+
+/* Mobile: nothing should be clipped, overlapped or too small to read */
+@media(max-width:760px){
+  .topbar-inner{height:60px;padding:0 10px}
+  .app-sidebar{top:60px}
+  .mobile-nav-backdrop{inset:60px 0 0}
+  .app-content{margin-left:0}
+  .content-inner{padding:20px 14px 60px}
+  .content-inner>div{gap:18px}
+  .page-head{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+  .page-head h1{font-size:clamp(28px,8vw,36px);line-height:1.05}
+  .page-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .page-actions>*{width:100%}
+  .form-grid-2,.form-grid-4{grid-template-columns:1fr}
+  .quick-action-grid,.stats-grid{grid-template-columns:1fr 1fr}
+  .dashboard-grid-2,.settings-grid,.plan-grid,.receipt-tool-grid{grid-template-columns:1fr}
+  .panel,.table-card,.settings-card,.plan-card-new{padding:15px}
+  .panel-head{gap:10px}
+  .panel-head .page-actions,.panel-head>.actions{width:100%}
+  .panel-head .page-actions>*{flex:1}
+  .toolbar{display:flex;flex-direction:column;align-items:stretch}
+  .search-box{width:100%;min-width:0}
+  .search-count{padding-left:0}
+  .product-card-new{grid-template-columns:84px minmax(0,1fr)}
+  .product-card-art{min-height:130px}
+  .product-card-body{padding:13px}
+  .product-actions{display:grid;grid-template-columns:1fr 1fr}
+  .product-actions>*{width:100%;min-width:0}
+  .qc-modal-backdrop,.payment-modal-backdrop{padding:10px}
+  .qc-modal,.payment-modal{width:100%;max-width:none;max-height:calc(100dvh - 20px);border-radius:16px}
+  .qc-modal-actions,.modal-actions{display:grid;grid-template-columns:1fr}
+  .qc-modal-actions>* ,.modal-actions>*{width:100%}
+  .receipt-actions{display:grid;grid-template-columns:1fr}
+  .receipt-actions>*{width:100%;min-width:0}
+  .landing-redesign-nav{grid-template-columns:auto 1fr auto;gap:8px;padding:8px 12px}
+  .landing-nav-links{display:none}
+  .landing-nav-actions{justify-content:flex-end}
+  .landing-brand{font-size:16px}
+  .dev-brand{font-size:9px;margin-left:3px;padding:4px 6px}
+  .landing-hero{padding:50px 16px 58px;gap:30px}
+  .landing-copy h1{font-size:clamp(40px,12vw,60px)}
+  .preview-shell{grid-template-columns:1fr}
+  .preview-shell aside{display:none}
+  .preview-main{padding:16px}
+  .preview-stats{grid-template-columns:1fr}
+  .landing-section{padding:52px 16px}
+  .feature-grid,.steps-grid{grid-template-columns:1fr}
+  .feature-grid article{border-right:0!important;border-bottom:1px solid var(--border)!important}
+  .feature-grid article:last-child{border-bottom:0!important}
+  .landing-cta{width:calc(100% - 24px);padding:28px 22px}
+  .landing-footer{padding:30px 16px 22px;flex-direction:column}
+  .auth-card{padding:22px 17px}
+}
+
+/* Very small phones */
+@media(max-width:380px){
+  .content-inner{padding-left:11px;padding-right:11px}
+  .page-actions,.quick-action-grid,.stats-grid{grid-template-columns:1fr}
+  .quick-action-grid button{min-height:58px}
+  .product-card-new{grid-template-columns:1fr}
+  .product-card-art{min-height:170px}
+  .product-actions{grid-template-columns:1fr}
+  .phone-input{grid-template-columns:98px minmax(0,1fr)}
+  .phone-input select{font-size:10px}
+  .landing-copy h1{font-size:39px}
+}
+
+/* Prevent long URLs, IDs and account numbers from breaking the layout */
+.store-link,.store-url,.account-number,.receipt-id,[class*="url"],[class*="link"]{overflow-wrap:anywhere;word-break:break-word}
