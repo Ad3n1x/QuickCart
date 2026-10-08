@@ -1918,3 +1918,21 @@ button{white-space:normal;line-height:1.25}
  .customer-status-track{grid-template-columns:30px minmax(8px,1fr) 30px minmax(8px,1fr) 30px}
  .customer-status-track small{font-size:7px}
 }
+
+
+/* Complete Pickup Tracking Experience */
+.customer-order-status-card{position:relative;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease}
+.customer-order-status-card.is-ready{border-color:color-mix(in srgb,var(--accent) 45%,var(--border));box-shadow:0 8px 24px rgba(0,0,0,.055)}
+.customer-order-status-card.is-complete{opacity:.94}
+.customer-pickup-ready-note,.customer-pickup-wait-note{display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:11px 12px;border-radius:9px;font-size:12px;line-height:1.5}
+.customer-pickup-ready-note{flex-direction:column;border:1px solid color-mix(in srgb,var(--accent) 32%,var(--border));background:var(--accent-soft)}
+.customer-pickup-ready-note strong{font-size:12px;text-transform:uppercase}
+.customer-pickup-ready-note span{color:var(--muted)}
+.customer-pickup-wait-note{align-items:center;background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.customer-pickup-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.pickup-confirm-button{min-width:170px;box-shadow:0 7px 18px color-mix(in srgb,var(--accent) 18%,transparent)}
+.customer-status-message{margin-top:12px}
+@media(max-width:600px){
+ .customer-pickup-ready-note,.customer-pickup-wait-note{font-size:11px}
+ .pickup-confirm-button{width:100%;min-width:0}
+}
