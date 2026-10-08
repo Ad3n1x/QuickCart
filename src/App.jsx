@@ -428,9 +428,20 @@ function PublicStore({data}){
        "Order ID: "+order.orderId,
        ...receiptLines
      ].join("\n");
-     const whatsappUrl="https://wa.me/"+String(s.vendorPhone||"").replace(/\D/g,"")+"?text="+encodeURIComponent(text);
-     if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.location.href=whatsappUrl;
-     else window.location.href=whatsappUrl;
+     const phoneDigits=String(s.vendorPhone||"").replace(/\D/g,"");
+     const encodedText=encodeURIComponent(text);
+     // Prefer the WhatsApp app/deep link, then fall back to the universal WhatsApp URL.
+     // This works for both regular WhatsApp and WhatsApp Business without requiring a separate integration.
+     const whatsappAppUrl="whatsapp://send?phone="+phoneDigits+"&text="+encodedText;
+     const whatsappWebUrl="https://wa.me/"+phoneDigits+"?text="+encodedText;
+     if(whatsappWindow&&!whatsappWindow.closed){
+       whatsappWindow.location.href=whatsappAppUrl;
+       window.setTimeout(()=>{
+         try{if(!whatsappWindow.closed)whatsappWindow.location.href=whatsappWebUrl}catch{}
+       },900);
+     }else{
+       window.location.href=whatsappWebUrl;
+     }
      setMsg("Order created. WhatsApp checkout opened.");
      setCart({});
      setDisc(null);
