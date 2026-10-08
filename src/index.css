@@ -1002,3 +1002,29 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .receipt-meta,.receipt-customer{display:grid;gap:4px;padding:12px 0;border-bottom:1px dashed #aaa;font-size:11px}.receipt-meta{display:flex;justify-content:space-between;gap:8px}.receipt-customer strong{font-size:12px}.receipt-lines{padding:8px 0}.receipt-lines>div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;font-size:11px}.receipt-lines>div span{min-width:0}.receipt-total{display:flex;justify-content:space-between;padding:13px 0;border-top:2px solid #15221c;font-size:15px}.receipt-foot{text-align:center;padding-top:12px;border-top:1px dashed #aaa;color:#68736e;font-size:9px;line-height:1.55}.receipt-actions{justify-content:flex-end;margin-top:14px}.receipt-small{min-height:34px;padding:6px 9px;font-size:11px}
 @media(max-width:760px){.receipt-tool-grid{grid-template-columns:1fr}.receipt-drop{min-height:190px}.receipt-actions>*{flex:1}.receipt-actions{width:100%}}
 @media print{body *{visibility:hidden!important}.receipt-paper,.receipt-paper *{visibility:visible!important}.receipt-paper{position:absolute;left:0;top:0;width:80mm;margin:0;box-shadow:none;border:0;border-radius:0}.qc-modal-backdrop{position:static!important;background:#fff!important;padding:0!important}.qc-modal{box-shadow:none!important;border:0!important;width:auto!important;max-width:none!important}.qc-modal>header,.receipt-actions{display:none!important}.qc-modal-body{padding:0!important}}
+
+
+/* Customer order tracking and receipt polish */
+.customer-order-status{display:grid;gap:12px}
+.customer-order-status .checkout-line{align-items:flex-start;flex-wrap:wrap}
+.customer-order-status .checkout-line>span{min-width:180px;flex:1}
+.customer-order-status .checkout-line small{display:block;margin-top:4px}
+.customer-receipt-card{width:100%;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);overflow:hidden}
+.customer-receipt-card summary{display:flex;align-items:center;gap:7px;cursor:pointer;list-style:none;padding:10px 12px;font-size:12px;font-weight:700}
+.customer-receipt-card summary::-webkit-details-marker{display:none}
+.customer-receipt-card summary span{margin-left:auto;color:var(--muted);font-weight:600}
+.customer-receipt-paper{padding:14px;background:var(--surface)}
+.customer-receipt-paper .receipt-brand{padding-bottom:10px}
+.customer-receipt-paper .receipt-meta{font-size:10px}
+.customer-receipt-paper .receipt-line{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:11px}
+.customer-receipt-paper .receipt-total{margin-top:5px}
+.customer-receipt-paper .ghost-button{margin-top:10px;width:100%}
+@media(max-width:760px){
+ .public-store-grid{grid-template-columns:1fr!important}
+ .public-checkout{position:static!important}
+ .customer-order-status .checkout-line{padding:10px 0;gap:9px}
+ .customer-order-status .checkout-line>span{flex-basis:100%}
+ .customer-order-status .checkout-line>.primary-button{width:100%}
+ .customer-receipt-card{flex-basis:100%}
+ .customer-receipt-paper{padding:12px}
+}
