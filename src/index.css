@@ -56,7 +56,7 @@ textarea{resize:vertical}
 
 .landing-redesign{min-height:100dvh;overflow-x:clip;background:radial-gradient(900px 520px at 90% 0%,color-mix(in srgb,var(--accent) 11%,transparent),transparent 70%),radial-gradient(700px 460px at 4% 26%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 72%),var(--bg)}
 .landing-redesign-nav{position:sticky;top:0;z-index:50;min-height:68px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px;padding:10px max(16px,calc((100vw - var(--max))/2));background:color-mix(in srgb,var(--bg) 90%,transparent);border-bottom:1px solid color-mix(in srgb,var(--border) 75%,transparent);backdrop-filter:blur(18px)}
-.landing-brand,.dashboard-brand{display:inline-flex;align-items:center;gap:9px;background:transparent;font-weight:850}
+.landing-brand,.dashboard-brand{display:inline-flex;align-items:center;gap:9px;background:transparent;font-weight:850}.dev-mark{font-size:9px;font-weight:900;letter-spacing:.14em;color:var(--muted);padding-left:3px;border-left:1px solid var(--border);margin-left:2px;line-height:1}
 .landing-brand{padding:6px 0;font-size:18px}.dev-brand{display:inline-flex;align-items:center;gap:5px;margin-left:8px;padding:5px 9px;border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));border-radius:999px;background:color-mix(in srgb,var(--accent) 10%,var(--surface));color:var(--accent);font-size:11px;font-weight:900;letter-spacing:.07em;white-space:nowrap}.dev-brand span{color:var(--muted);font-weight:700;letter-spacing:0}
 .landing-nav-links{display:flex;justify-content:center;gap:clamp(14px,2.8vw,30px)}
 .landing-nav-links button{padding:8px 3px;background:transparent;color:var(--muted);font-size:13px;font-weight:760}
