@@ -334,7 +334,7 @@ function PublicStore({data}){
    };
    const timer=window.setInterval(refresh,10000);
    return()=>window.clearInterval(timer);
- },[data?.store?.id,customerOrders.map(o=>o.id+":"+o.status).join("|")]);
+ },[data?.store?.id,customerOrders.map(o=>o.id).join("|")]);
 
  if(!s)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
 
@@ -530,13 +530,12 @@ function PublicStore({data}){
     <div className="discount-row"><input value={code} onChange={e=>{setCode(e.target.value.toUpperCase());setDisc(null)}} placeholder="Discount code" aria-label="Discount code"/><button type="button" className="ghost-button" disabled={!code.trim()||!items.length} onClick={apply}>Apply</button></div>
     {msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"} role="status">{msg}</div>}
     <CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/>
-    <CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/>
     <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
     <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
     {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
    </aside>
-   
    )}</div>
+   {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
  </main>
 }
 
