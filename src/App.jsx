@@ -365,20 +365,55 @@ function PublicStore({data}){
     <CustomerReceiptCard order={completedOrder}/>
     <div className="modal-actions"><button className="primary-button" onClick={()=>setCompletedOrder(null)}>Continue shopping</button></div>
   </Modal>}
-  <header className="public-store-nav"><div className="public-brand"><Logo size={36}/><div><b>{s.storeName}</b><small>{s.tagline}</small></div></div></header>
-  <section className="public-store-hero"><span className="eyebrow">OFFICIAL STOREFRONT</span><h1>{s.storeName}</h1><p>{s.tagline}</p><div className="public-search"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products" aria-label="Search products"/></div></section>
+  <header className="public-store-nav">
+    <div className="public-brand">
+      <Logo size={40}/>
+      <div><b>{s.storeName}</b><small>{s.tagline||"Shop directly from this store"}</small></div>
+    </div>
+    <span className="public-store-badge">QuickCart storefront</span>
+  </header>
+  <section className="public-store-hero">
+    <div className="public-store-hero-copy">
+      <span className="eyebrow">OFFICIAL STOREFRONT</span>
+      <h1>{s.storeName}</h1>
+      <p>{s.tagline||"Browse products and place your order directly."}</p>
+    </div>
+    <div className="public-search">
+      <Search size={17}/>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products by name…" aria-label="Search products"/>
+      {q&&<button type="button" className="public-search-clear" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+    </div>
+  </section>
   <div className="public-store-grid">
    <section className="public-catalog">
+    <div className="public-catalog-head">
+      <div><span className="eyebrow">PRODUCTS</span><h2>Shop the collection</h2><p>{visible.length} {visible.length===1?"product":"products"}{q?" matching “"+q+"”":""}.</p></div>
+      {items.length>0&&<a className="public-cart-jump" href="#public-checkout"><span>{items.reduce((n,x)=>n+x.quantity,0)} item{items.reduce((n,x)=>n+x.quantity,0)===1?"":"s"}</span><strong>{fmt(total)}</strong></a>}
+    </div>
     {visible.length?visible.map(x=>{
-      const stock=Math.max(0,Number(x.stock)||0);
+      const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
       return <article className="public-product-card" key={x.id}>
-       <div className="public-product-art">{x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}</div>
-       <div><h3>{x.name}</h3><p>{x.description}</p><strong>{fmt(x.price)}</strong></div>
-       <button className="primary-button" disabled={stock<=0} onClick={()=>updateCart(x.id,(cart[x.id]||0)+1)}>{stock>0?<><Plus size={16}/> Add</>:"Sold out"}</button>
+       <div className="public-product-art">
+        {x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}
+        {stock<=0&&<span className="public-stock-pill">Sold out</span>}
+        {stock>0&&stock<=5&&<span className="public-stock-pill">Only {stock} left</span>}
+       </div>
+       <div className="product-info">
+        <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
+        <strong className="product-price">{fmt(x.price)}</strong>
+       </div>
+       <div className="public-product-actions">
+        {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
+          <button type="button" onClick={()=>updateCart(x.id,qty-1)} aria-label={"Remove one "+x.name}>−</button>
+          <strong>{qty}</strong>
+          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Add one "+x.name}>+</button>
+        </div>}
+        <button className="primary-button" disabled={stock<=0||qty>=stock} onClick={()=>updateCart(x.id,qty+1)}>{stock>0?(qty?"Add another":"Add to cart"):"Sold out"} {stock>0&&<Plus size={15}/>}</button>
+       </div>
       </article>
-    }):<Empty title="No products found" text="Try another search."/>}
+    }):<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
-   <aside className="panel public-checkout">
+   <aside id="public-checkout" className="panel public-checkout">
     <span className="eyebrow">CHECKOUT</span><h2>Your order</h2>
     {items.length?items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>):<p className="muted">Your cart is empty.</p>}
     <div className="choice-block"><b>Fulfilment</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
