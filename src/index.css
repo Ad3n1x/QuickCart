@@ -1392,3 +1392,27 @@ button{white-space:normal;line-height:1.25}
  .public-product-grid{grid-template-columns:1fr}
  .public-store-page .content-inner{padding-left:10px;padding-right:10px}
 }
+
+/* Receipt actions: keep both save options visible and usable at every width */
+.public-store-page .customer-receipt-paper .receipt-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  width:100%;
+  min-width:0;
+}
+.public-store-page .customer-receipt-paper .receipt-actions>*{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@media(max-width:560px){
+  .public-store-page .customer-receipt-paper .receipt-actions{
+    grid-template-columns:1fr;
+  }
+}
