@@ -1133,3 +1133,46 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
     padding-top:12px;
   }
 }
+
+
+/* Final spacing pass — every dashboard/app screen gets consistent vertical rhythm */
+.content-inner>div{
+  display:flex;
+  flex-direction:column;
+  gap:var(--section-gap);
+}
+.content-inner>div>.page-head,
+.content-inner>div>.feature-promo{
+  margin-bottom:0;
+}
+.content-inner>div>.panel,
+.content-inner>div>.stats-grid,
+.content-inner>div>.dashboard-grid-2,
+.content-inner>div>.settings-grid,
+.content-inner>div>.plan-grid,
+.content-inner>div>.product-grid,
+.content-inner>div>.toolbar,
+.content-inner>div>.quick-action-grid,
+.content-inner>div>.receipt-tool-grid,
+.content-inner>div>.analytics-page{
+  margin-top:0;
+}
+.content-inner .panel> .panel-head + *{margin-top:var(--block-gap)}
+.content-inner .choice-block + .qc-field,
+.content-inner .qc-field + .choice-block,
+.content-inner .choice-block + .choice-block{margin-top:var(--block-gap)}
+
+/* Phone/country-code inputs */
+.phone-field{display:grid;gap:6px;min-width:0}
+.phone-field>span{font-size:11px;font-weight:700;color:var(--ink)}
+.phone-input{display:grid;grid-template-columns:minmax(132px,.7fr) minmax(0,1.3fr);gap:8px;min-width:0}
+.phone-input select,.phone-input input{width:100%;min-width:0;height:42px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);padding:0 11px;outline:0}
+.phone-input select:focus,.phone-input input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-faint)}
+@media(max-width:560px){
+  .phone-input{grid-template-columns:112px minmax(0,1fr);gap:7px}
+  .phone-input select,.phone-input input{height:44px;padding:0 9px}
+}
+@media(max-width:380px){
+  .phone-input{grid-template-columns:100px minmax(0,1fr)}
+  .phone-input select{font-size:11px}
+}
