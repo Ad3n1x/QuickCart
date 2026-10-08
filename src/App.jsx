@@ -190,16 +190,14 @@ function PublicStore({data}){
    try{localStorage.setItem("qc_customer_orders:"+data.store.id,JSON.stringify(customerOrders.slice(0,10)))}catch{}
  },[data?.store?.id,customerOrders]);
 
- if(!data?.store)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
-
- const s=data.store,p=Array.isArray(data.products)?data.products:[],deliveryEnabled=s.deliveryEnabled!==false;
+ const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
  const items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:Math.min(Number(x.stock)||0,Math.max(0,Number(cart[x.id])||0))})).filter(x=>x.quantity>0);
  const subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0);
- const delivery=ful==="delivery"&&deliveryEnabled?Number(s.deliveryFee||0):0;
+ const delivery=ful==="delivery"&&deliveryEnabled?Number(s?.deliveryFee||0):0;
  const discount=Number(disc?.amount||0);
  const total=Math.max(0,subtotal+delivery-discount);
- const ready=Boolean(items.length&&customer.name.trim()&&customer.phone.trim()&&(ful==="pickup"||customer.address.trim())&&s.vendorPhone);
+ const ready=Boolean(items.length&&customer.name.trim()&&customer.phone.trim()&&(ful==="pickup"||customer.address.trim())&&s?.vendorPhone);
 
  useEffect(()=>{
    setCart(prev=>{
@@ -212,11 +210,12 @@ function PublicStore({data}){
        if(qty>0)next[x.id]=qty;
        if(qty!==wanted)changed=true;
      }
-     const oldKeys=Object.keys(prev);
-     if(oldKeys.length!==Object.keys(next).length)changed=true;
+     if(Object.keys(prev).length!==Object.keys(next).length)changed=true;
      return changed?next:prev;
    });
  },[data?.store?.id,p.map(x=>x.id+":"+x.stock).join("|")]);
+
+ if(!s)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
 
  const updateCart=(id,next)=>{
    setCart(prev=>{
