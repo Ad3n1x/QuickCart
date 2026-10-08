@@ -428,6 +428,11 @@ function PublicStore({data}){
    }));
    setCustomerOrders(updates);
  };
+ useEffect(()=>{
+   if(!customerOrders.length)return;
+   const timer=window.setInterval(()=>{refreshOrders()},10000);
+   return()=>window.clearInterval(timer);
+ },[customerOrders.map(o=>o.id+":"+o.status).join("|")]);
 
  return <main className="public-store-page">
   {completedOrder&&<Modal title="Order confirmed" subtitle={"Order #"+String(completedOrder.id).slice(0,12)} onClose={()=>setCompletedOrder(null)}>
