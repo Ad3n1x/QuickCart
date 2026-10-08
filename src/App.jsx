@@ -272,11 +272,11 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customer,setCustomer]=useState({name:"",phone:"",address:""}),[ful,setFul]=useState(""),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[completedOrder,setCompletedOrder]=useState(null);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customer,setCustomer]=useState({name:"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[completedOrder,setCompletedOrder]=useState(null);
 
  useEffect(()=>{
    if(!data?.store)return;
-   setFul(prev=>prev|| (data.store.deliveryEnabled===false?"pickup":""));
+   setFul(prev=>prev||"pickup");
  },[data?.store?.id,data?.store?.deliveryEnabled]);
 
  useEffect(()=>{
@@ -522,7 +522,7 @@ function PublicStore({data}){
    <aside id="public-checkout" className="panel public-checkout">
     <span className="eyebrow">YOUR CART</span><h2>Review your order</h2>
     {items.length?items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>):<p className="muted">Your cart is empty.</p>}
-    <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!ful&&deliveryEnabled&&<p className="muted">Choose Delivery or Pickup to continue.</p>}{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
+    <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
     <Field label="Your name" value={customer.name} onChange={e=>setCustomer({...customer,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
     <PhoneField label="Phone" value={customer.phone} onChange={v=>setCustomer({...customer,phone:v})} required/>
     {ful==="delivery"&&<Field label="Delivery address" value={customer.address} onChange={e=>setCustomer({...customer,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
