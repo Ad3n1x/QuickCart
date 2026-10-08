@@ -1074,3 +1074,62 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   .page-head{margin-bottom:16px}
   .panel,.table-card,.settings-card,.plan-card-new{padding:14px}
 }
+
+
+/* Add Product popup — balanced spacing and clear sections */
+.product-modal{
+  width:min(640px,calc(100vw - 28px));
+  max-height:min(820px,calc(100dvh - 28px));
+}
+.product-modal .qc-modal-body{
+  padding:20px 22px 22px;
+}
+.product-form{
+  display:grid;
+  gap:18px;
+}
+.product-form-section{
+  padding:18px;
+  border-radius:15px;
+}
+.product-section-heading{
+  margin-bottom:15px;
+  gap:11px;
+}
+.product-form-section .qc-field{
+  gap:8px;
+}
+.product-form-section .form-grid-2{
+  gap:14px;
+}
+.product-form-section+.product-form-section{
+  margin-top:0;
+}
+.product-modal-actions{
+  margin-top:4px;
+  padding:14px 2px 2px;
+}
+@media(max-width:560px){
+  .product-modal{
+    width:calc(100vw - 20px);
+    max-height:calc(100dvh - 20px);
+  }
+  .product-modal .qc-modal-body{
+    padding:16px 14px 16px;
+  }
+  .product-form{
+    gap:14px;
+  }
+  .product-form-section{
+    padding:15px;
+  }
+  .product-section-heading{
+    margin-bottom:13px;
+  }
+  .product-form-section .form-grid-2{
+    gap:11px;
+  }
+  .product-modal-actions{
+    padding-top:12px;
+  }
+}
