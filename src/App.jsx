@@ -250,7 +250,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
     const sent=o.whatsappSent===true,isPickup=o.fulfillment==="pickup",ready=isPickup&&o.status==="ready",done=["picked_up","delivered"].includes(o.status),preparing=isPickup&&["new","confirmed","processing"].includes(o.status);
     const stage=done?3:(ready?2:(sent?1:0));
     const label=done?(isPickup?"Pickup Completed":"Delivery Completed"):!sent?"WhatsApp Checkout Pending":isPickup?(ready?"Ready For Pickup":"Preparing Your Order"):o.status==="shipped"?"Out For Delivery":"Preparing Your Order";
-    const action=done?"":!sent?"I Sent It On WhatsApp":ready?"Confirm Pickup":isPickup?"Waiting For Pickup":o.status==="shipped"?"Confirm Delivery":"Waiting For Delivery";
+    const action=done?"":!sent?"I Sent It On WhatsApp":ready?"Confirm Pickup":isPickup?"Preparing Your Order":o.status==="shipped"?"Confirm Delivery":"Waiting For Delivery";
     return <article className={"customer-order-status-card "+(ready?"is-ready ":"")+(done?"is-complete":"")} key={o.id}>
       <div className="customer-order-top"><div><strong>#{String(o.id).slice(0,8)}</strong><span>{isPickup?"Pickup":"Delivery"} · {fmt(o.total)}</span></div><span className={"customer-status-pill stage-"+stage}>{label}</span></div>
       <div className="customer-status-track" aria-label={isPickup?"Pickup progress":"Delivery progress"}>
