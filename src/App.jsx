@@ -168,22 +168,20 @@ function CustomerReceiptScanner({value,onChange}){const[preview,setPreview]=useS
 
 function saveReceiptImage(order){
  if(!order)return;
- const width=900,pad=54,line=34,items=Array.isArray(order.items)?order.items:[];
- const height=330+items.length*line;
+ const width=1400,pad=90,line=58,items=Array.isArray(order.items)?order.items:[];
+ const height=Math.max(720,430+items.length*line);
  const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;
  const ctx=canvas.getContext("2d");if(!ctx)return;
- ctx.fillStyle="#fff";ctx.fillRect(0,0,width,height);ctx.fillStyle="#15221c";ctx.font="700 30px Arial";
- ctx.fillText(String(order.storeName||"QuickCart Store"),pad,62);
- ctx.font="14px Arial";ctx.fillStyle="#68736e";ctx.fillText("Customer receipt",pad,88);
- ctx.strokeStyle="#aaa";ctx.setLineDash([7,7]);ctx.beginPath();ctx.moveTo(pad,110);ctx.lineTo(width-pad,110);ctx.stroke();ctx.setLineDash([]);
- ctx.fillStyle="#15221c";ctx.font="14px Arial";
- ctx.fillText("Order #"+String(order.id||"").slice(0,12),pad,140);
- ctx.fillText(order.createdAt?new Date(order.createdAt).toLocaleString():"—",pad,164);
- let y=204;
- items.forEach(x=>{ctx.font="14px Arial";ctx.fillText((x.quantity||1)+"× "+String(x.name||"Item").slice(0,48),pad,y);ctx.textAlign="right";ctx.fillText(fmt(Number(x.price||0)*Number(x.quantity||1)),width-pad,y);ctx.textAlign="left";y+=line});
- ctx.strokeStyle="#15221c";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y+8);ctx.lineTo(width-pad,y+8);ctx.stroke();
- ctx.font="700 20px Arial";ctx.fillText("Total",pad,y+46);ctx.textAlign="right";ctx.fillText(fmt(order.total),width-pad,y+46);ctx.textAlign="left";
- ctx.font="12px Arial";ctx.fillStyle="#68736e";ctx.fillText("Powered by QuickCart",pad,y+82);
+ ctx.fillStyle="#fff";ctx.fillRect(0,0,width,height);
+ ctx.fillStyle="#15221c";ctx.font="700 52px Arial";ctx.fillText(String(order.storeName||"QuickCart Store"),pad,82);
+ ctx.font="600 30px Arial";ctx.fillStyle="#68736e";ctx.fillText("CUSTOMER RECEIPT",pad,132);
+ ctx.fillStyle="#15221c";ctx.font="500 25px Arial";ctx.fillText("Order #"+String(order.id||"").slice(0,12),pad,210);
+ ctx.fillText(order.createdAt?new Date(order.createdAt).toLocaleString():"—",pad,248);
+ let y=310;
+ items.forEach(x=>{ctx.font="600 30px Arial";ctx.fillText((x.quantity||1)+"× "+String(x.name||"Item").slice(0,55),pad,y);ctx.textAlign="right";ctx.fillText(fmt(Number(x.price||0)*Number(x.quantity||1)),width-pad,y);ctx.textAlign="left";y+=line});
+ ctx.strokeStyle="#15221c";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(pad,y+14);ctx.lineTo(width-pad,y+14);ctx.stroke();
+ ctx.font="700 40px Arial";ctx.fillText("TOTAL",pad,y+76);ctx.textAlign="right";ctx.fillText(fmt(order.total),width-pad,y+76);ctx.textAlign="left";
+ ctx.font="500 24px Arial";ctx.fillStyle="#68736e";ctx.fillText("Powered by QuickCart",pad,y+135);
  const link=document.createElement("a");link.download="quickcart-receipt-"+String(order.id||"receipt").slice(0,12)+".png";link.href=canvas.toDataURL("image/png");link.click();
 }
 function CustomerReceiptCard({order}){
