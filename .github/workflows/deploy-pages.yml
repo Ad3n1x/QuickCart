@@ -1,5 +1,6 @@
 name: Deploy QuickCart to GitHub Pages
 # Trigger a fresh Pages deployment.
+# Google sitemap verification enabled.
 
 on:
   push:
