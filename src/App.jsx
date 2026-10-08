@@ -495,7 +495,7 @@ function PublicStore({data}){
       <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
       {items.length>0&&<a className="public-cart-jump" href="#public-checkout"><span>{items.reduce((n,x)=>n+x.quantity,0)} item{items.reduce((n,x)=>n+x.quantity,0)===1?"":"s"}</span><strong>{fmt(total)}</strong></a>}
     </div>
-    {visible.length?visible.map(x=>{
+    {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
       return <article className="public-product-card" key={x.id}>
        <div className="public-product-art">
