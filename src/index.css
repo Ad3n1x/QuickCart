@@ -1779,3 +1779,39 @@ button{white-space:normal;line-height:1.25}
  .order-card-meta{gap:8px;line-height:1.5}
  .order-card-actions label{max-width:none}
 }
+
+/* Sidebar Close Button — Final */
+@media(max-width:1180px){
+  .sidebar-top{padding-top:48px!important}
+  .sidebar-close{
+    display:grid!important;
+    position:absolute!important;
+    top:0!important;
+    right:0!important;
+    z-index:130!important;
+    width:40px!important;
+    height:40px!important;
+    padding:0!important;
+    place-items:center!important;
+    border:1px solid var(--border)!important;
+    border-radius:11px!important;
+    background:var(--surface-2)!important;
+    color:var(--ink)!important;
+    box-shadow:0 6px 16px rgba(16,43,33,.08)!important;
+    cursor:pointer!important;
+  }
+  .sidebar-close:hover{
+    background:var(--accent-soft)!important;
+    color:var(--accent)!important;
+    border-color:color-mix(in srgb,var(--accent) 30%,var(--border))!important;
+  }
+  .sidebar-close:active{transform:translateY(1px)!important}
+  .sidebar-close:focus-visible{
+    outline:3px solid color-mix(in srgb,var(--accent) 28%,transparent)!important;
+    outline-offset:2px!important;
+  }
+}
+@media(max-width:760px){
+  .sidebar-top{padding-top:48px!important}
+  .sidebar-close{width:42px!important;height:42px!important;right:0!important}
+}
