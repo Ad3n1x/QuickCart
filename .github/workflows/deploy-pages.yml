@@ -52,6 +52,9 @@ jobs:
           test -s dist/sitemap.xml
           test -s dist/robots.txt
           grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
+
+          # Validate the sitemap as XML before publishing it.
+          xmllint --noout dist/sitemap.xml
           grep -Fq '<?xml version="1.0" encoding="UTF-8"?>' dist/sitemap.xml
           grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
           grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
@@ -76,14 +79,18 @@ jobs:
         run: |
           set -e
           for i in {1..12}; do
-            sitemap_code=$(curl -L -sS -o /tmp/sitemap.xml -w "%{http_code}" --retry 2 --retry-delay 3 "https://ad3n1x.github.io/QuickCart/sitemap.xml" || true)
+            sitemap_headers=$(curl -L -sS -D /tmp/sitemap.headers -o /tmp/sitemap.xml -w "%{http_code}" --retry 2 --retry-delay 3 "https://ad3n1x.github.io/QuickCart/sitemap.xml" || true)
             robots_code=$(curl -L -sS -o /tmp/robots.txt -w "%{http_code}" --retry 2 --retry-delay 3 "https://ad3n1x.github.io/QuickCart/robots.txt" || true)
-            if [ "$sitemap_code" = "200" ] && [ "$robots_code" = "200" ] && grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' /tmp/sitemap.xml && grep -Fq 'Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml' /tmp/robots.txt; then
-              echo "GitHub Pages SEO files are live and valid."
+            content_type=$(awk -F': ' 'tolower($1)=="content-type" {print tolower($2)}' /tmp/sitemap.headers | tr -d '\r' | tail -1)
+
+            if [ "$sitemap_headers" = "200" ] && [ "$robots_code" = "200" ] &&                echo "$content_type" | grep -Eq '^(application/xml|text/xml)(;|$)' &&                xmllint --noout /tmp/sitemap.xml &&                grep -Fq 'Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml' /tmp/robots.txt; then
+              echo "GitHub Pages sitemap.xml and robots.txt are live, valid XML, and served with an XML content type."
               exit 0
             fi
-            echo "Waiting for GitHub Pages propagation (attempt $i/12): sitemap=$sitemap_code robots=$robots_code"
+
+            echo "Waiting for GitHub Pages propagation (attempt $i/12): sitemap=$sitemap_headers robots=$robots_code content-type=$content_type"
             sleep 10
           done
-          echo "GitHub Pages did not serve sitemap.xml and robots.txt correctly after deployment."
+
+          echo "GitHub Pages did not serve a Google-readable sitemap.xml and robots.txt."
           exit 1
