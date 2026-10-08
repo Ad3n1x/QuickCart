@@ -504,6 +504,7 @@ function PublicStore({data}){
       </article>
     }):<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
+   {items.length>0&&(
    <aside id="public-checkout" className="panel public-checkout">
     <span className="eyebrow">YOUR CART</span><h2>Review your order</h2>
     {items.length?items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>):<p className="muted">Your cart is empty.</p>}
@@ -520,7 +521,8 @@ function PublicStore({data}){
     <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
     {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
    </aside>
-  </div>
+   
+   )}</div>
  </main>
 }
 
