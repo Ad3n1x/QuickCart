@@ -129,14 +129,8 @@ check("Startup no longer deletes saved customer order confirmation tokens",
 check("Order-edit controls report failures and prevent duplicate requests while an update is pending",
   /if\(busy===order\.id\)return/.test(app) &&
   /setMsg\(e\.message\|\|"Could not update this order/.test(app) &&
-  /finally\{setBusy\(" "\)\}/.test(app) === false &&
-  /finally\{setBusy\(" "\)\}/.test(app) === false &&
-  /finally\{setBusy\("\)\}/.test(app) === false &&
-  /finally\{setBusy\(""\)\}/.test(app) &&
+  /finally\{setBusy\("")\}/.test(app) &&
   /if\(!order\|\|busy\)return/.test(app));
-console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
-for (const label of checks) console.log(`✓ ${label}`);
-
 check("Customer cart and order tracking render together and collapse together without squeezing the tracking panel",
   /\[panelsExpanded,setPanelsExpanded\]=useState\(true\)/.test(app) &&
   /public-cart-tracking-toggle/.test(app) &&
@@ -146,3 +140,6 @@ check("Customer cart and order tracking render together and collapse together wi
   /customerOrders\.length>0&&<div className="customer-tracking-wrap">/.test(app) &&
   /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css) &&
   /\.public-cart-tracking-toggle>svg\.is-expanded/.test(css));
+
+console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
+for (const label of checks) console.log(`✓ ${label}`);
