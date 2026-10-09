@@ -104,16 +104,19 @@ check("Server order history remains authoritative after reload while preserving 
   /setCustomerOrders\(remote\.map\(o=>/.test(app) &&
   /setCustomerOrders\(current=>freshOrders\.orders\.filter/.test(app) &&
   /whatsappSent:current\.find\(c=>c\.id===o\.id\)\?\.whatsappSent===true/.test(app));
-check("Customer order reductions and cancellations update the server order and restore product stock",
+check("Customer order quantity changes validate stock, preserve minimum quantities, and restore stock on reductions or cancellations",
   /\/api\/orders\/:id\/customer-update/.test(api) &&
   /customerConfirmationTokenHash/.test(api) &&
   /status:\{\$in:\['new','confirmed'\]\}/.test(api) &&
   /\$inc:\{stock:Math\.max\(0,Number\(item\.quantity\)\|\|0\)\}/.test(api) &&
   /\$inc:\{stock:1\}/.test(api) &&
-  /status:empty\?'cancelled':order\.status/.test(api));
-check("Customer order tracking exposes guarded reduce and cancel actions and refreshes storefront data after changes",
+  /if\(action==='increase'\)/.test(api) &&
+  /stock:\{\$gt:0\}/.test(api) &&
+  /Each item must stay at quantity 1 or more/.test(api));
+check("Customer order tracking exposes plus/minus and cancel actions and refreshes storefront data after changes",
   /onModifyOrder/.test(app) &&
   /action:"reduce",itemId:item\.id/.test(app) &&
+  /action:"increase",itemId:item\.id/.test(app) &&
   /action:"cancel"/.test(app) &&
   /onStoreRefresh\?\.\(fresh\)/.test(app) &&
   /onStoreRefresh=\{setPublicData\}/.test(app));
