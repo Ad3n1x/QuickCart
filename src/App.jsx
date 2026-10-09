@@ -272,7 +272,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
        <div className={stage>=1?"active":""}><span>1</span><small>Order Sent</small></div><i className={stage>=1?"active":""}/><div className={stage>=2?"active":""}><span>2</span><small>{isPickup?"Ready":"Out For Delivery"}</small></div><i className={stage>=2?"active":""}/><div className={stage>=3?"active":""}><span>3</span><small>{isPickup?"Picked Up":"Delivered"}</small></div>
       </div>
       <div className="customer-order-message"><strong>{label}</strong><span>{message}</span></div>
-      {["new","confirmed"].includes(o.status)&&<div className="customer-order-edit-controls"><div><strong>Need to change this order?</strong><span>You can reduce quantities or cancel before the seller starts processing it.</span></div><div className="customer-order-edit-items">{(o.items||[]).map(item=><div className="customer-order-edit-item" key={item.id}><span>{item.name} · {item.quantity} in order</span><button className="ghost-button" type="button" disabled={busy===o.id} onClick={()=>modify(o,{action:"reduce",itemId:item.id})}>− Reduce 1</button></div>)}</div><button className="ghost-button customer-cancel-order" type="button" disabled={busy===o.id} onClick={()=>{if(window.confirm("Cancel this order? The item quantities will be returned to store stock."))modify(o,{action:"cancel"})}}>Cancel order</button></div>}
+      {["new","confirmed"].includes(o.status)&&<div className="customer-order-edit-controls"><div><strong>Need to change this order?</strong><span>You can reduce quantities or cancel before the seller starts processing it.</span></div><div className="customer-order-edit-items">{(o.items||[]).map(item=><div className="customer-order-edit-item" key={item.id}><span>{item.name}</span><div className="order-quantity-control"><button type="button" aria-label={"Decrease "+item.name} disabled={busy===o.id||Number(item.quantity)<=1} onClick={()=>modify(o,{action:"reduce",itemId:item.id})}>−</button><strong>{item.quantity}</strong><button type="button" aria-label={"Increase "+item.name} disabled={busy===o.id} onClick={()=>modify(o,{action:"increase",itemId:item.id})}>+</button></div></div>)}</div><button className="ghost-button customer-cancel-order" type="button" disabled={busy===o.id} onClick={()=>{if(window.confirm("Cancel this order? The item quantities will be returned to store stock."))modify(o,{action:"cancel"})}}>Cancel order</button></div>}
       {isPickup&&ready&&<div className="customer-pickup-ready-note"><strong>Ready For Pickup</strong><span>Order #{String(o.id).slice(0,8)} is ready. Collect it from the store, then confirm your pickup below.</span></div>}
       {isPickup&&preparing&&!done&&<div className="customer-pickup-wait-note"><span className="customer-pickup-dot" aria-hidden="true"/><span>We’re waiting for the seller to mark this order ready. This status will update automatically.</span></div>}
       <div className="customer-order-actions">
@@ -286,11 +286,9 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
  </section>
 }
 function PublicStore({data,customer,onLogin,onStoreRefresh}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState(""),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
- useEffect(()=>{const storeId=data?.store?.id;if(!storeId)return;try{setPanelsExpanded(sessionStorage.getItem("qc_cart_panels:"+storeId)!=="0")}catch{setPanelsExpanded(true)}setPanelsPreferenceStore(storeId)},[data?.store?.id]);
- useEffect(()=>{const storeId=data?.store?.id;if(!storeId||panelsPreferenceStore!==storeId)return;try{sessionStorage.setItem("qc_cart_panels:"+storeId,panelsExpanded?"1":"0")}catch{}},[data?.store?.id,panelsExpanded,panelsPreferenceStore]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId){setCart({});setCartOwner("");return}const owner=storeId+":"+(email||"guest");try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");const guest=email?JSON.parse(localStorage.getItem("qc_cart:"+storeId+":guest")||"{}"):{};const safeSaved=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};const safeGuest=guest&&typeof guest==="object"&&!Array.isArray(guest)?guest:{};const merged={...safeSaved};if(email)for(const [id,qty] of Object.entries(safeGuest))merged[id]=(Math.max(0,Number(merged[id])||0)+Math.max(0,Number(qty)||0));setCart(email?merged:safeSaved);setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email),owner=storeId+":"+(email||"guest");if(!storeId||cartOwner!==owner)return;try{localStorage.setItem("qc_cart:"+owner,JSON.stringify(cart));if(email)localStorage.removeItem("qc_cart:"+storeId+":guest")}catch{}},[data?.store?.id,customer?.email,cart,cartOwner]);
 
@@ -357,7 +355,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
    });
  },[data?.store?.id,p.map(x=>x.id+":"+x.stock).join("|")]);
 
- useEffect(()=>{if(!focusCartAfterAdd||!items.length||!panelsExpanded)return;setFocusCartAfterAdd(false);requestAnimationFrame(()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"}))},[focusCartAfterAdd,items.length,panelsExpanded]);
+ useEffect(()=>{if(!focusCartAfterAdd||!items.length)return;setFocusCartAfterAdd(false);requestAnimationFrame(()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"}))},[focusCartAfterAdd,items.length]);
 
  useEffect(()=>{
    if(!data?.store?.id||!customerOrders.length)return;
@@ -380,7 +378,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
 
  const updateCart=(id,next)=>{
    const adding=Number(next)>Number(cart[id]||0);
-   if(adding){setPanelsExpanded(true);if(items.length===0)setFocusCartAfterAdd(true)}
+   if(adding&&items.length===0)setFocusCartAfterAdd(true)
    setCart(prev=>{
      const value=Math.max(0,Number(next)||0);
      const product=p.find(x=>x.id===id);
@@ -571,7 +569,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     {msg&&<div className={/could not|cannot|invalid|unable|failed|error/i.test(msg)?"form-error public-store-feedback":"form-success public-store-feedback"} role="status" aria-live="polite">{msg}</div>}
     <div className="public-catalog-head">
       <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
-      {(items.length>0||customerOrders.length>0)&&<button className="public-cart-jump public-cart-tracking-toggle" type="button" aria-expanded={panelsExpanded} onClick={()=>{const next=!panelsExpanded;setPanelsExpanded(next);if(next)requestAnimationFrame(()=>document.getElementById(items.length?"public-checkout":"customer-order-tracking")?.scrollIntoView({behavior:"smooth",block:"start"}))}}><span>{panelsExpanded?"Collapse":"Show"} cart &amp; tracking</span>{items.length>0&&<strong>{items.reduce((n,x)=>n+x.quantity,0)} · {fmt(total)}</strong>}{customerOrders.length>0&&<small>{customerOrders.length} {customerOrders.length===1?"order":"orders"} tracking</small>}<ChevronDown size={16} className={panelsExpanded?"is-expanded":""}/></button>}
+
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
@@ -584,7 +582,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        <div className="product-info">
         <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
         <strong className="product-price">{fmt(x.price)}</strong>
-        {(()=>{const lines=editableOrderLines.filter(item=>String(item.id)===String(x.id));return lines.length?<div className="product-order-edit">{lines.map(line=><div className="product-order-edit-line" key={line.orderId+":"+line.id}><span>Order #{String(line.orderId).slice(0,8)} · <b>{line.quantity}</b> in order</span><button className="ghost-button" type="button" disabled={busy||Boolean(orderEditBusy)} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id})}>{orderEditBusy===line.orderId?"Updating…":"− Reduce 1 from order"}</button></div>)}</div>:null})()}
+        {(()=>{const lines=editableOrderLines.filter(item=>String(item.id)===String(x.id));return lines.length?<div className="product-order-edit">{lines.map(line=><div className="product-order-edit-line" key={line.orderId+":"+line.id}><span>Order #{String(line.orderId).slice(0,8)}</span><div className="order-quantity-control"><button type="button" aria-label={"Decrease "+x.name} disabled={busy||Boolean(orderEditBusy)||Number(line.quantity)<=1} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id})}>−</button><strong>{line.quantity}</strong><button type="button" aria-label={"Increase "+x.name} disabled={busy||Boolean(orderEditBusy)} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"increase",itemId:line.id})}>+</button></div>{orderEditBusy===line.orderId&&<span className="order-edit-pending">Updating…</span>}</div>)}</div>:null})()}
        </div>
        <div className={"public-product-actions"+(qty>0?" has-quantity":"")}>
         {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
@@ -597,7 +595,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       </article>
     })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
-   {(items.length>0||customerOrders.length>0)&&panelsExpanded&&<div className="public-cart-tracking-stack">
+   {(items.length>0||customerOrders.length>0)&&<div className="public-cart-tracking-stack">
    {items.length>0&&(<section id="public-checkout" className="panel public-checkout">
     <div className="checkout-heading"><span className="eyebrow">YOUR CART</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
     {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your cart is saved.</strong><span>Sign in to continue with your order and keep your order history together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
