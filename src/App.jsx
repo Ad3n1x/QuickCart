@@ -552,7 +552,7 @@ function PublicStore({data,customer,onLogin}){
       </article>
     })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
-   (items.length>0||customerOrders.length>0)&&panelsExpanded&&<div className="public-cart-tracking-stack">
+   {(items.length>0||customerOrders.length>0)&&panelsExpanded&&<div className="public-cart-tracking-stack">
    {items.length>0&&(<section id="public-checkout" className="panel public-checkout">
     <div className="checkout-heading"><span className="eyebrow">YOUR CART</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
     {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your cart is saved.</strong><span>Sign in to continue with your order and keep your order history together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
