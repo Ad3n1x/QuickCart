@@ -2979,3 +2979,20 @@ button{white-space:normal;line-height:1.25}
     flex-basis:40px!important;width:40px!important;min-width:40px!important;max-width:40px!important;
   }
 }
+
+/* Force the quantity stepper itself to occupy the whole action-row track. */
+.public-product-actions-stepper{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+}
+.public-product-actions-stepper > .public-qty-control{
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+}
