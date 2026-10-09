@@ -196,6 +196,8 @@ app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
  const orders=database.collection('orders'),current=await orders.findOne({id:req.params.id,storeId:store.id});
  if(!current)return res.status(404).json({error:'Order not found.'});
  if(current.status===status)return res.json({status});
+ if(current.status==='cancelled')return res.status(409).json({error:'Cancelled orders cannot be reopened. Create a new order instead.'});
+ if(status==='cancelled'&&['shipped','delivered','picked_up'].includes(current.status))return res.status(409).json({error:'This order has already been dispatched or completed and cannot be cancelled.'});
  const result=await orders.updateOne({id:current.id,storeId:store.id,status:current.status},{$set:{status,updatedAt:now()}});
  if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh and try again.'});
  if(status==='cancelled'&&!['cancelled','delivered','picked_up'].includes(current.status)){
