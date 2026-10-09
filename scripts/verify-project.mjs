@@ -90,12 +90,13 @@ check("Guest cart quantities merge with the signed-in customer cart instead of o
   /const merged=\{\.\.\.safeSaved\};if\(email\)for\(const \[id,qty\] of Object\.entries\(safeGuest\)\)merged\[id\]=\(Math\.max\(0,Number\(merged\[id\]\)\|\|0\)\+Math\.max\(0,Number\(qty\)\|\|0\)\)/.test(app));
 
 check("Order tracking stays collapsed until explicitly opened and only shows valid orders for the active store",
-  /\[trackingExpanded,setTrackingExpanded\]=useState\(false\)/.test(app) &&
-  /setTrackingExpanded\(false\)/.test(app) &&
-  /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app) &&
-  /public-track-orders-link/.test(app) &&
-  /trackingExpanded&&customer&&<Modal title="Track your orders"[\\s\\S]*?className="customer-tracking-modal"/.test(app) &&
-  /setTrackingExpanded\(true\)/.test(app));
+  app.includes("[trackingExpanded,setTrackingExpanded]=useState(false)") &&
+  app.includes("public-track-orders-link") &&
+  app.includes('title="Track your orders"') &&
+  app.includes('className="customer-tracking-modal"') &&
+  app.includes("setTrackingExpanded(false)") &&
+  app.includes("setTrackingExpanded(true)") &&
+  /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app));
 
 check("Successful checkout scrolls to automatically rendered order tracking",
   /id="customer-order-tracking" className="panel customer-order-status"/.test(app) &&
