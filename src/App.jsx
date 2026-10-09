@@ -54,6 +54,8 @@ function dedupeCustomerOrders(list){
  const seenIds=new Set(),seenClientIds=new Set(),recentFingerprints=new Map();
  return (Array.isArray(list)?list:[]).filter(order=>{
   if(!order||order.id==null)return false;
+  // Never render malformed/empty order records as customer orders or receipts.
+  if(!Array.isArray(order.items)||order.items.length===0)return false;
   const id=String(order.id);
   if(seenIds.has(id))return false;
   const storeId=String(order.storeId||""),clientOrderId=String(order.clientOrderId||"").trim();
