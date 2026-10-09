@@ -3207,3 +3207,15 @@ button{white-space:normal;line-height:1.25}
  .landing-nav-actions{gap:4px}
  .landing-nav-actions .ghost-button,.landing-nav-actions .primary-button{padding-inline:8px;font-size:11px}
 }
+
+
+/* Keep customer storefront account actions visible at every viewport width. */
+@media(max-width:700px){
+ .public-store-page .public-nav-actions .public-nav-link{display:inline-flex!important;align-items:center;justify-content:center;min-height:40px;padding:8px 11px;white-space:nowrap;flex:0 0 auto}
+ .public-store-page .public-nav-actions{width:auto;max-width:100%;flex-wrap:wrap;justify-content:flex-end}
+ .public-store-page .public-nav-actions .public-signin-link{font-weight:850}
+}
+@media(max-width:380px){
+ .public-store-page .public-nav-actions{gap:5px}
+ .public-store-page .public-nav-actions .public-nav-link{padding:7px 9px;font-size:12px}
+}
