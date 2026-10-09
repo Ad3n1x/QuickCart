@@ -75,11 +75,12 @@ function dedupeCustomerOrders(list){
 }
 const routes={overview:"dashboard",dashboard:"dashboard",products:"products",orders:"orders",customers:"customers",analytics:"analytics",discounts:"discounts",receipts:"receipts",settings:"settings",premium:"premium"};
 
-function cleanPath(){const raw=window.location.pathname||"/";return BASE&&raw.startsWith(BASE)?raw.slice(BASE.length)||"/":raw}
-function getRoute(){const p=cleanPath();let m=p.match(/^\/store\/([^/]+)\/auth\/(login|signup)\/?$/);if(m)return{type:"store-auth",slug:decodeURIComponent(m[1]),mode:m[2]};m=p.match(/^\/store\/([^/]+)\/?$/);if(m)return{type:"store",slug:decodeURIComponent(m[1])};m=p.match(/^\/auth\/(login|signup)\/?$/);if(m)return{type:"auth",mode:m[1]};m=p.match(/^\/app(?:\/([^/]+))?\/?$/);if(m)return{type:"app",view:routes[m[1]||"overview"]||"dashboard"};return{type:"landing"}}
-function go(path,replace=false){const url=(BASE||"")+path;(replace?history.replaceState:history.pushState).call(history,{}, "",url);dispatchEvent(new PopStateEvent("popstate"))}
+function cleanPath(){const raw=window.location.pathname||"/";const base=BASE||"";const path=base&&raw.startsWith(base)?raw.slice(base.length)||"/":raw;return path.length>1?path.replace(/\/+$/,""):path}
+function safeDecode(value){try{return decodeURIComponent(value)}catch{return value}}
+function getRoute(){const p=cleanPath();let m=p.match(/^\/store\/([^/]+)\/auth\/(login|signup)\/?$/);if(m)return{type:"store-auth",slug:safeDecode(m[1]),mode:m[2]};m=p.match(/^\/store\/([^/]+)\/?$/);if(m)return{type:"store",slug:decodeURIComponent(m[1])};m=p.match(/^\/auth\/(login|signup)\/?$/);if(m)return{type:"auth",mode:m[1]};m=p.match(/^\/app(?:\/([^/]+))?\/?$/);if(m)return{type:"app",view:routes[m[1]||"overview"]||"dashboard"};return{type:"landing"}}
+function go(path,replace=false){const url=(BASE||"")+path;(replace?history.replaceState:history.pushState).call(history,{}, "",url);window.dispatchEvent(new Event("popstate"));if(!String(path).includes("#"))window.scrollTo({top:0,behavior:"auto"})}
 function body(v){return JSON.stringify(v)}
-function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());addEventListener("popstate",f);return()=>removeEventListener("popstate",f)},[]);return r}
+function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
 
 function Logo({size=36}){return <span className="qc-logo" style={{width:size,height:size}} aria-label="QuickCart" role="img"><ShoppingBag size={Math.round(size*.56)}/></span>}
 function Field({label,...p}){return <label className="qc-field"><span>{label}</span><input {...p}/></label>}
@@ -636,7 +637,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     {msg&&<div className={/could not|cannot|invalid|unable|failed|error/i.test(msg)?"form-error public-store-feedback":"form-success public-store-feedback"} role="status" aria-live="polite">{msg}</div>}
     <div className="public-catalog-head">
       <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
-      {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))&&<button type="button" className="ghost-button customer-tracking-toggle" aria-expanded={trackingVisible} aria-controls="customer-order-tracking" onClick={()=>setTrackingVisible(v=>!v)}>{trackingVisible?"Hide order tracking":"Track my orders"} <span aria-hidden="true">{trackingVisible?"−":"+"}</span></button>}
+      {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&!(o.fulfillment==="pickup"&&o.status==="picked_up"))&&<button type="button" className="ghost-button customer-tracking-toggle" aria-expanded={trackingVisible} aria-controls="customer-order-tracking" onClick={()=>setTrackingVisible(v=>!v)}>{trackingVisible?"Hide order tracking":"Track my orders"} <span aria-hidden="true">{trackingVisible?"−":"+"}</span></button>}
 
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
