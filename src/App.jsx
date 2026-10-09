@@ -610,22 +610,21 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
-      return <article className="public-product-card group overflow-hidden rounded-2xl border border-qc-line bg-qc-surface shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-card focus-within:ring-2 focus-within:ring-qc-accent" key={x.id}>
-       <div className="public-product-art relative overflow-hidden bg-qc-subtle">
+      return <article className="qc-shop-card" key={x.id}>
+       <div className="qc-shop-image">
         {x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}
         {stock<=0&&<span className="public-stock-pill">Sold out</span>}
         {stock>0&&stock<=5&&<span className="public-stock-pill">Only {stock} left</span>}
        </div>
-       <div className="product-info min-w-0 p-4">
-        <h3 className="text-base font-bold tracking-tight text-qc-ink">{x.name}</h3><p className="mt-1 line-clamp-2 text-sm leading-5 text-qc-muted">{x.description||"Available from this store."}</p>
-        <strong className="product-price mt-2 inline-flex text-lg font-extrabold tracking-tight text-qc-accent">{fmt(x.price)}</strong>
-
+       <div className="qc-shop-info">
+        <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
+        <strong className="qc-shop-price">{fmt(x.price)}</strong>
        </div>
-       <div className={"public-product-actions public-product-actions-stepper"+(qty>0?" has-quantity":"")}>
-        {stock>0?<div className="public-qty-control" aria-label={"Quantity of "+x.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",boxSizing:"border-box",width:"100%",maxWidth:"none",minWidth:0,gap:8,padding:"4px 6px"}}>
-          <button type="button" onClick={()=>updateCart(x.id,Math.max(0,qty-1))} disabled={qty<=0} aria-label={"Decrease "+x.name+" quantity"} style={{flex:"0 0 40px",width:40,minWidth:40,height:40,minHeight:40,padding:0}}>−</button>
-          <strong aria-live="polite" aria-atomic="true" style={{flex:"1 1 auto",minWidth:0,textAlign:"center"}}>{qty}</strong>
-          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Increase "+x.name+" quantity"} style={{flex:"0 0 40px",width:40,minWidth:40,height:40,minHeight:40,padding:0}}>+</button>
+       <div className="qc-shop-actions">
+        {stock>0?<div className="qc-shop-stepper" aria-label={"Quantity of "+x.name}>
+          <button type="button" onClick={()=>updateCart(x.id,Math.max(0,qty-1))} disabled={qty<=0} aria-label={"Decrease "+x.name+" quantity"}>−</button>
+          <strong aria-live="polite" aria-atomic="true">{qty}</strong>
+          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Increase "+x.name+" quantity"}>+</button>
         </div>:<span className="public-sold-out" role="status">Sold out</span>}
        </div>
       </article>
