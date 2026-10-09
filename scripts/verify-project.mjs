@@ -111,9 +111,9 @@ check("First product added focuses the automatically visible cart while quantity
 check("Server order history remains authoritative after reload while preserving local WhatsApp handoff state",
   /const cachedById=new Map\(cached\.map\(o=>\[String\(o\.id\),o\]\)\)/.test(app) &&
   /whatsappSent:cachedById\.get\(String\(o\.id\)\)\?\.whatsappSent===true/.test(app) &&
-  /setCustomerOrders\(remote\.map\(o=>/.test(app) &&
-  /setCustomerOrders\(current=>freshOrders\.orders\.filter/.test(app) &&
-  /whatsappSent:current\.find\(c=>c\.id===o\.id\)\?\.whatsappSent===true/.test(app));
+  /setCustomerOrders\(dedupeCustomerOrders\(remote\.map\(o=>/.test(app) &&
+  /cachedById\.get\(String\(o\.id\)\)\?\.whatsappSent===true/.test(app) &&
+  /setCustomerOrders\(dedupeCustomerOrders\(updates\)\)/.test(app));
 check("Customer order quantity changes validate stock, preserve minimum quantities, and restore stock on reductions or cancellations",
   /\/api\/orders\/:id\/customer-update/.test(api) &&
   /customerConfirmationTokenHash/.test(api) &&
