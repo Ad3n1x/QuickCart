@@ -183,5 +183,23 @@ check("Checkout has a per-store duplicate-submit lock and stable retry idempoten
   /clientOrderId/.test(app) &&
   /clientOrderKey/.test(app));
 
+check("Order retries replay only the same customer's existing store order",
+  /findOne\(\{storeId,clientOrderId,customerEmail\}\)/.test(api) &&
+  /replayed:true/.test(api) &&
+  /orders_store_clientOrder_unique/.test(api));
+check("Customer order edits use compare-and-set status and item snapshots to reject stale concurrent updates",
+  /const eligible=\{id:order\.id,status:\{\$in:\['new','confirmed'\]\},items:order\.items\}/.test(api) &&
+  /order changed elsewhere\. Refresh tracking and try again\./.test(api) &&
+  /if\(!result\.modifiedCount\)/.test(api));
+check("Stock reservations are restored when order creation fails partway through",
+  /const changed=\[\]/.test(api) &&
+  /changed\.push\(item\)/.test(api) &&
+  /for\(const item of changed\)/.test(api) &&
+  /\$inc:\{stock:item\.quantity\}/.test(api));
+check("Order cancellation restores stock only after a successful conditional status change",
+  /orders\.updateOne\(eligible,\{\$set:\{status:'cancelled',updatedAt\}\}\)/.test(api) &&
+  /if\(!result\.modifiedCount\)return res\.status\(409\)/.test(api) &&
+  /for\(const item of order\.items\|\|\[\]\)await database\.collection\('products'\)\.updateOne/.test(api));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
