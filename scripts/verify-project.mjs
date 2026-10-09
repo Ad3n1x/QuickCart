@@ -156,6 +156,14 @@ check("Cart appears only when populated and order tracking opens in a navigation
   app.includes("setTrackingExpanded(false)") &&
   /saved\.filter\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(storeId\)\)/.test(app));
 
+check("Customer order tracking deduplicates repeated order IDs, idempotency keys, and immediate duplicate submissions",
+  /function dedupeCustomerOrders\(list\)/.test(app) &&
+  /seenIds\.has\(id\)/.test(app) &&
+  /seenClientIds\.has\(clientKey\)/.test(app) &&
+  /Math\.abs\(created-previous\)<=5000/.test(app) &&
+  /setCustomerOrders\(dedupeCustomerOrders\(remote\.map/.test(app) &&
+  /setCustomerOrders\(dedupeCustomerOrders\(\[savedOrder,\.\.\.xs\]\)\.slice\(0,10\)\)/.test(app));
+
 check("Customer order quantities use plus and minus controls and are updated by the backend",
   /action:"increase"/.test(app) && /action:"reduce"/.test(app) &&
   /!\['reduce','increase'\]\.includes\(action\)/.test(api) && /action==='increase'/.test(api) && /stock:\{\$gt:0\}/.test(api) &&
