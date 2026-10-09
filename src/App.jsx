@@ -41,6 +41,27 @@ function printReceiptDocument(order,store){
 }
 const slugify=v=>String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48);
 const emailOf=v=>String(v||"").trim().toLowerCase().replace(/[\u200B-\u200D\uFEFF]/g,"");
+function dedupeCustomerOrders(list){
+ const seenIds=new Set(),seenClientIds=new Set(),recentFingerprints=new Map();
+ return (Array.isArray(list)?list:[]).filter(order=>{
+  if(!order||order.id==null)return false;
+  const id=String(order.id);
+  if(seenIds.has(id))return false;
+  const storeId=String(order.storeId||""),clientOrderId=String(order.clientOrderId||"").trim();
+  const clientKey=clientOrderId?storeId+":"+clientOrderId:"";
+  if(clientKey&&seenClientIds.has(clientKey))return false;
+  const items=(Array.isArray(order.items)?order.items:[]).map(item=>({id:String(item.id??item.productId??item.name??""),quantity:Number(item.quantity)||1})).sort((a,b)=>a.id.localeCompare(b.id)||a.quantity-b.quantity);
+  const fingerprint=JSON.stringify({storeId,email:String(order.customerEmail||"").trim().toLowerCase(),fulfillment:order.fulfillment||"pickup",total:Number(order.total)||0,items});
+  const created=Date.parse(order.createdAt||order.updatedAt||"");
+  const previous=recentFingerprints.get(fingerprint);
+  // Hide accidental double submissions created within a few seconds, without merging later repeat purchases.
+  if(Number.isFinite(created)&&previous!=null&&Math.abs(created-previous)<=5000)return false;
+  seenIds.add(id);
+  if(clientKey)seenClientIds.add(clientKey);
+  if(Number.isFinite(created))recentFingerprints.set(fingerprint,created);
+  return true;
+});
+}
 const routes={overview:"dashboard",dashboard:"dashboard",products:"products",orders:"orders",customers:"customers",analytics:"analytics",discounts:"discounts",receipts:"receipts",settings:"settings",premium:"premium"};
 
 function cleanPath(){const raw=window.location.pathname||"/";return BASE&&raw.startsWith(BASE)?raw.slice(BASE.length)||"/":raw}
@@ -313,13 +334,13 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        let cached=[];
        try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");cached=Array.isArray(saved)?saved.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(storeId)):[]}catch{}
        const cachedById=new Map(cached.map(o=>[String(o.id),o]));
-       setCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"})).slice(0,10));
+       setCustomerOrders(dedupeCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"})).slice(0,10)));
      }catch{
        if(cancelled)return;
        try{
          const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");
          const matching=Array.isArray(saved)?saved.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(storeId)): [];
-         setCustomerOrders(matching.slice(0,10));
+         setCustomerOrders(dedupeCustomerOrders(matching).slice(0,10));
        }catch{setCustomerOrders([])}
      }finally{if(!cancelled)setCustomerOrdersHydrated(true)}
    };
@@ -376,7 +397,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
          return {...o,status:d.status||o.status,updatedAt:d.updatedAt||o.updatedAt};
        }catch{return o}
      }));
-     setCustomerOrders(updates);
+     setCustomerOrders(dedupeCustomerOrders(updates));
    };
    const timer=window.setInterval(refresh,10000);
    return()=>window.clearInterval(timer);
@@ -465,7 +486,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),
        receiptData
      };
-     setCustomerOrders(xs=>[savedOrder,...xs.filter(x=>x.id!==savedOrder.id)].slice(0,10));
+     setCustomerOrders(xs=>dedupeCustomerOrders([savedOrder,...xs]).slice(0,10));
      setTrackingExpanded(true);
 
      const receiptLines=(receiptData.merchant||receiptData.total||receiptData.receiptNo)
@@ -519,7 +540,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     if(!token&&!customerToken)throw new Error("Please sign in to your customer account to change this order.");
     const result=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-update",{method:"POST",headers:customerToken?{Authorization:"Bearer "+customerToken}:{},body:body({...(token?{confirmationToken:token}:{}),...change})});
     const updated=result.order;
-    if(updated)setCustomerOrders(xs=>xs.map(o=>o.id===updated.id?{...o,...updated,storeName:s.storeName}:o));
+    if(updated)setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>o.id===updated.id?{...o,...updated,storeName:s.storeName}:o)));
     // Surface a refreshed stock count on the product cards immediately after a successful server update.
     try{const fresh=await api("/api/storefront/"+encodeURIComponent(s.slug));onStoreRefresh?.(fresh)}catch{}
     try{
