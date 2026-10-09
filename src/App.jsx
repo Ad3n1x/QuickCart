@@ -293,23 +293,30 @@ function PublicStore({data,customer,onLogin}){
  },[data?.store?.id,data?.store?.deliveryEnabled]);
 
  useEffect(()=>{
-   const storeId=data?.store?.id;
-   const phone=String(customerForm.phone||"").replace(/\\D/g,"");
-   if(!storeId||!phone){setCustomerOrders([]);setCustomerOrdersHydrated(false);return}
+   const storeId=data?.store?.id,email=emailOf(customer?.email);
+   if(!storeId||!email){setCustomerOrders([]);setCustomerOrdersHydrated(false);return}
+   let cancelled=false;
    setCustomerOrdersHydrated(false);
-   try{
-     const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+phone)||"[]");
-     setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[]);
-   }catch{setCustomerOrders([])}
-   setCustomerOrdersHydrated(true);
- },[data?.store?.id,customerForm.phone]);
+   const loadCustomerOrders=async()=>{
+     try{
+       const d=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
+       if(cancelled)return;
+       const remote=Array.isArray(d.orders)?d.orders.filter(o=>o.storeId===storeId).map(o=>({...o,storeName:data?.store?.storeName||"Store"})):[];
+       setCustomerOrders(remote.slice(0,10));
+     }catch{
+       if(cancelled)return;
+       try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[])}catch{setCustomerOrders([])}
+     }finally{if(!cancelled)setCustomerOrdersHydrated(true)}
+   };
+   loadCustomerOrders();
+   return()=>{cancelled=true};
+ },[data?.store?.id,customer?.email]);
 
  useEffect(()=>{
-   const storeId=data?.store?.id;
-   const phone=String(customerForm.phone||"").replace(/\\D/g,"");
-   if(!storeId||!phone||!customerOrdersHydrated)return;
-   try{localStorage.setItem("qc_customer_orders:"+storeId+":"+phone,JSON.stringify(customerOrders.slice(0,10)))}catch{}
- },[data?.store?.id,customerForm.phone,customerOrdersHydrated,customerOrders]);
+   const storeId=data?.store?.id,email=emailOf(customer?.email);
+   if(!storeId||!email||!customerOrdersHydrated)return;
+   try{localStorage.setItem("qc_customer_orders:"+storeId+":"+email,JSON.stringify(customerOrders.slice(0,10)))}catch{}
+ },[data?.store?.id,customer?.email,customerOrdersHydrated,customerOrders]);
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
@@ -418,6 +425,7 @@ function PublicStore({data,customer,onLogin}){
        status:"new",
        createdAt:new Date().toISOString(),
        customerName:customerForm.name.trim(),
+       customerEmail:customer?.email||"",
        customerPhone:customerForm.phone.trim(),
        address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
        paymentMethod:pay,
@@ -546,6 +554,7 @@ function PublicStore({data,customer,onLogin}){
       {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
       <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
       <Field label="Your name" value={customerForm.name} onChange={e=>setCustomerForm({...customerForm,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
+      <Field label="Order email" type="email" value={customer?.email||""} readOnly autoComplete="email"/>
       <PhoneField label="Phone" value={customerForm.phone} onChange={v=>setCustomerForm({...customerForm,phone:v})} required/>
       {ful==="delivery"&&<Field label="Delivery address" value={customerForm.address} onChange={e=>setCustomerForm({...customerForm,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
       <div className="choice-block"><b>Payment</b><div className="choice-grid"><button type="button" className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button type="button" className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div>
