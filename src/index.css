@@ -3192,3 +3192,18 @@ button{white-space:normal;line-height:1.25}
 @media(hover:none){
  .public-store-page .qc-shop-card:hover{transform:none}
 }
+
+
+/* Keep Sign in visible in the landing navigation on phones as well as desktop. */
+@media(max-width:760px){
+ .landing-nav-actions .ghost-button{display:inline-flex;min-height:39px;padding:8px 11px;font-size:12px;white-space:nowrap}
+ .landing-nav-actions{gap:6px;justify-self:end}
+ .landing-brand .dev-brand{display:none}
+}
+@media(max-width:360px){
+ .landing-redesign-nav{grid-template-columns:minmax(0,1fr) auto;gap:7px;padding-inline:9px}
+ .landing-brand{gap:6px;font-size:14px}
+ .landing-brand .qc-logo{width:30px!important;height:30px!important}
+ .landing-nav-actions{gap:4px}
+ .landing-nav-actions .ghost-button,.landing-nav-actions .primary-button{padding-inline:8px;font-size:11px}
+}
