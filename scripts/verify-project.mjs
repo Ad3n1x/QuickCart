@@ -129,7 +129,7 @@ check("Startup no longer deletes saved customer order confirmation tokens",
 check("Order-edit controls report failures and prevent duplicate requests while an update is pending",
   /if\(busy===order\.id\)return/.test(app) &&
   /setMsg\(e\.message\|\|"Could not update this order/.test(app) &&
-  /finally\{setBusy\("")\}/.test(app) &&
+  app.includes('finally{setBusy("")}') &&
   /if\(!order\|\|busy\)return/.test(app));
 check("Customer cart and order tracking render together and collapse together without squeezing the tracking panel",
   /\[panelsExpanded,setPanelsExpanded\]=useState\(true\)/.test(app) &&
