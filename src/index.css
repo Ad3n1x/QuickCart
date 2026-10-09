@@ -2917,3 +2917,7 @@ button{white-space:normal;line-height:1.25}
   .public-store-page .public-qty-control{min-height:40px}
   .public-store-page .public-qty-control button{flex-basis:30px;width:30px;height:30px}
 }
+
+
+/* Tailwind utility layer; existing semantic styles remain the component foundation. */
+@tailwind utilities;
