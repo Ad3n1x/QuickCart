@@ -140,7 +140,7 @@ function Products({products,onAdd,onEdit,onDelete}){
 function Orders({orders,onStatus,onReceipt,onDelete}){
  const[filter,setFilter]=useState("all"),[q,setQ]=useState("");
  const query=q.trim().toLowerCase();
- const statuses=["all","new","confirmed","processing","ready","shipped","delivered","cancelled"];
+ const statuses=["all","new","confirmed","processing","ready","shipped","delivered","picked_up","cancelled"];
  const filtered=orders.filter(o=>{
    const matchesStatus=filter==="all"||o.status===filter;
    const hay=[o.customerName,o.customerPhone,o.id].map(v=>String(v||"").toLowerCase()).join(" ");
@@ -177,7 +177,7 @@ function Orders({orders,onStatus,onReceipt,onDelete}){
         <div className="order-total"><small>{itemCount} Item{itemCount===1?"":"s"}</small><strong>{fmt(o.total)}</strong></div>
        </div>
        <div className="order-card-meta"><span><b>Order</b> #{String(o.id).slice(0,10)}</span><span><b>Type</b> {o.fulfillment==="pickup"?"Pickup":"Delivery"}</span><span><b>Placed</b> {date}</span><span><b>Status</b> {status}</span></div>
-       <div className="order-card-actions"><label><span>Status</span><select value={o.status} onChange={e=>onStatus(o.id,e.target.value)}>{statuses.slice(1).map(s=><option key={s} value={s}>{s}</option>)}</select></label><button className="ghost-button" onClick={()=>onReceipt?.(o)}><FileText size={15}/> View Receipt</button><button className="danger-button" onClick={()=>onDelete?.(o.id)}><Trash2 size={15}/> Delete</button></div>
+       <div className="order-card-actions"><label><span>Status</span><select value={o.status} onChange={e=>onStatus(o.id,e.target.value)}>{[o.status,...(o.status==="new"?["confirmed","cancelled"]:o.status==="confirmed"?["processing","cancelled"]:o.status==="processing"?(o.fulfillment==="delivery"?["shipped","cancelled"]:["ready","cancelled"]):o.status==="ready"?["cancelled"]:o.status==="shipped"?["delivered"]:[])].filter((s,i,all)=>all.indexOf(s)===i).map(s=><option key={s} value={s}>{s.replaceAll("_"," ")}</option>)}</select></label><button className="ghost-button" onClick={()=>onReceipt?.(o)}><FileText size={15}/> View Receipt</button><button className="danger-button" onClick={()=>onDelete?.(o.id)}><Trash2 size={15}/> Delete</button></div>
      </article>
    })}</div>:<Empty title={q?"No Orders Found":"No Matching Orders"} text={q?"Try Another Customer Name, Phone Number, Or Order ID.":"Orders Appear Here After Customers Check Out."}/>}
   </section>
