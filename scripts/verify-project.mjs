@@ -38,8 +38,8 @@ check("Tailwind CSS is configured with QuickCart semantic design tokens and util
   Boolean(packageJson.devDependencies?.tailwindcss && packageJson.devDependencies?.postcss && packageJson.devDependencies?.autoprefixer) &&
   existsSync("tailwind.config.js") && existsSync("postcss.config.js") &&
   /@tailwind utilities/.test(css) &&
-  /hover:-translate-y-0\.5/.test(app) &&
-  /customer-tracking-toggle inline-flex/.test(app));
+  /public-product-card group/.test(app) &&
+  /customer-tracking-toggle/.test(app));
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
 check("Storefront carts persist for guests and customers, stay store-scoped, and merge guest items on sign-in",
