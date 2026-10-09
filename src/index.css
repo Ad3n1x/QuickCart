@@ -2524,3 +2524,123 @@ button{white-space:normal;line-height:1.25}
 .customer-checkout-gate strong{font-size:15px}
 .customer-checkout-gate span{color:var(--muted);font-size:12px;line-height:1.55;margin-bottom:5px}
 @media(max-width:600px){.customer-auth-page{padding:14px}.customer-auth-card{border-radius:18px;padding:20px}.public-customer-name{max-width:110px}}
+
+
+/* Storefront polish: clearer hierarchy, calmer spacing, and cleaner mobile layout. */
+.public-store-page{
+  --store-content-width:1180px;
+  background:var(--page-bg,#f7f9f7);
+  color:var(--text,#17231d);
+}
+.public-store-page .public-store-nav{
+  min-height:64px;
+  gap:14px;
+  border-bottom:1px solid rgba(25,55,40,.09);
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(14px);
+}
+.public-store-page .public-store-hero{
+  width:min(calc(100% - 40px),var(--store-content-width));
+  padding:28px 0 22px;
+}
+.public-store-page .public-store-hero-copy{
+  border-radius:22px;
+  padding:clamp(24px,4vw,42px);
+  box-shadow:0 12px 34px rgba(20,45,31,.07);
+}
+.public-store-page .public-store-hero-copy h1{
+  max-width:720px;
+  line-height:1.08;
+  letter-spacing:-.035em;
+  text-wrap:balance;
+}
+.public-store-page .public-store-grid{
+  width:min(calc(100% - 40px),var(--store-content-width));
+  gap:24px;
+  align-items:start;
+}
+.public-store-page .public-product-grid{
+  gap:16px;
+}
+.public-store-page .public-product-card{
+  overflow:hidden;
+  border:1px solid rgba(25,55,40,.09);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 5px 18px rgba(20,45,31,.035);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.public-store-page .public-product-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(25,95,62,.2);
+  box-shadow:0 12px 28px rgba(20,45,31,.08);
+}
+.public-store-page .public-product-art{
+  background:#f0f4f0;
+}
+.public-store-page .product-info{
+  padding:16px 16px 10px;
+}
+.public-store-page .product-info h3{
+  line-height:1.35;
+  letter-spacing:-.015em;
+}
+.public-store-page .product-info p{
+  color:#68746d;
+  line-height:1.5;
+}
+.public-store-page .public-product-actions{
+  padding:10px 16px 16px;
+  gap:8px;
+}
+.public-store-page .public-checkout{
+  border:1px solid rgba(25,55,40,.1);
+  border-radius:20px;
+  padding:22px;
+  background:#fff;
+  box-shadow:0 10px 30px rgba(20,45,31,.055);
+}
+.public-store-page .public-checkout h2{
+  letter-spacing:-.025em;
+}
+.public-store-page .public-checkout input,
+.public-store-page .public-checkout select,
+.public-store-page .public-checkout textarea{
+  min-height:44px;
+  border-radius:11px;
+}
+.public-store-page .public-checkout .primary-button{
+  width:100%;
+  justify-content:center;
+  border-radius:12px;
+  font-weight:700;
+}
+.public-store-page .customer-order-status{
+  border:1px solid rgba(25,55,40,.1);
+  border-radius:20px;
+  box-shadow:0 8px 26px rgba(20,45,31,.045);
+}
+@media(max-width:700px){
+  .public-store-page .public-store-hero{
+    width:calc(100% - 24px);
+    padding:18px 0 14px;
+  }
+  .public-store-page .public-store-hero-copy{
+    padding:22px 18px;
+    border-radius:17px;
+  }
+  .public-store-page .public-store-grid{
+    width:calc(100% - 24px);
+    gap:16px;
+  }
+  .public-store-page .public-product-grid{
+    gap:10px;
+  }
+  .public-store-page .public-product-card{
+    border-radius:14px;
+  }
+  .public-store-page .public-checkout{
+    padding:17px;
+    border-radius:16px;
+  }
+}
