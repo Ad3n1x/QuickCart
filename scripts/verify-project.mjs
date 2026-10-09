@@ -134,15 +134,16 @@ check("Order-edit controls validate successful server responses, show action-spe
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
   /editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app));
-check("Customer cart and order tracking render together and collapse together without squeezing the tracking panel",
-  /\[panelsExpanded,setPanelsExpanded\]=useState\(true\)/.test(app) &&
-  /public-cart-tracking-toggle/.test(app) &&
-  /aria-expanded=\{panelsExpanded\}/.test(app) &&
-  /\(items\.length>0\|\|customerOrders\.length>0\)&&panelsExpanded&&<div className="public-cart-tracking-stack">/.test(app) &&
+check("Cart and order tracking appear automatically when they contain data, without a show/hide toggle",
+  !/public-cart-tracking-toggle|panelsExpanded|panelsPreferenceStore/.test(app) &&
+  /\(items\.length>0\|\|customerOrders\.length>0\)&&<div className="public-cart-tracking-stack">/.test(app) &&
   /items\.length>0&&\(<section id="public-checkout" className="panel public-checkout">/.test(app) &&
   /customerOrders\.length>0&&<div className="customer-tracking-wrap">/.test(app) &&
-  /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css) &&
-  /\.public-cart-tracking-toggle>svg\.is-expanded/.test(css));
+  /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css));
+check("Customer order quantities use plus and minus controls and are updated by the backend",
+  /action:"increase"/.test(app) && /action:"reduce"/.test(app) &&
+  /action==='increase'/.test(api) && /stock:\{\$gt:0\}/.test(api) &&
+  /Each item must stay at quantity 1 or more/.test(api));
 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
