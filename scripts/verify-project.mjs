@@ -38,7 +38,7 @@ check("Tailwind CSS is configured with QuickCart semantic design tokens and util
   Boolean(packageJson.devDependencies?.tailwindcss && packageJson.devDependencies?.postcss && packageJson.devDependencies?.autoprefixer) &&
   existsSync("tailwind.config.js") && existsSync("postcss.config.js") &&
   /@tailwind utilities/.test(css) &&
-  /public-product-card group/.test(app) &&
+  /qc-shop-card/.test(app) &&
   /customer-tracking-toggle/.test(app));
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
@@ -65,11 +65,11 @@ check("Customer accounts cannot retain seller credentials or enter the seller da
   /if\(route\.type!=="app"\|\|!\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
   /if\(\(route\.type==="app"\|\|route\.type==="auth"\)&&\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return <Landing/.test(app) &&
   /localStorage\.removeItem\("quickcart_customer_token"\);localStorage\.removeItem\("quickcart_customer"\);setCustomerSession\(null\);localStorage\.setItem\("quickcart_token"/.test(app));
-check("Product quantity steppers stay visible and responsive without a duplicate add button",
-  app.includes("public-product-actions-stepper") &&
-  /\.public-store-page \.public-product-actions-stepper\{[\s\S]*?justify-content:flex-end/.test(css) &&
-  /\.public-store-page \.public-qty-control button\{[\s\S]*?height:32px/.test(css) &&
-  /@media\(max-width:760px\)[\s\S]*?\.public-store-page \.public-product-actions-stepper\{grid-column:2;grid-row:2\}/.test(css));
+check("Customer storefront uses the new responsive product card and full-width quantity stepper",
+  /qc-shop-card/.test(app) &&
+  /qc-shop-stepper/.test(app) &&
+  /\.qc-shop-stepper\{display:grid;grid-template-columns:42px minmax\(0,1fr\) 42px/.test(css) &&
+  /@media\(max-width:640px\)[\s\S]*?\.qc-shop-stepper/.test(css));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
@@ -163,7 +163,7 @@ check("Customer order tracking is collapsed by default and can be toggled open o
   /trackingVisible\?"Hide order tracking":"Track my orders"/.test(app) &&
   /trackingVisible&&customer&&customerOrdersHydrated/.test(app) &&
   !/editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app) &&
-  /public-qty-control/.test(app));
+  /qc-shop-stepper/.test(app));
 check("Checkout summary appears only when populated and order tracking is automatic inline for valid active-store orders",
   app.includes("const hasCheckoutItems=items.length>0") &&
   app.includes('hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">') &&
