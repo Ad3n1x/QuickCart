@@ -4,7 +4,7 @@ import { api } from "./lib/api.js";
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
 
 // Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
-const BASE=(import.meta.env.BASE_URL||"/").replace(/\/$/,"");
+const BASE=(import.meta.env.BASE_URL||"/").replace(/\/$/,"")||(typeof window!=="undefined"&&window.location.hostname==="ad3n1x.github.io"?"/QuickCart":"");
 const fmt=n=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(n)||0);
 const PHONE_COUNTRIES=[
   ["NG","Nigeria","+234"],["GH","Ghana","+233"],["KE","Kenya","+254"],["ZA","South Africa","+27"],["US","United States","+1"],["CA","Canada","+1"],["GB","United Kingdom","+44"],["AE","UAE","+971"],["IN","India","+91"],["DE","Germany","+49"],["FR","France","+33"],["AU","Australia","+61"]
