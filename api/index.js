@@ -129,10 +129,21 @@ app.post('/api/orders',async(req,res)=>{try{const database=await db(),customerAu
 
 app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
   const database=await db(),orders=database.collection('orders'),confirmationToken=String(req.body?.confirmationToken||''),action=String(req.body?.action||'');
-  if(!confirmationToken)return res.status(403).json({error:'Invalid customer confirmation token.'});
   const order=await orders.findOne({id:req.params.id});
   if(!order)return res.status(404).json({error:'Order not found.'});
-  if(hashToken(confirmationToken)!==order.customerConfirmationTokenHash)return res.status(403).json({error:'Invalid customer confirmation token.'});
+  // Accept the original per-order secret, or a verified customer session for the same email.
+  // This lets customers recover after browser storage was cleared without weakening order ownership.
+  let authorized=Boolean(confirmationToken&&order.customerConfirmationTokenHash&&hashToken(confirmationToken)===order.customerConfirmationTokenHash);
+  if(!authorized){
+    const header=String(req.headers.authorization||''),bearer=header.startsWith('Bearer ')?header.slice(7).trim():'';
+    if(bearer){
+      try{
+        const payload=jwt.verify(bearer,jwtSecret);
+        authorized=payload?.role==='customer'&&Boolean(payload?.sub)&&String(payload?.email||'').trim().toLowerCase()===String(order.customerEmail||'').trim().toLowerCase();
+      }catch{}
+    }
+  }
+  if(!authorized)return res.status(403).json({error:'Please sign in with the customer account used to place this order, or use the original order confirmation token.'});
   if(!['new','confirmed'].includes(order.status))return res.status(409).json({error:'This order can no longer be changed because the seller has started processing it.'});
   const eligible={id:order.id,status:{$in:['new','confirmed']},items:order.items};
   if(action==='cancel'){
