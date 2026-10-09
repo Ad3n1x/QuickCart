@@ -543,7 +543,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     try{const fresh=await api("/api/storefront/"+encodeURIComponent(s.slug));onStoreRefresh?.(fresh)}catch{}
     try{
       const freshOrders=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
-      if(Array.isArray(freshOrders.orders))setCustomerOrders(current=>freshOrders.orders.filter(o=>o.storeId===s.id).map(o=>({...o,whatsappSent:current.find(c=>c.id===o.id)?.whatsappSent===true,storeName:s.storeName})).slice(0,10));
+      if(Array.isArray(freshOrders.orders))setCustomerOrders(current=>dedupeCustomerOrders(freshOrders.orders.filter(o=>String(o.storeId)===String(s.id)).map(o=>({...o,whatsappSent:current.find(c=>String(c.id)===String(o.id))?.whatsappSent===true,storeName:s.storeName})).slice(0,10)));
     }catch{}
     return {cancelled:!!result.cancelled,order:updated};
   };
