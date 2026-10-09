@@ -331,6 +331,36 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
 
  useEffect(()=>{
    const storeId=data?.store?.id,email=emailOf(customer?.email);
+   if(!storeId||!email||!customerOrdersHydrated)return;
+   let stopped=false,requesting=false;
+   const syncOrders=async()=>{
+     if(stopped||requesting||document.visibilityState==="hidden")return;
+     const token=localStorage.getItem("quickcart_customer_token");
+     if(!token)return;
+     requesting=true;
+     try{
+       const result=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+token}});
+       if(stopped||!Array.isArray(result.orders))return;
+       setCustomerOrders(current=>{
+         const currentById=new Map(current.map(order=>[String(order.id),order]));
+         return dedupeCustomerOrders(result.orders
+           .filter(order=>String(order.storeId)===String(storeId))
+           .map(order=>({...order,whatsappSent:currentById.get(String(order.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"}))
+         ).slice(0,10);
+       });
+     }catch{
+       // Keep the last confirmed server snapshot visible while offline; retry on focus/interval.
+     }finally{requesting=false}
+   };
+   const onVisible=()=>{if(document.visibilityState==="visible")syncOrders()};
+   addEventListener("focus",onVisible);
+   document.addEventListener("visibilitychange",onVisible);
+   const interval=setInterval(syncOrders,25000);
+   return()=>{stopped=true;clearInterval(interval);removeEventListener("focus",onVisible);document.removeEventListener("visibilitychange",onVisible)};
+ },[data?.store?.id,customer?.email,customerOrdersHydrated]);
+
+ useEffect(()=>{
+   const storeId=data?.store?.id,email=emailOf(customer?.email);
    // Clear the previous storefront's tracking immediately; never flash another store's orders.
    setCustomerOrders([]);
    if(!storeId||!email){setCustomerOrdersHydrated(false);return}
