@@ -2,7 +2,6 @@
 import React,{useEffect,useMemo,useRef,useState} from "react";
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
 
-const API=import.meta.env.VITE_API_URL||"https://quickcart-api-f7x7.onrender.com";
 // Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
 const BASE=(import.meta.env.BASE_URL||"/").replace(/\/$/,"");
 const fmt=n=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(n)||0);
@@ -48,35 +47,7 @@ function getRoute(){const p=cleanPath();let m=p.match(/^\/store\/([^/]+)\/auth\/
 function go(path,replace=false){const url=(BASE||"")+path;(replace?history.replaceState:history.pushState).call(history,{}, "",url);dispatchEvent(new PopStateEvent("popstate"))}
 function body(v){return JSON.stringify(v)}
 async function api(path,options={}){
-  const method=String(options.method||"GET").toUpperCase();
-  // Render can take a while to wake the free API after inactivity. Keep auth/session
-  // requests alive long enough for the cold start instead of aborting at 15 seconds.
-  const isAuthRequest=/^\/api\/auth\//.test(path)||path==="/api/me";
-  const timeoutMs=isAuthRequest?60000:(path.startsWith("/api/storefront/")?20000:45000);
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
-  try{
-    // Public storefront requests must stay completely separate from seller-session state.
-    // This prevents a customer opening a store link from inheriting seller credentials.
-    const isPublicStorefront=path.startsWith("/api/storefront/");
-    const token=isPublicStorefront?null:localStorage.getItem("quickcart_token");
-    const storeId=isPublicStorefront?null:localStorage.getItem("quickcart_store_id");
-    const r=await fetch(API+path,{...options,signal:controller.signal,headers:{Accept:"application/json","Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...(storeId?{"X-Store-Id":storeId}:{}),...(options.headers||{})}});
-    const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
-    if(!r.ok){const e=new Error(data.error||"Request failed.");e.status=r.status;e.code=data.code;e.retryAfterSeconds=data.retryAfterSeconds;throw e}
-    return data
-  }catch(e){
-    if(method==="GET"&&path.startsWith("/api/storefront/")){try{const c=JSON.parse(localStorage.getItem("qc_public_"+path)||"null");if(c?.data)return c.data}catch{}}
-    if(e?.name==="AbortError"){
-      const timeoutError=new Error(isAuthRequest
-        ?"The server is taking longer than usual to wake up. Please try signing in again in a moment."
-        :"The request took too long to complete. Please try again.");
-      timeoutError.code="REQUEST_TIMEOUT";
-      throw timeoutError;
-    }
-    throw e
-  }finally{clearTimeout(timer)}
-}
-function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());addEventListener("popstate",f);return()=>removeEventListener("popstate",f)},[]);return r}
+  const method=String(options.method||"GET").tetR(getRoute());addEventListener("popstate",f);return()=>removeEventListener("popstate",f)},[]);return r}
 
 function Logo({size=36}){return <span className="qc-logo" style={{width:size,height:size}} aria-label="QuickCart" role="img"><ShoppingBag size={Math.round(size*.56)}/></span>}
 function Field({label,...p}){return <label className="qc-field"><span>{label}</span><input {...p}/></label>}
