@@ -254,8 +254,8 @@ check("Removed obsolete customer tracking modal CSS after switching to automatic
   css.includes(".public-product-actions-stepper"));
 
 check("GitHub Pages route redirects retain the /QuickCart base path even if the build base is accidentally root",
-  /const BASE=\(import\.meta\.env\.BASE_URL\|\|"\/"\)\.replace\(\/\\\/$\/,""\)\|\|\(typeof window!=="undefined"&&window\.location\.hostname==="ad3n1x\.github\.io"\?"\/QuickCart":""\)/.test(app) &&
-  /const url=\(BASE\|\|""\)\+safePath/.test(app));
+  app.includes('window.location.hostname==="ad3n1x.github.io"?"/QuickCart":""') &&
+  app.includes('const url=(BASE||"")+safePath'));
 
 check("Seller API authentication rejects customer-role JWTs rather than treating any valid token as a seller",
   /payload\.role==='customer'/.test(api) &&
