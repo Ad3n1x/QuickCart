@@ -749,6 +749,9 @@ export default function App(){
  const createDiscount=async()=>{try{const d=await api("/api/discounts",{method:"POST",body:body(discountForm)});setDiscounts(xs=>[d.discount,...xs]);setDiscountForm({code:"",type:"percent",value:10,expiresAt:""})}catch(e){error(e)}};
  const deleteDiscount=async id=>{try{await api("/api/discounts/"+id,{method:"DELETE"});setDiscounts(xs=>xs.filter(x=>x.id!==id))}catch(e){error(e)}};
  if(boot)return <Loading/>;
+  // Public/unknown routes always stay on the landing page, even if a seller token exists.
+  // This also prevents browser Back from exposing the seller dashboard to a customer session.
+  if(route.type==="landing")return <Landing onAuth={m=>go("/auth/"+m)} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
   // Customer credentials must never render seller workspace routes, even for one render before effects run.
   if(route.type==="app"&&(customerSession||localStorage.getItem("quickcart_customer_token")))return <Landing onAuth={m=>go("/auth/"+m)} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
  if(route.type==="store-auth"||((route.type==="store")&&!customerSession))return <CustomerAuth mode={route.type==="store-auth"?route.mode:"login"} slug={route.slug} onMode={m=>go("/store/"+encodeURIComponent(route.slug)+"/auth/"+m)} onSuccess={c=>{setCustomerSession(c);go("/store/"+encodeURIComponent(route.slug),true)}}/>;
