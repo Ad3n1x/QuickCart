@@ -50,6 +50,8 @@ check("Seller order deletion is scoped to the seller's own store",
   /deleteOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
+check("Checkout reuses its idempotency key after interrupted requests and clears it after successful WhatsApp handoff",
+  /quickcart_checkout_client_id:/.test(app) && /localStorage\.getItem\(clientOrderKey\)/.test(app) && /localStorage\.setItem\(clientOrderKey,clientOrderId\)/.test(app) && /localStorage\.removeItem\(clientOrderKey\)/.test(app));
 check("Deployment workflow checks backend syntax and verifies live sitemap files",
   /node --check api\/index\.js/.test(workflow) &&
   /Verify live SEO files/.test(workflow) &&
