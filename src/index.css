@@ -2819,3 +2819,10 @@ button{white-space:normal;line-height:1.25}
 .product-order-edit>span b{color:var(--text,#17231d);font-variant-numeric:tabular-nums}
 .product-order-edit .ghost-button{min-height:36px;justify-content:center;font-size:12px}
 .product-order-edit .ghost-button:disabled{opacity:.55;cursor:wait}
+
+/* Multiple active orders can contain the same product; keep each edit action clear on mobile. */
+.product-order-edit{display:grid;gap:8px;margin-top:10px;padding:10px;border:1px solid var(--border-color,rgba(128,128,128,.25));border-radius:12px;background:var(--surface-muted,rgba(128,128,128,.06))}
+.product-order-edit-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.product-order-edit-line>span{font-size:.82rem;min-width:0;overflow-wrap:anywhere}
+.product-order-edit-line .ghost-button{flex-shrink:0}
+@media(max-width:480px){.product-order-edit-line{align-items:stretch;flex-direction:column}.product-order-edit-line .ghost-button{width:100%}}
