@@ -3219,3 +3219,72 @@ button{white-space:normal;line-height:1.25}
  .public-store-page .public-nav-actions{gap:5px}
  .public-store-page .public-nav-actions .public-nav-link{padding:7px 9px;font-size:12px}
 }
+
+
+/* Small-screen navigation: keep the brand and account actions visible without clipping. */
+@media(max-width:760px){
+ .landing-redesign-nav{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:9px 12px!important;
+  min-width:0;
+ }
+ .landing-brand{
+  display:inline-flex!important;
+  min-width:0!important;
+  max-width:100%;
+  gap:6px!important;
+  font-size:15px!important;
+  white-space:nowrap;
+ }
+ .landing-brand>span:not(.dev-brand){overflow:visible}
+ .landing-brand .dev-brand{display:none!important}
+ .landing-nav-actions{
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  min-width:0!important;
+  max-width:100%;
+  gap:5px!important;
+ }
+ .landing-nav-actions .ghost-button,
+ .landing-nav-actions .primary-button{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  min-width:0!important;
+  min-height:38px!important;
+  padding:7px 10px!important;
+  font-size:12px!important;
+  line-height:1.15;
+  white-space:nowrap!important;
+  flex:0 1 auto;
+ }
+ .landing-nav-links{
+  display:flex!important;
+  grid-column:1/-1!important;
+  grid-row:2!important;
+  justify-content:flex-start!important;
+  flex-wrap:wrap!important;
+  gap:6px 16px!important;
+  min-width:0!important;
+ }
+ .landing-nav-links button{padding:5px 0!important;font-size:12px!important}
+}
+@media(max-width:380px){
+ .landing-redesign-nav{padding-inline:8px!important;column-gap:5px!important}
+ .landing-brand{font-size:14px!important;gap:5px!important}
+ .landing-brand svg{width:28px!important;height:28px!important;flex:0 0 28px}
+ .landing-nav-actions{gap:4px!important}
+ .landing-nav-actions .ghost-button,.landing-nav-actions .primary-button{padding:7px 8px!important;font-size:11px!important}
+ .landing-nav-links{gap:5px 12px!important}
+}
+@media(max-width:300px){
+ .landing-redesign-nav{grid-template-columns:minmax(0,1fr)!important}
+ .landing-nav-actions{grid-row:2!important;justify-content:flex-start!important}
+ .landing-nav-links{grid-row:3!important}
+}
