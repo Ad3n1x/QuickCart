@@ -2826,3 +2826,13 @@ button{white-space:normal;line-height:1.25}
 .product-order-edit-line>span{font-size:.82rem;min-width:0;overflow-wrap:anywhere}
 .product-order-edit-line .ghost-button{flex-shrink:0}
 @media(max-width:480px){.product-order-edit-line{align-items:stretch;flex-direction:column}.product-order-edit-line .ghost-button{width:100%}}
+
+/* Compact, accessible quantity steppers for cart and existing orders. */
+.order-quantity-control{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:38px}
+.order-quantity-control button{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--border-color,rgba(128,128,128,.35));border-radius:10px;background:var(--surface-muted,rgba(128,128,128,.08));color:inherit;font-size:1.2rem;font-weight:700;line-height:1;cursor:pointer}
+.order-quantity-control button:disabled{opacity:.4;cursor:not-allowed}
+.order-quantity-control strong{min-width:1.5em;text-align:center;font-variant-numeric:tabular-nums}
+.order-edit-pending{font-size:.8rem;color:var(--muted-foreground,currentColor);opacity:.75}
+.customer-order-edit-item{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.product-order-edit-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+@media(max-width:480px){.customer-order-edit-item,.product-order-edit-line{align-items:center}.order-quantity-control{gap:7px}}
