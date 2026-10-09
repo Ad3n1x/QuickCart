@@ -134,7 +134,7 @@ check("Order-edit controls validate successful server responses, show action-spe
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
   /editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app));
 check("Cart and order tracking appear automatically when they contain data, without a show/hide toggle",
-  !/public-cart-tracking-toggle|panelsExpanded|panelsPreferenceStore/.test(app) &&
+  !/public-cart-tracking-toggle|panelsExpanded|panelsPreferenceStore|setPanelsExpanded/.test(app) &&
   /\(items\.length>0\|\|customerOrders\.length>0\)&&<div className="public-cart-tracking-stack">/.test(app) &&
   /items\.length>0&&\(<section id="public-checkout" className="panel public-checkout">/.test(app) &&
   /customerOrders\.length>0&&<div className="customer-tracking-wrap">/.test(app) &&
