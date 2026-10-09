@@ -89,17 +89,19 @@ check("Adding the first product automatically focuses the cart without a cart/tr
 check("Guest cart quantities merge with the signed-in customer cart instead of overwriting matching products",
   /const merged=\{\.\.\.safeSaved\};if\(email\)for\(const \[id,qty\] of Object\.entries\(safeGuest\)\)merged\[id\]=\(Math\.max\(0,Number\(merged\[id\]\)\|\|0\)\+Math\.max\(0,Number\(qty\)\|\|0\)\)/.test(app));
 
-check("Order tracking stays collapsed until explicitly opened and only shows valid orders for the active store",
-  app.includes("[trackingExpanded,setTrackingExpanded]=useState(false)") &&
-  app.includes("public-track-orders-link") &&
-  app.includes('title="Track your orders"') &&
-  app.includes('className="customer-tracking-modal"') &&
-  app.includes("setTrackingExpanded(false)") &&
-  app.includes("setTrackingExpanded(true)") &&
+check("Order tracking appears automatically inline for valid orders from the active store, without a separate tracking button or modal",
+  !app.includes("public-track-orders-link") &&
+  !app.includes('className="customer-tracking-modal"') &&
+  app.includes('id="customer-order-tracking" className="panel customer-tracking-auto"') &&
   /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app));
 
+check("Customer quantity controls use plus and minus labels instead of remove-one wording",
+  !app.includes("Remove one") &&
+  app.includes('aria-label={"Decrease "+x.name+" quantity"}') &&
+  app.includes('aria-label={"Add one "+x.name}'));
+
 check("Successful checkout scrolls to automatically rendered order tracking",
-  /id="customer-order-tracking" className="panel customer-order-status"/.test(app) &&
+  /id="customer-order-tracking" className="panel customer-tracking-auto"/.test(app) &&
   /requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
 
 check("First product added focuses the automatically visible cart while quantity controls stay linked to cart state",
