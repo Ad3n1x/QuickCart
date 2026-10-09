@@ -366,7 +366,7 @@ function PublicStore({data,customer,onLogin}){
      // Open synchronously from the button click so mobile browsers do not block WhatsApp later.
      whatsappWindow=window.open("about:blank","_blank");
      if(whatsappWindow)whatsappWindow.opener=null;
-     const clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);
+     const clientOrderKey="quickcart_checkout_client_id:"+String(s.id);let clientOrderId=localStorage.getItem(clientOrderKey);if(!clientOrderId){clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);localStorage.setItem(clientOrderKey,clientOrderId);}
      const order=await api("/api/orders",{
        method:"POST",
        headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
@@ -447,7 +447,8 @@ function PublicStore({data,customer,onLogin}){
      }else{
        window.location.assign(whatsappUrl);
      }
-     setMsg("Order created. WhatsApp checkout opened.");
+     localStorage.removeItem(clientOrderKey);
+      setMsg("Order created. WhatsApp checkout opened.");
      setCart({});
      setDisc(null);
      setCode("");
