@@ -284,7 +284,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data,customer,onLogin}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState("");
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState(""),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
  useEffect(()=>{const storeId=data?.store?.id;if(!storeId)return;try{setPanelsExpanded(sessionStorage.getItem("qc_cart_panels:"+storeId)!=="0")}catch{setPanelsExpanded(true)}setPanelsPreferenceStore(storeId)},[data?.store?.id]);
@@ -351,6 +351,8 @@ function PublicStore({data,customer,onLogin}){
    });
  },[data?.store?.id,p.map(x=>x.id+":"+x.stock).join("|")]);
 
+ useEffect(()=>{if(!focusCartAfterAdd||!items.length||!panelsExpanded)return;setFocusCartAfterAdd(false);requestAnimationFrame(()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"}))},[focusCartAfterAdd,items.length,panelsExpanded]);
+
  useEffect(()=>{
    if(!data?.store?.id||!customerOrders.length)return;
    const refresh=async()=>{
@@ -371,7 +373,8 @@ function PublicStore({data,customer,onLogin}){
  if(!s)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
 
  const updateCart=(id,next)=>{
-   if(Number(next)>Number(cart[id]||0))setPanelsExpanded(true);
+   const adding=Number(next)>Number(cart[id]||0);
+   if(adding){setPanelsExpanded(true);if(items.length===0)setFocusCartAfterAdd(true)}
    setCart(prev=>{
      const value=Math.max(0,Number(next)||0);
      const product=p.find(x=>x.id===id);
