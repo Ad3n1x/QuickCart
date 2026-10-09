@@ -277,7 +277,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
  const modify=async(order,change)=>{if(busy===order.id)return;setBusy(order.id);setBusyAction("update");setMsg("");try{const result=await onModifyOrder?.(order,change);if(!result?.order?.id)throw new Error("The server did not confirm this order update. Refresh tracking and try again.");setMsg(result.cancelled?"Order cancelled. Product stock and tracking have been updated.":"Order updated. Product stock and tracking have been updated.");setLastChecked(new Date());}catch(e){setMsg(e.message||"Could not update this order. Please try again.");}finally{setBusy("");setBusyAction("")}};
  const refresh=async()=>{if(!onRefresh)return;setRefreshing(true);setMsg("");try{await onRefresh();setLastChecked(new Date());setMsg("Order status updated.")}catch{setMsg("Could not update the order status. Check your connection and try again.")}finally{setRefreshing(false)}};
  if(!orders.length)return null;
- return <section id="customer-order-tracking" className="panel customer-order-status">
+ return <section id="customer-order-tracking" className="panel customer-order-status customer-tracking-auto">
   <div className="panel-head customer-order-status-head"><div><div className="customer-status-title-row"><span className="eyebrow">ORDER TRACKING</span><span className="customer-live-indicator"><i/>LIVE</span></div><h2>Track Your Orders</h2><p className="muted">Order status refreshes automatically while you wait. No separate cart or manual tracking checks needed.</p></div><div className="customer-status-head-actions"><span className="customer-last-checked">{lastChecked?"Updated "+lastChecked.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):"Auto-updating"}</span><button className="ghost-button customer-status-refresh" type="button" onClick={refresh} disabled={refreshing}>{refreshing?"Checking…":"Refresh"} <span aria-hidden="true">↻</span></button></div></div>
   <div className="customer-order-list">
    {orders.map(o=>{
@@ -307,7 +307,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
  </section>
 }
 function PublicStore({data,customer,onLogin,onStoreRefresh}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[trackingExpanded,setTrackingExpanded]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId){setCart({});setCartOwner("");return}const owner=storeId+":"+(email||"guest");try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");const guest=email?JSON.parse(localStorage.getItem("qc_cart:"+storeId+":guest")||"{}"):{};const safeSaved=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};const safeGuest=guest&&typeof guest==="object"&&!Array.isArray(guest)?guest:{};const merged={...safeSaved};if(email)for(const [id,qty] of Object.entries(safeGuest))merged[id]=(Math.max(0,Number(merged[id])||0)+Math.max(0,Number(qty)||0));setCart(email?merged:safeSaved);setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
@@ -322,7 +322,6 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
    const storeId=data?.store?.id,email=emailOf(customer?.email);
    // Clear the previous storefront's tracking immediately; never flash another store's orders.
    setCustomerOrders([]);
-   setTrackingExpanded(false);
    if(!storeId||!email){setCustomerOrdersHydrated(false);return}
    let cancelled=false;
    setCustomerOrdersHydrated(false);
@@ -487,7 +486,6 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        receiptData
      };
      setCustomerOrders(xs=>dedupeCustomerOrders([savedOrder,...xs]).slice(0,10));
-     setTrackingExpanded(true);
 
      const receiptLines=(receiptData.merchant||receiptData.total||receiptData.receiptNo)
        ?["","PAYMENT RECEIPT",
@@ -569,7 +567,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        return {...o,status:d.status||o.status,updatedAt:d.updatedAt||o.updatedAt};
      }catch{return o}
    }));
-   setCustomerOrders(updates);
+   setCustomerOrders(dedupeCustomerOrders(updates));
  };
  return <main className="public-store-page">
   <header className="public-store-nav">
@@ -640,7 +638,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
     </>}
    </section>)}
-   {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))&&<section id="customer-order-tracking" className="panel customer-tracking-auto"><div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div></section>}
+   {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>o.id===id?{...o,whatsappSent:true}:o)))} />}
    </div>}</div>
  </main>
 }
