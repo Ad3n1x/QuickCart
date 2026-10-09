@@ -99,6 +99,19 @@ check("First product added opens and focuses the shared cart while quantity cont
   /if\(!focusCartAfterAdd\|\|!items\.length\|\|!panelsExpanded\)return;setFocusCartAfterAdd\(false\);requestAnimationFrame\(\(\)=>document\.getElementById\("public-checkout"\)\?\.scrollIntoView/.test(app) &&
   /onClick=\{\(\)=>updateCart\(x\.id,qty\+1\)\}/.test(app));
 
+check("Customer order reductions and cancellations update the server order and restore product stock",
+  /\/api\/orders\/:id\/customer-update/.test(api) &&
+  /customerConfirmationTokenHash/.test(api) &&
+  /status:\{\$in:\['new','confirmed'\]\}/.test(api) &&
+  /\$inc:\{stock:Math\.max\(0,Number\(item\.quantity\)\|\|0\)\}/.test(api) &&
+  /\$inc:\{stock:1\}/.test(api) &&
+  /status:empty\?'cancelled':order\.status/.test(api));
+check("Customer order tracking exposes guarded reduce and cancel actions and refreshes storefront data after changes",
+  /onModifyOrder/.test(app) &&
+  /action:"reduce",itemId:item\.id/.test(app) &&
+  /action:"cancel"/.test(app) &&
+  /onStoreRefresh\?\.\(fresh\)/.test(app) &&
+  /onStoreRefresh=\{setPublicData\}/.test(app));
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
 
