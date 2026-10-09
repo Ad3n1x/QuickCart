@@ -137,12 +137,14 @@ check("Order-edit controls validate successful server responses, show action-spe
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
   /editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app));
-check("Cart and order tracking appear automatically when they contain data, without a show/hide toggle",
+check("Cart and order tracking appear automatically only for the active store's actual data",
   !/public-cart-tracking-toggle|panelsExpanded|panelsPreferenceStore|setPanelsExpanded/.test(app) &&
   /const hasCheckoutItems=items\.length>0/.test(app) &&
   /\(hasCheckoutItems\|\|customerOrders\.length>0\)&&<div className="public-cart-tracking-stack">/.test(app) &&
   /hasCheckoutItems&&\(<section id="public-checkout" className="panel public-checkout">/.test(app) &&
   /customerOrders\.length>0&&<div className="customer-tracking-wrap">/.test(app) &&
+  /setCustomerOrders\(\[\]\);[\s\S]*?setCustomerOrdersHydrated\(false\)/.test(app) &&
+  /saved\.filter\(o=>String\(o\.storeId\|\|storeId\)===String\(storeId\)\)/.test(app) &&
   /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css));
 check("Customer order quantities use plus and minus controls and are updated by the backend",
   /action:"increase"/.test(app) && /action:"reduce"/.test(app) &&
