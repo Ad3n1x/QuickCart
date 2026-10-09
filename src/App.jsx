@@ -334,7 +334,8 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
  const delivery=ful==="delivery"&&deliveryEnabled?Number(s?.deliveryFee||0):0;
  const discount=Number(disc?.amount||0);
  const total=Math.max(0,subtotal+delivery-discount);
- const ready=Boolean(customer&&items.length&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
+ const hasCheckoutItems=items.some(x=>Number(x.quantity)>0);
+ const ready=Boolean(customer&&hasCheckoutItems&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
 
  useEffect(()=>{
    // Do not prune a restored cart while storefront products are still loading.
@@ -594,8 +595,8 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       </article>
     })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
-   {(items.length>0||customerOrders.length>0)&&<div className="public-cart-tracking-stack">
-   {items.length>0&&(<section id="public-checkout" className="panel public-checkout">
+   {(hasCheckoutItems||customerOrders.length>0)&&<div className="public-cart-tracking-stack">
+   {hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">
     <div className="checkout-heading"><span className="eyebrow">ORDER SUMMARY</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
     {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your order is saved.</strong><span>Sign in to checkout and keep your order history and tracking together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
       {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
