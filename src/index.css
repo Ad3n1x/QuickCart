@@ -2783,3 +2783,15 @@ button{white-space:normal;line-height:1.25}
   .public-store-page .public-cart-tracking-toggle{width:100%;justify-content:space-between}
   .public-store-page .public-catalog-head{gap:12px}
 }
+
+
+/* Cart and order tracking share one visibility state while keeping tracking full-width. */
+.public-store-page .public-cart-tracking-stack{display:contents}
+.public-store-page .public-cart-tracking-stack .public-checkout{min-width:0}
+.public-store-page .public-cart-tracking-stack .customer-tracking-wrap{
+  grid-column:1 / -1;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding-bottom:0;
+}
