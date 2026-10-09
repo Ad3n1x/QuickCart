@@ -153,7 +153,7 @@ app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
     const updated=await orders.findOne({id:order.id});
     return res.json({cancelled:true,order:{id:updated.id,storeId:updated.storeId,items:updated.items,total:updated.total,status:updated.status,fulfillment:updated.fulfillment,updatedAt:updated.updatedAt,createdAt:updated.createdAt,customerName:updated.customerName,customerEmail:updated.customerEmail,customerPhone:updated.customerPhone,address:updated.address,paymentMethod:updated.paymentMethod,receiptData:updated.receiptData}});
   }
-  if(action!=='reduce')return res.status(400).json({error:'Unsupported order change.'});
+  if(!['reduce','increase'].includes(action))return res.status(400).json({error:'Unsupported order change.'});
   const itemId=String(req.body?.itemId||''),item=(order.items||[]).find(x=>String(x.id)===itemId);
   if(!item)return res.status(404).json({error:'That item is not part of this order.'});
   const items=order.items.map(x=>({...x}));
