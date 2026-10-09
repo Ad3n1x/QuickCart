@@ -611,13 +611,12 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
         <strong className="product-price">{fmt(x.price)}</strong>
         {(()=>{const lines=editableOrderLines.filter(item=>String(item.id)===String(x.id));return lines.length?<div className="product-order-edit">{lines.map(line=><div className="product-order-edit-line" key={line.orderId+":"+line.id}><span>Order #{String(line.orderId).slice(0,8)}</span><div className="order-quantity-control"><button type="button" aria-label={"Decrease "+x.name} disabled={busy||Boolean(orderEditBusy)||Number(line.quantity)<=1} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id})}>−</button><strong>{line.quantity}</strong><button type="button" aria-label={"Increase "+x.name} disabled={busy||Boolean(orderEditBusy)} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"increase",itemId:line.id})}>+</button></div>{orderEditBusy===line.orderId&&<span className="order-edit-pending">Updating…</span>}</div>)}</div>:null})()}
        </div>
-       <div className={"public-product-actions"+(qty>0?" has-quantity":"")}>
-        {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
-          <button type="button" onClick={()=>updateCart(x.id,qty-1)} aria-label={"Decrease "+x.name+" quantity"}>−</button>
-          <strong>{qty}</strong>
-          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Add one "+x.name}>+</button>
-        </div>}
-        <button className="primary-button" disabled={stock<=0||qty>=stock} onClick={()=>updateCart(x.id,qty+1)}>{stock>0?(qty?"Add another":"Add to order"):"Sold out"} {stock>0&&<Plus size={15}/>}</button>
+       <div className={"public-product-actions public-product-actions-stepper"+(qty>0?" has-quantity":"")}>
+        {stock>0?<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
+          <button type="button" onClick={()=>updateCart(x.id,Math.max(0,qty-1))} disabled={qty<=0} aria-label={"Decrease "+x.name+" quantity"}>−</button>
+          <strong aria-live="polite" aria-atomic="true">{qty}</strong>
+          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Increase "+x.name+" quantity"}>+</button>
+        </div>:<span className="public-sold-out" role="status">Sold out</span>}
        </div>
       </article>
     })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
