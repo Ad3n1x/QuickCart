@@ -399,7 +399,8 @@ function PublicStore({data,customer,onLogin}){
    let whatsappWindow=null;
    try{
      // Open synchronously from the button click so mobile browsers do not block WhatsApp later.
-     whatsappWindow=window.open("about:blank","_blank","noopener,noreferrer");
+     whatsappWindow=window.open("about:blank","_blank");
+     if(whatsappWindow)whatsappWindow.opener=null;
      const order=await api("/api/orders",{
        method:"POST",
        headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
@@ -458,16 +459,21 @@ function PublicStore({data,customer,onLogin}){
        "Order ID: "+order.orderId,
        ...receiptLines
      ].join("\n");
-     const phoneDigits=String(s.vendorPhone||"").replace(/\D/g,"");
-     if(!phoneDigits){
-       throw new Error("This store has no valid WhatsApp Business number configured.");
+     let phoneDigits=String(s.vendorPhone||"").replace(/\D/g,"");
+     // WhatsApp requires an international number without a plus sign or local trunk zero.
+     // Normalize common Nigerian local formats while preserving existing country codes.
+     if(phoneDigits.startsWith("00"))phoneDigits=phoneDigits.slice(2);
+     if(phoneDigits.startsWith("0"))phoneDigits="234"+phoneDigits.slice(1);
+     else if(phoneDigits.length===10)phoneDigits="234"+phoneDigits;
+     if(phoneDigits.length<10||phoneDigits.length>15){
+       throw new Error("This store’s WhatsApp number looks invalid. Ask the seller to add a full number with country code in Store settings.");
      }
      const encodedText=encodeURIComponent(text);
      // Use WhatsApp's official click-to-chat URL. It works with WhatsApp Business
      // and regular WhatsApp, and lets the device/browser choose the installed app.
      // Avoid whatsapp:// deep links because they can target the wrong WhatsApp app
      // or fail on some Android browsers.
-     const whatsappUrl="https://wa.me/"+phoneDigits+"?text="+encodedText;
+     const whatsappUrl="https://api.whatsapp.com/send?phone="+phoneDigits+"&text="+encodedText;
      if(whatsappWindow&&!whatsappWindow.closed){
        whatsappWindow.location.replace(whatsappUrl);
      }else{
