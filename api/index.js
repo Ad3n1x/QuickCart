@@ -114,7 +114,6 @@ app.post('/api/payments/alatpay/callback',async(req,res)=>{try{
    }else if(update.paymentStatus&&['failed','expired','cancelled','canceled'].includes(update.paymentStatus)){
      if(pendingUser)await database.collection('users').updateOne({id:pendingUser.id},{$set:{pendingPlanPaymentStatus:update.paymentStatus},$unset:{pendingPlan:'',pendingPlanPaymentReference:'',pendingPlanPaymentId:'',pendingPlanPaymentTransactionId:'',pendingPlanPaymentExpiresAt:''}});
    }
-  }
   res.json({received:true});
 }catch(error){console.error(error);res.status(500).json({error:'Unable to process ALATPay callback.'});}});
 
