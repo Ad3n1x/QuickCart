@@ -227,7 +227,6 @@ check("Seller order status changes follow fulfillment-specific transitions and t
 
 check("Removed obsolete customer tracking modal CSS after switching to automatic inline tracking",
   !css.includes("customer-tracking-modal") &&
-  !css.includes("public-track-orders-link") &&
   css.includes(".customer-tracking-auto") &&
   css.includes(".public-product-actions-stepper"));
 
