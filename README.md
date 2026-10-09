@@ -9,7 +9,7 @@ WhatsApp-first social-commerce storefront SaaS for independent sellers.
 - **Customer storefront:** the public store routes are rendered by the same app and use store-specific data, customer authentication, and customer-email-scoped cart/order caches.
 - **API:** `server.js` starts the Express application exported from `api/index.js`. MongoDB Atlas stores users, stores, products, and orders.
 - **Hosting:** GitHub Actions builds the React/Vite frontend for GitHub Pages. The API is a separate service and must be deployed/healthy independently.
-- **Compatibility note:** `src/main.tsx` and `src/App.tsx` are not the configured browser entrypoint. The active build uses the JavaScript JSX files.
+- **Single frontend source of truth:** the active frontend is JavaScript/JSX. The unused competing TypeScript entrypoint and its app-level TypeScript configuration have been removed to prevent accidental drift.
 
 ## Quality checks
 
