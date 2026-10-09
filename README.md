@@ -5,6 +5,7 @@ WhatsApp-first social-commerce storefront SaaS for independent sellers.
 ## Application architecture
 
 - **Browser entrypoint:** `index.html` loads `src/main.jsx`, which mounts the React app in `src/App.jsx` and the shared styles in `src/index.css`.
+- **API transport:** `src/lib/api.js` centralizes request timeouts, authenticated seller headers, and separation of public storefront requests from seller session credentials.
 - **Seller experience:** store setup, products, orders, customers, analytics, receipts, discounts, plan settings, and navigation are handled by the React app.
 - **Customer storefront:** the public store routes are rendered by the same app and use store-specific data, customer authentication, and customer-email-scoped cart/order caches.
 - **API:** `server.js` starts the Express application exported from `api/index.js`. MongoDB Atlas stores users, stores, products, and orders.
