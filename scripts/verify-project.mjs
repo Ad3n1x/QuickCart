@@ -206,5 +206,12 @@ check("Seller order status cannot reopen cancelled orders or cancel already disp
   /if\(status==='cancelled'&&\['shipped','delivered','picked_up'\]\.includes\(current\.status\)\)return res\.status\(409\)/.test(api) &&
   /if\(status==='cancelled'&&!\['cancelled','delivered','picked_up'\]\.includes\(current\.status\)\)/.test(api));
 
+
+check("Seller order status changes follow fulfillment-specific transitions and tracking includes picked-up orders",
+  /const nextStatuses=\{new:\[\x27confirmed\x27,\x27cancelled\x27\],confirmed:\[\x27processing\x27,\x27cancelled\x27\],processing:current\.fulfillment===\x27delivery\x27\?\[\x27shipped\x27,\x27cancelled\x27\]:\[\x27ready\x27,\x27cancelled\x27\],ready:\[\x27cancelled\x27\],shipped:\[\x27delivered\x27\],delivered:\[\],picked_up:\[\],cancelled:\[\]\}/.test(api) &&
+  /if\(!nextStatuses\[current\.status\]\?\.includes\(status\)\)return res\.status\(409\)/.test(api) &&
+  /const statuses=\[\x27all\x27,\x27new\x27,\x27confirmed\x27,\x27processing\x27,\x27ready\x27,\x27shipped\x27,\x27delivered\x27,\x27picked_up\x27,\x27cancelled\x27\]/.test(app) &&
+  /o\.fulfillment===\x27delivery\x27\?\[\x27shipped\x27,\x27cancelled\x27\]:\[\x27ready\x27,\x27cancelled\x27\]/.test(app));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
