@@ -81,22 +81,21 @@ check("Deployment workflow checks backend syntax and verifies live sitemap files
 check("Restored cart is not cleared before storefront products finish loading",
   /if\(!data\?\.store\|\|!Array\.isArray\(data\?\.products\)\)return;/.test(app));
 
-check("Product additions reopen the shared cart/tracking panel and its collapsed state persists per store session",
-  /const adding=Number\(next\)>Number\(cart\[id\]\|\|0\);\s*if\(adding\)\{setPanelsExpanded\(true\);if\(items\.length===0\)setFocusCartAfterAdd\(true\)\}/.test(app) &&
-  /sessionStorage\.getItem\("qc_cart_panels:"\+storeId\)/.test(app) &&
-  /sessionStorage\.setItem\("qc_cart_panels:"\+storeId,panelsExpanded\?"1":"0"\)/.test(app));
+check("Adding the first product automatically focuses the cart without a cart/tracking toggle",
+  /const adding=Number\(next\)>Number\(cart\[id\]\|\|0\);\s*if\(adding&&items\.length===0\)setFocusCartAfterAdd\(true\)/.test(app) &&
+  /if\(!focusCartAfterAdd\|\|!items\.length\)return;setFocusCartAfterAdd\(false\);requestAnimationFrame\(\(\)=>document\.getElementById\("public-checkout"\)\?\.scrollIntoView/.test(app) &&
+  !/setPanelsExpanded|panelsExpanded|panelsPreferenceStore/.test(app));
 check("Guest cart quantities merge with the signed-in customer cart instead of overwriting matching products",
   /const merged=\{\.\.\.safeSaved\};if\(email\)for\(const \[id,qty\] of Object\.entries\(safeGuest\)\)merged\[id\]=\(Math\.max\(0,Number\(merged\[id\]\)\|\|0\)\+Math\.max\(0,Number\(qty\)\|\|0\)\)/.test(app));
 
-check("Cart/tracking toggle scrolls to the shared panels and successful checkout opens live order tracking",
-  /document\.getElementById\(items\.length\?"public-checkout":"customer-order-tracking"\)\?\.scrollIntoView/.test(app) &&
+check("Successful checkout scrolls to automatically rendered order tracking",
   /id="customer-order-tracking" className="panel customer-order-status"/.test(app) &&
-  /setPanelsExpanded\(true\);\s*requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
+  /requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
 
-check("First product added opens and focuses the shared cart while quantity controls stay linked to cart state",
+check("First product added focuses the automatically visible cart while quantity controls stay linked to cart state",
   /\[focusCartAfterAdd,setFocusCartAfterAdd\]=useState\(false\)/.test(app) &&
-  /if\(adding\)\{setPanelsExpanded\(true\);if\(items\.length===0\)setFocusCartAfterAdd\(true\)\}/.test(app) &&
-  /if\(!focusCartAfterAdd\|\|!items\.length\|\|!panelsExpanded\)return;setFocusCartAfterAdd\(false\);requestAnimationFrame\(\(\)=>document\.getElementById\("public-checkout"\)\?\.scrollIntoView/.test(app) &&
+  /if\(adding&&items\.length===0\)setFocusCartAfterAdd\(true\)/.test(app) &&
+  /if\(!focusCartAfterAdd\|\|!items\.length\)return;setFocusCartAfterAdd\(false\);requestAnimationFrame\(\(\)=>document\.getElementById\("public-checkout"\)\?\.scrollIntoView/.test(app) &&
   /onClick=\{\(\)=>updateCart\(x\.id,qty\+1\)\}/.test(app));
 
 check("Server order history remains authoritative after reload while preserving local WhatsApp handoff state",
