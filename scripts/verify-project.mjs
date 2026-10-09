@@ -201,5 +201,10 @@ check("Order cancellation restores stock only after a successful conditional sta
   /if\(!result\.modifiedCount\)return res\.status\(409\)/.test(api) &&
   /for\(const item of order\.items\|\|\[\]\)await database\.collection\('products'\)\.updateOne/.test(api));
 
+check("Seller order status cannot reopen cancelled orders or cancel already dispatched/completed orders",
+  /if\(current\.status==='cancelled'\)return res\.status\(409\)\.json\(\{error:'Cancelled orders cannot be reopened/.test(api) &&
+  /if\(status==='cancelled'&&\['shipped','delivered','picked_up'\]\.includes\(current\.status\)\)return res\.status\(409\)/.test(api) &&
+  /if\(status==='cancelled'&&!\['cancelled','delivered','picked_up'\]\.includes\(current\.status\)\)/.test(api));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
