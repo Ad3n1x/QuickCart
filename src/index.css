@@ -2795,3 +2795,16 @@ button{white-space:normal;line-height:1.25}
   margin:0;
   padding-bottom:0;
 }
+
+
+/* Customer order edits: compact controls that stay readable on mobile. */
+.customer-order-edit-controls{display:grid;gap:10px;margin:12px 0;padding:14px;border:1px solid var(--line,#dfe7e2);border-radius:14px;background:var(--surface-soft,#f7faf8)}
+.customer-order-edit-controls>div:first-child{display:grid;gap:4px}
+.customer-order-edit-controls>div:first-child span{font-size:.88rem;color:var(--muted,#65736b)}
+.customer-order-edit-items{display:grid;gap:8px}
+.customer-order-edit-item{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.customer-order-edit-item>span{font-size:.9rem}
+.customer-order-edit-item .ghost-button,.customer-cancel-order{min-height:36px;padding:7px 12px}
+.customer-cancel-order{justify-self:start;color:var(--danger,#a52828)}
+.customer-order-edit-controls button:disabled{opacity:.55;cursor:wait}
+@media(max-width:520px){.customer-order-edit-controls{padding:11px}.customer-order-edit-item{align-items:flex-start}.customer-order-edit-item>span{flex:1 1 140px}}
