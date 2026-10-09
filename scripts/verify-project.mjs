@@ -35,8 +35,12 @@ check("Only one Vite configuration is present and GitHub Pages base path is expl
   !existsSync("vite.config.ts") && /VITE_GITHUB_PAGES/.test(vite) && /\/QuickCart\//.test(vite));
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
-check("Public customer cart cache is scoped to both store and normalized email",
-  /qc_cart:/.test(app) && /emailOf\(customer\?\.email\)/.test(app) && /storeId\+":"\+email/.test(app));
+check("Storefront carts persist for guests and customers, stay store-scoped, and merge guest items on sign-in",
+  /qc_cart:/.test(app) && /emailOf\(customer\?\.email\)/.test(app) &&
+  /storeId\+":"\+\(email\|\|"guest"\)/.test(app) &&
+  /localStorage\.getItem\("qc_cart:"\+storeId\+":guest"\)/.test(app) &&
+  /localStorage\.setItem\("qc_cart:"\+owner,JSON\.stringify\(cart\)\)/.test(app) &&
+  /localStorage\.removeItem\("qc_cart:"\+storeId\+":guest"\)/.test(app));
 check("Customer order history requires a customer-authenticated API route",
   /app\.get\('\/api\/customer\/orders',customerAuth/.test(api));
 check("Order creation validates the signed-in customer token and uses its email",
