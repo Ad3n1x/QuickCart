@@ -1,4 +1,4 @@
-const CACHE = 'quickcart-shell-v4';
+const CACHE = 'quickcart-shell-v5';
 const BASE = new URL(self.registration.scope).pathname;
 const SHELL = [BASE, BASE + 'index.html'];
 
@@ -24,7 +24,7 @@ self.addEventListener('fetch', event => {
 
     if (request.mode === 'navigate' || isAsset) {
       try {
-        const fresh = await fetch(request, { cache: 'no-cache' });
+        const fresh = await fetch(request, { cache: 'no-store' });
         const cache = await caches.open(CACHE);
         cache.put(request, fresh.clone()).catch(() => {});
         return fresh;
