@@ -23,7 +23,7 @@ const workflow = read(".github/workflows/deploy-pages.yml");
 check("Product modal CSS uses real line breaks and does not contain escaped newline tokens",
   !css.includes("\\n") &&
   css.includes("/* Product add/edit modal polish */") &&
-  css.includes(".product-modal{width:min(620px,calc(100vw - 24px))}"));
+  css.includes(".product-modal{width:min(620px,calc(100vw - 24px));"));
 
 check("Vite HTML entry exists and points to the JavaScript React entrypoint",
   existsSync("src/main.jsx") && !existsSync("src/main.tsx") && !existsSync("src/App.tsx") && /src\/main\.jsx/.test(html) && !/src\/main\.tsx/.test(html));
