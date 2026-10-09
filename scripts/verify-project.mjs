@@ -12,6 +12,7 @@ function check(label, test) {
 const packageJson = JSON.parse(read("package.json"));
 const html = read("index.html");
 const main = read("src/main.jsx");
+const apiClient = read("src/lib/api.js");
 const app = read("src/App.jsx");
 const vite = read("vite.config.js");
 const api = read("api/index.js");
@@ -19,6 +20,8 @@ const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Vite HTML entry exists and points to the JavaScript React entrypoint",
   existsSync("src/main.jsx") && !existsSync("src/main.tsx") && !existsSync("src/App.tsx") && /src\/main\.jsx/.test(html) && !/src\/main\.tsx/.test(html));
+check("API client is isolated in a dedicated module and imported by the app",
+  /from ["']\.\/lib\/api\.js["']/.test(app) && /export \{ api \}/.test(apiClient) && /AbortController/.test(apiClient) && /isPublicStorefront/.test(apiClient));
 check("React entrypoint imports the active app and global stylesheet",
   /from ["']\.\/App\.jsx["']/.test(main) && /import ["']\.\/index\.css["']/.test(main));
 check("Production entrypoint includes a render-error boundary",
