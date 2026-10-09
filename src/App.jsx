@@ -250,7 +250,7 @@ function CustomerReceiptCard({order}){
  const print=()=>printReceiptDocument(order,{storeName:order?.storeName,tagline:"Customer receipt"});
  if(!order)return null;
  return <details open className="customer-receipt-card"><summary><FileText size={15}/> Receipt <span>#{String(order.id).slice(0,10)}</span></summary><div className="customer-receipt-paper"><div className="receipt-brand"><Logo size={30}/><div><strong>{order.storeName||"QuickCart Store"}</strong><small>Customer receipt</small></div></div><div className="receipt-meta"><span>Order #{String(order.id).slice(0,12)}</span><span>{order.createdAt?new Date(order.createdAt).toLocaleString():"—"}</span></div>{order.items?.map((x,i)=><div className="receipt-line" key={i}><span>{x.quantity||1}× {x.name}</span><strong>{fmt(Number(x.price||0)*Number(x.quantity||1))}</strong></div>)}<div className="receipt-total"><span>Total</span><strong>{fmt(order.total)}</strong></div>{order.receiptData&&(order.receiptData.merchant||order.receiptData.total||order.receiptData.receiptNo)&&<div className="receipt-foot">Payment receipt: {order.receiptData.merchant||"Uploaded"}{order.receiptData.total?" · "+order.receiptData.total:""}{order.receiptData.receiptNo?" · Ref "+order.receiptData.receiptNo:""}</div>}<div className="receipt-actions"><button className="primary-button" type="button" onClick={print}><Download size={15}/> Save PDF / Print</button><button className="ghost-button" type="button" onClick={()=>saveReceiptImage(order)}><ImageIcon size={15}/> Save image</button></div></div></details>}
-function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
+function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
  const[busy,setBusy]=useState(""),[msg,setMsg]=useState(""),[refreshing,setRefreshing]=useState(false),[lastChecked,setLastChecked]=useState(null);
  const confirm=async order=>{setBusy(order.id);setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed successfully.":"Delivery confirmed successfully.");setLastChecked(new Date());onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("")}};
  const refresh=async()=>{if(!onRefresh)return;setRefreshing(true);setMsg("");try{await onRefresh();setLastChecked(new Date());setMsg("Order status updated.")}catch{setMsg("Could not update the order status. Check your connection and try again.")}finally{setRefreshing(false)}};
@@ -271,6 +271,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
        <div className={stage>=1?"active":""}><span>1</span><small>Order Sent</small></div><i className={stage>=1?"active":""}/><div className={stage>=2?"active":""}><span>2</span><small>{isPickup?"Ready":"Out For Delivery"}</small></div><i className={stage>=2?"active":""}/><div className={stage>=3?"active":""}><span>3</span><small>{isPickup?"Picked Up":"Delivered"}</small></div>
       </div>
       <div className="customer-order-message"><strong>{label}</strong><span>{message}</span></div>
+      {["new","confirmed"].includes(o.status)&&<div className="customer-order-edit-controls"><div><strong>Need to change this order?</strong><span>You can reduce quantities or cancel before the seller starts processing it.</span></div><div className="customer-order-edit-items">{(o.items||[]).map(item=><div className="customer-order-edit-item" key={item.id}><span>{item.name} · {item.quantity} in order</span><button className="ghost-button" type="button" disabled={busy===o.id} onClick={()=>onModifyOrder?.(o,{action:"reduce",itemId:item.id})}>− Reduce 1</button></div>)}</div><button className="ghost-button customer-cancel-order" type="button" disabled={busy===o.id} onClick={()=>{if(window.confirm("Cancel this order? The item quantities will be returned to store stock."))onModifyOrder?.(o,{action:"cancel"})}}>Cancel order</button></div>}
       {isPickup&&ready&&<div className="customer-pickup-ready-note"><strong>Ready For Pickup</strong><span>Order #{String(o.id).slice(0,8)} is ready. Collect it from the store, then confirm your pickup below.</span></div>}
       {isPickup&&preparing&&!done&&<div className="customer-pickup-wait-note"><span className="customer-pickup-dot" aria-hidden="true"/><span>We’re waiting for the seller to mark this order ready. This status will update automatically.</span></div>}
       <div className="customer-order-actions">
@@ -283,7 +284,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
   {msg&&<div className="form-success customer-status-message" role="status">{msg}</div>}
  </section>
 }
-function PublicStore({data,customer,onLogin}){
+function PublicStore({data,customer,onLogin,onStoreRefresh}){
  const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState(""),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
@@ -503,6 +504,23 @@ function PublicStore({data,customer,onLogin}){
    }finally{sessionStorage.removeItem("quickcart_checkout_lock:"+String(s.id));setBusy(false)}
  };
 
+ const modifyCustomerOrder=async(order,change)=>{
+    const token=localStorage.getItem("qc_order_token:"+order.id);
+    if(!token){setMsg("This order cannot be changed on this browser because its secure order token is missing.");return}
+    setBusy(true);setMsg("");
+    try{
+      const result=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-update",{method:"POST",body:body({confirmationToken:token,...change})});
+      const updated=result.order;
+      if(updated)setCustomerOrders(xs=>xs.map(o=>o.id===updated.id?{...o,...updated,storeName:s.storeName}:o));
+      setMsg(result.cancelled?"Order cancelled. Stock and tracking have been synced.":"Order quantity updated. Product stock and tracking are syncing.");
+      try{const fresh=await api("/api/storefront/"+encodeURIComponent(s.slug));onStoreRefresh?.(fresh)}catch{}
+      try{const freshOrders=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
+        if(Array.isArray(freshOrders.orders))setCustomerOrders(freshOrders.orders.filter(o=>o.storeId===s.id).map(o=>({...o,storeName:s.storeName})).slice(0,10));
+      }catch{}
+    }catch(e){setMsg(e.message||"Could not update this order. Please refresh and try again.")}
+    finally{setBusy(false)}
+  };
+
  const refreshOrders=async()=>{
    const updates=await Promise.all(customerOrders.map(async o=>{
      try{
@@ -582,7 +600,7 @@ function PublicStore({data,customer,onLogin}){
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
     </>}
    </section>)}
-   {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
+   {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
    </div>}</div>
  </main>
 }
@@ -647,7 +665,7 @@ export default function App(){
   // Customer credentials must never render seller workspace routes, even for one render before effects run.
   if((route.type==="app"||route.type==="auth")&&(customerSession||localStorage.getItem("quickcart_customer_token")))return <Landing onAuth={m=>go("/auth/"+m)} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
  if(route.type==="store-auth"||((route.type==="store")&&!customerSession))return <CustomerAuth mode={route.type==="store-auth"?route.mode:"login"} slug={route.slug} onMode={m=>go("/store/"+encodeURIComponent(route.slug)+"/auth/"+m)} onSuccess={c=>{setCustomerSession(c);go("/store/"+encodeURIComponent(route.slug),true)}}/>;
- if(route.type==="store")return publicError?<main className="public-store-page"><div className="public-store-error"><Logo size={48}/><h1>Storefront unavailable</h1><p>{publicError}</p><button className="primary-button" onClick={()=>window.location.reload()}>Try again</button></div></main>:<><PublicStore data={publicData} customer={customerSession} onLogin={m=>go("/store/"+encodeURIComponent(route.slug)+"/auth/"+m)}/><Notice value={notice} onClose={()=>setNotice(null)}/></>;
+ if(route.type==="store")return publicError?<main className="public-store-page"><div className="public-store-error"><Logo size={48}/><h1>Storefront unavailable</h1><p>{publicError}</p><button className="primary-button" onClick={()=>window.location.reload()}>Try again</button></div></main>:<><PublicStore data={publicData} customer={customerSession} onStoreRefresh={setPublicData} onLogin={m=>go("/store/"+encodeURIComponent(route.slug)+"/auth/"+m)}/><Notice value={notice} onClose={()=>setNotice(null)}/></>;
  if(route.type==="auth")return <><Auth mode={authMode} onMode={m=>{setAuthError("");go("/auth/"+m)}} onSubmit={submit} form={auth} setForm={setAuth} error={authError} loading={authLoading}/>{otpOpen&&<Modal title="Verify your email" subtitle={"Enter the 6-digit code sent to "+otpEmail} onClose={()=>setOtpOpen(false)}><form className="stack" onSubmit={verify}><Field label="Verification code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}/>{otpMessage&&<div className="form-success">{otpMessage}</div>}{otpError&&<div className="form-error">{otpError}</div>}<button className="primary-button big" disabled={otpLoading||otp.length!==6}>{otpLoading?"Verifying…":"Verify email"} <Check size={16}/></button><button type="button" className="ghost-button" disabled={otpLoading||otpCooldown>0} onClick={resend}>{otpCooldown?"Resend in "+otpCooldown+"s":"Resend code"}</button></form></Modal>}{/* AUTH */}</>;
  if(!user)return <Landing onAuth={m=>go("/auth/"+m)} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
  if(!store)return <><div className="empty-app"><Logo size={50}/><h1>Create your first store.</h1><p>Set up your storefront before adding products and orders.</p><button className="primary-button big" onClick={()=>setSetup(true)}><Store size={17}/> Create store</button></div>{setup&&<StoreSetup loading={busy} onCreate={createStore} onClose={()=>setSetup(false)}/>}</>;
