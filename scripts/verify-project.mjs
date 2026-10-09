@@ -144,7 +144,7 @@ check("Cart and order tracking appear automatically when they contain data, with
   /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css));
 check("Customer order quantities use plus and minus controls and are updated by the backend",
   /action:"increase"/.test(app) && /action:"reduce"/.test(app) &&
-  /action==='increase'/.test(api) && /stock:\{\$gt:0\}/.test(api) &&
+  /!\['reduce','increase'\]\.includes\(action\)/.test(api) && /action==='increase'/.test(api) && /stock:\{\$gt:0\}/.test(api) &&
   /Each item must stay at quantity 1 or more/.test(api));
 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
