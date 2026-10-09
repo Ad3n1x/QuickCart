@@ -622,10 +622,10 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
 
        </div>
        <div className={"public-product-actions public-product-actions-stepper"+(qty>0?" has-quantity":"")}>
-        {stock>0?<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
-          <button type="button" onClick={()=>updateCart(x.id,Math.max(0,qty-1))} disabled={qty<=0} aria-label={"Decrease "+x.name+" quantity"}>−</button>
-          <strong aria-live="polite" aria-atomic="true">{qty}</strong>
-          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Increase "+x.name+" quantity"}>+</button>
+        {stock>0?<div className="public-qty-control" aria-label={"Quantity of "+x.name} style={{display:"flex",alignItems:"center",justifyContent:"space-between",boxSizing:"border-box",width:"100%",maxWidth:"none",minWidth:0,gap:8,padding:"4px 6px"}}>
+          <button type="button" onClick={()=>updateCart(x.id,Math.max(0,qty-1))} disabled={qty<=0} aria-label={"Decrease "+x.name+" quantity"} style={{flex:"0 0 40px",width:40,minWidth:40,height:40,minHeight:40,padding:0}}>−</button>
+          <strong aria-live="polite" aria-atomic="true" style={{flex:"1 1 auto",minWidth:0,textAlign:"center"}}>{qty}</strong>
+          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Increase "+x.name+" quantity"} style={{flex:"0 0 40px",width:40,minWidth:40,height:40,minHeight:40,padding:0}}>+</button>
         </div>:<span className="public-sold-out" role="status">Sold out</span>}
        </div>
       </article>
