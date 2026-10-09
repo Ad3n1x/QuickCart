@@ -93,7 +93,7 @@ check("Guest cart quantities merge with the signed-in customer cart instead of o
 check("Order tracking appears automatically inline for valid orders from the active store, without a separate tracking button or modal",
   !app.includes("public-track-orders-link") &&
   !app.includes('className="customer-tracking-modal"') &&
-  app.includes('id="customer-order-tracking" className="panel customer-tracking-auto"') &&
+  app.includes('id="customer-order-tracking" className="panel customer-order-status customer-tracking-auto"') &&
   /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app));
 
 check("Every in-stock product card has accessible plus and minus quantity controls without remove-one wording",
@@ -105,7 +105,7 @@ check("Every in-stock product card has accessible plus and minus quantity contro
   app.includes('disabled={qty>=stock}'));
 
 check("Successful checkout scrolls to automatically rendered order tracking",
-  /id="customer-order-tracking" className="panel customer-tracking-auto"/.test(app) &&
+  /id="customer-order-tracking" className="panel customer-order-status customer-tracking-auto"/.test(app) &&
   /requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
 
 check("First product added focuses the automatically visible cart while quantity controls stay linked to cart state",
@@ -157,7 +157,7 @@ check("Checkout summary appears only when populated and order tracking is automa
   app.includes('hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">') &&
   !app.includes("public-track-orders-link") &&
   !app.includes('className="customer-tracking-modal"') &&
-  app.includes('id="customer-order-tracking" className="panel customer-tracking-auto"') &&
+  app.includes('id="customer-order-tracking" className="panel customer-order-status customer-tracking-auto"') &&
   /saved\.filter\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(storeId\)\)/.test(app));
 
 check("Customer order tracking deduplicates repeated order IDs, idempotency keys, and immediate duplicate submissions",
@@ -224,6 +224,13 @@ check("Seller order status changes follow fulfillment-specific transitions and t
   /if\(!nextStatuses\[current\.status\]\?\.includes\(status\)\)return res\.status\(409\)/.test(api) &&
   /const statuses=\["all","new","confirmed","processing","ready","shipped","delivered","picked_up","cancelled"\]/.test(app) &&
   /o\.fulfillment==="delivery"\?\["shipped","cancelled"\]:\["ready","cancelled"\]/.test(app));
+
+check("Order tracking renders exactly once with one unique tracking anchor and no nested duplicate wrapper",
+  (app.match(/id="customer-order-tracking"/g)||[]).length===1 &&
+  !app.includes('className="panel customer-tracking-auto"><div className="customer-tracking-wrap">') &&
+  /className="panel customer-order-status customer-tracking-auto"/.test(app) &&
+  !app.includes("trackingExpanded") &&
+  /setCustomerOrders\(dedupeCustomerOrders\(updates\)\)/.test(app));
 
 check("Removed obsolete customer tracking modal CSS after switching to automatic inline tracking",
   !css.includes("customer-tracking-modal") &&
