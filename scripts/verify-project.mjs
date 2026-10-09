@@ -52,6 +52,13 @@ check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
   /checkoutFingerprint=JSON\.stringify/.test(app) && /savedCheckout\.fingerprint===checkoutFingerprint/.test(app) && /localStorage\.setItem\(clientOrderKey,JSON\.stringify\(\{id:clientOrderId,fingerprint:checkoutFingerprint\}\)\)/.test(app) && /localStorage\.removeItem\(clientOrderKey\)/.test(app));
+check("Customer receipt OCR validates uploads and always releases worker resources",
+  /file\.size>10\*1024\*1024/.test(app) &&
+  /if\(worker\)try\{await worker\.terminate\(\)\}catch\{\}/.test(app) &&
+  /URL\.revokeObjectURL\(preview\)/.test(app));
+check("Checkout idempotency does not reuse un-fingerprinted legacy keys",
+  /savedCheckout&&typeof savedCheckout==="object"&&savedCheckout\.fingerprint===checkoutFingerprint\?savedCheckout\.id:""/.test(app) &&
+  !/typeof savedCheckout==="string"\?savedCheckout/.test(app));
 check("Deployment workflow checks backend syntax and verifies live sitemap files",
   /node --check api\/index\.js/.test(workflow) &&
   /Verify live SEO files/.test(workflow) &&
