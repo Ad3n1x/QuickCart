@@ -38,6 +38,9 @@ jobs:
           node --check api/index.js
           node --check server.js
 
+      - name: Verify app architecture and production invariants
+        run: node scripts/verify-project.mjs
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
