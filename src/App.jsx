@@ -284,10 +284,12 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data,customer,onLogin}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState("");
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
- useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId){setCart({});setCartOwner("");return}const owner=storeId+":"+(email||"guest");try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");const guest=email?JSON.parse(localStorage.getItem("qc_cart:"+storeId+":guest")||"{}"):{};const safeSaved=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};const safeGuest=guest&&typeof guest==="object"&&!Array.isArray(guest)?guest:{};setCart(email?{...safeGuest,...safeSaved}:safeSaved);setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
+ useEffect(()=>{const storeId=data?.store?.id;if(!storeId)return;try{setPanelsExpanded(sessionStorage.getItem("qc_cart_panels:"+storeId)!=="0")}catch{setPanelsExpanded(true)}setPanelsPreferenceStore(storeId)},[data?.store?.id]);
+ useEffect(()=>{const storeId=data?.store?.id;if(!storeId||panelsPreferenceStore!==storeId)return;try{sessionStorage.setItem("qc_cart_panels:"+storeId,panelsExpanded?"1":"0")}catch{}},[data?.store?.id,panelsExpanded,panelsPreferenceStore]);
+ useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId){setCart({});setCartOwner("");return}const owner=storeId+":"+(email||"guest");try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");const guest=email?JSON.parse(localStorage.getItem("qc_cart:"+storeId+":guest")||"{}"):{};const safeSaved=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};const safeGuest=guest&&typeof guest==="object"&&!Array.isArray(guest)?guest:{};const merged={...safeSaved};if(email)for(const [id,qty] of Object.entries(safeGuest))merged[id]=(Math.max(0,Number(merged[id])||0)+Math.max(0,Number(qty)||0));setCart(email?merged:safeSaved);setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email),owner=storeId+":"+(email||"guest");if(!storeId||cartOwner!==owner)return;try{localStorage.setItem("qc_cart:"+owner,JSON.stringify(cart));if(email)localStorage.removeItem("qc_cart:"+storeId+":guest")}catch{}},[data?.store?.id,customer?.email,cart,cartOwner]);
 
  useEffect(()=>{
@@ -369,6 +371,7 @@ function PublicStore({data,customer,onLogin}){
  if(!s)return <main className="public-store-page"><Loading label="Loading store…"/></main>;
 
  const updateCart=(id,next)=>{
+   if(Number(next)>Number(cart[id]||0))setPanelsExpanded(true);
    setCart(prev=>{
      const value=Math.max(0,Number(next)||0);
      const product=p.find(x=>x.id===id);
