@@ -2702,3 +2702,56 @@ button{white-space:normal;line-height:1.25}
   .public-store-page .public-product-actions.has-quantity{gap:7px;padding:8px 10px 12px}
   .public-store-page .public-product-actions.has-quantity>.primary-button{font-size:12px;padding:9px 8px}
 }
+
+/* Customer storefront product actions: keep quantity and add-to-cart controls on separate full-width rows. */
+.public-store-page .public-product-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  align-items:stretch;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  margin-top:12px;
+}
+.public-store-page .public-product-actions .public-qty-control{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(24px,auto) minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  padding:5px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--surface-2);
+}
+.public-store-page .public-product-actions .public-qty-control button{
+  display:grid;
+  place-items:center;
+  min-width:36px;
+  min-height:36px;
+  padding:0;
+  border-radius:8px;
+  background:var(--surface);
+  color:var(--ink);
+  font-size:20px;
+}
+.public-store-page .public-product-actions .public-qty-control button:disabled{opacity:.45;cursor:not-allowed}
+.public-store-page .public-product-actions .public-qty-control strong{text-align:center;font-size:14px;font-variant-numeric:tabular-nums}
+.public-store-page .public-product-actions>.primary-button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:10px 12px;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@media(max-width:380px){
+  .public-store-page .public-product-actions .public-qty-control{gap:5px;padding:4px}
+  .public-store-page .public-product-actions .public-qty-control button{min-width:32px;min-height:34px}
+  .public-store-page .public-product-actions>.primary-button{font-size:13px}
+}
