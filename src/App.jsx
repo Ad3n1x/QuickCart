@@ -253,6 +253,7 @@ function CustomerReceiptCard({order}){
 function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
  const[busy,setBusy]=useState(""),[msg,setMsg]=useState(""),[refreshing,setRefreshing]=useState(false),[lastChecked,setLastChecked]=useState(null);
  const confirm=async order=>{setBusy(order.id);setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed successfully.":"Delivery confirmed successfully.");setLastChecked(new Date());onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("")}};
+ const modify=async(order,change)=>{if(busy===order.id)return;setBusy(order.id);setMsg("");try{const result=await onModifyOrder?.(order,change);if(!result)throw new Error("The order update did not complete. Please refresh and try again.");setMsg(result.cancelled?"Order cancelled. Product stock and tracking have been updated.":"Order updated. Product stock and tracking have been updated.");setLastChecked(new Date());}catch(e){setMsg(e.message||"Could not update this order. Please try again.");}finally{setBusy("")}};
  const refresh=async()=>{if(!onRefresh)return;setRefreshing(true);setMsg("");try{await onRefresh();setLastChecked(new Date());setMsg("Order status updated.")}catch{setMsg("Could not update the order status. Check your connection and try again.")}finally{setRefreshing(false)}};
  if(!orders.length)return null;
  return <section id="customer-order-tracking" className="panel customer-order-status">
@@ -271,7 +272,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
        <div className={stage>=1?"active":""}><span>1</span><small>Order Sent</small></div><i className={stage>=1?"active":""}/><div className={stage>=2?"active":""}><span>2</span><small>{isPickup?"Ready":"Out For Delivery"}</small></div><i className={stage>=2?"active":""}/><div className={stage>=3?"active":""}><span>3</span><small>{isPickup?"Picked Up":"Delivered"}</small></div>
       </div>
       <div className="customer-order-message"><strong>{label}</strong><span>{message}</span></div>
-      {["new","confirmed"].includes(o.status)&&<div className="customer-order-edit-controls"><div><strong>Need to change this order?</strong><span>You can reduce quantities or cancel before the seller starts processing it.</span></div><div className="customer-order-edit-items">{(o.items||[]).map(item=><div className="customer-order-edit-item" key={item.id}><span>{item.name} · {item.quantity} in order</span><button className="ghost-button" type="button" disabled={busy===o.id} onClick={()=>onModifyOrder?.(o,{action:"reduce",itemId:item.id})}>− Reduce 1</button></div>)}</div><button className="ghost-button customer-cancel-order" type="button" disabled={busy===o.id} onClick={()=>{if(window.confirm("Cancel this order? The item quantities will be returned to store stock."))onModifyOrder?.(o,{action:"cancel"})}}>Cancel order</button></div>}
+      {["new","confirmed"].includes(o.status)&&<div className="customer-order-edit-controls"><div><strong>Need to change this order?</strong><span>You can reduce quantities or cancel before the seller starts processing it.</span></div><div className="customer-order-edit-items">{(o.items||[]).map(item=><div className="customer-order-edit-item" key={item.id}><span>{item.name} · {item.quantity} in order</span><button className="ghost-button" type="button" disabled={busy===o.id} onClick={()=>modify(o,{action:"reduce",itemId:item.id})}>− Reduce 1</button></div>)}</div><button className="ghost-button customer-cancel-order" type="button" disabled={busy===o.id} onClick={()=>{if(window.confirm("Cancel this order? The item quantities will be returned to store stock."))modify(o,{action:"cancel"})}}>Cancel order</button></div>}
       {isPickup&&ready&&<div className="customer-pickup-ready-note"><strong>Ready For Pickup</strong><span>Order #{String(o.id).slice(0,8)} is ready. Collect it from the store, then confirm your pickup below.</span></div>}
       {isPickup&&preparing&&!done&&<div className="customer-pickup-wait-note"><span className="customer-pickup-dot" aria-hidden="true"/><span>We’re waiting for the seller to mark this order ready. This status will update automatically.</span></div>}
       <div className="customer-order-actions">
@@ -329,6 +330,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
+ const editableOrderLines=customerOrders.filter(o=>["new","confirmed"].includes(o.status)).flatMap(o=>(o.items||[]).map(item=>({...item,orderId:o.id,orderStatus:o.status})));
  const items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:Math.min(Number(x.stock)||0,Math.max(0,Number(cart[x.id])||0))})).filter(x=>x.quantity>0);
  const subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0);
  const delivery=ful==="delivery"&&deliveryEnabled?Number(s?.deliveryFee||0):0;
@@ -509,19 +511,17 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
 
  const modifyCustomerOrder=async(order,change)=>{
     const token=localStorage.getItem("qc_order_token:"+order.id);
-    if(!token){setMsg("This order cannot be changed on this browser because its secure order token is missing.");return}
-    setBusy(true);setMsg("");
+    if(!token)throw new Error("This order cannot be changed on this browser because its secure order token is missing. Please use the browser used to place the order.");
+    const result=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-update",{method:"POST",body:body({confirmationToken:token,...change})});
+    const updated=result.order;
+    if(updated)setCustomerOrders(xs=>xs.map(o=>o.id===updated.id?{...o,...updated,storeName:s.storeName}:o));
+    // Surface a refreshed stock count on the product cards immediately after a successful server update.
+    try{const fresh=await api("/api/storefront/"+encodeURIComponent(s.slug));onStoreRefresh?.(fresh)}catch{}
     try{
-      const result=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-update",{method:"POST",body:body({confirmationToken:token,...change})});
-      const updated=result.order;
-      if(updated)setCustomerOrders(xs=>xs.map(o=>o.id===updated.id?{...o,...updated,storeName:s.storeName}:o));
-      setMsg(result.cancelled?"Order cancelled. Stock and tracking have been synced.":"Order quantity updated. Product stock and tracking are syncing.");
-      try{const fresh=await api("/api/storefront/"+encodeURIComponent(s.slug));onStoreRefresh?.(fresh)}catch{}
-      try{const freshOrders=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
-        if(Array.isArray(freshOrders.orders))setCustomerOrders(current=>freshOrders.orders.filter(o=>o.storeId===s.id).map(o=>({...o,whatsappSent:current.find(c=>c.id===o.id)?.whatsappSent===true,storeName:s.storeName})).slice(0,10));
-      }catch{}
-    }catch(e){setMsg(e.message||"Could not update this order. Please refresh and try again.")}
-    finally{setBusy(false)}
+      const freshOrders=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
+      if(Array.isArray(freshOrders.orders))setCustomerOrders(current=>freshOrders.orders.filter(o=>o.storeId===s.id).map(o=>({...o,whatsappSent:current.find(c=>c.id===o.id)?.whatsappSent===true,storeName:s.storeName})).slice(0,10));
+    }catch{}
+    return {cancelled:!!result.cancelled,order:updated};
   };
 
  const refreshOrders=async()=>{
@@ -557,6 +557,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
   </section>
   <div className="public-store-grid">
    <section className="public-catalog">
+    {msg&&<div className={/could not|cannot|invalid|unable|failed|error/i.test(msg)?"form-error public-store-feedback":"form-success public-store-feedback"} role="status" aria-live="polite">{msg}</div>}
     <div className="public-catalog-head">
       <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
       {(items.length>0||customerOrders.length>0)&&<button className="public-cart-jump public-cart-tracking-toggle" type="button" aria-expanded={panelsExpanded} onClick={()=>{const next=!panelsExpanded;setPanelsExpanded(next);if(next)requestAnimationFrame(()=>document.getElementById(items.length?"public-checkout":"customer-order-tracking")?.scrollIntoView({behavior:"smooth",block:"start"}))}}><span>{panelsExpanded?"Collapse":"Show"} cart &amp; tracking</span>{items.length>0&&<strong>{items.reduce((n,x)=>n+x.quantity,0)} · {fmt(total)}</strong>}{customerOrders.length>0&&<small>{customerOrders.length} {customerOrders.length===1?"order":"orders"} tracking</small>}<ChevronDown size={16} className={panelsExpanded?"is-expanded":""}/></button>}
@@ -572,6 +573,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        <div className="product-info">
         <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
         <strong className="product-price">{fmt(x.price)}</strong>
+        {(()=>{const line=editableOrderLines.find(item=>String(item.id)===String(x.id));return line?<div className="product-order-edit"><span>In your order: <b>{line.quantity}</b></span><button className="ghost-button" type="button" disabled={busy} onClick={()=>modifyCustomerOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id}).then(()=>setMsg("Order updated. Product stock and tracking have been updated.")).catch(e=>setMsg(e.message||"Could not update the order."))}>− Reduce 1 from order</button></div>:null})()}
        </div>
        <div className={"public-product-actions"+(qty>0?" has-quantity":"")}>
         {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
