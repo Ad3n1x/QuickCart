@@ -83,7 +83,8 @@ const routeMatchers=[
  {pattern:/^\/auth\/(login|signup)$/,resolve:m=>({type:"auth",mode:m[1]})},
  {pattern:/^\/app(?:\/([^/]+))?$/,resolve:m=>({type:"app",view:routes[m[1]||"overview"]||"dashboard"})}
 ];
-function getRoute(){const path=cleanPath();if(/^\/app(?:\/|$)/.test(path)){try{if(localStorage.getItem("quickcart_customer_token")||localStorage.getItem("quickcart_customer"))return{type:"landing"}}catch{}}for(const route of routeMatchers){const match=path.match(route.pattern);if(match)return route.resolve(match)}return{type:"landing"}}
+function hasCustomerCredentials(){try{return Boolean(localStorage.getItem("quickcart_customer_token")||localStorage.getItem("quickcart_customer"))}catch{return false}}
+function getRoute(){const path=cleanPath();if(/^\/app(?:\/|$)/.test(path)&&hasCustomerCredentials()){const home=(BASE||"")+"/";if(window.location.pathname!==home)history.replaceState({}, "", home);return{type:"landing"}}for(const route of routeMatchers){const match=path.match(route.pattern);if(match)return route.resolve(match)}return{type:"landing"}}
 function go(path,replace=false){const target=String(path||"/");const safePath=target.startsWith("/")?target:"/"+target;const url=(BASE||"")+safePath;(replace?history.replaceState:history.pushState).call(history,{},"",url);window.dispatchEvent(new Event("popstate"));if(!safePath.includes("#"))window.scrollTo({top:0,behavior:"auto"})}
 function body(v){return JSON.stringify(v)}
 function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
