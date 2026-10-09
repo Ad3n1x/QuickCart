@@ -2950,7 +2950,8 @@ button{white-space:normal;line-height:1.25}
 
 
 /* Tailwind utility layer; existing semantic styles remain the component foundation. */
-@tailwind utilities;
+@config "../tailwind.config.js";
+@import "tailwindcss/utilities";
 
 
 /* Responsive quantity stepper: never overflows narrow product cards. */
