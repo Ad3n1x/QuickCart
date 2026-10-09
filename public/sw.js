@@ -1,4 +1,4 @@
-const CACHE = 'quickcart-shell-v3';
+const CACHE = 'quickcart-shell-v4';
 const BASE = new URL(self.registration.scope).pathname;
 const SHELL = [BASE, BASE + 'index.html'];
 
