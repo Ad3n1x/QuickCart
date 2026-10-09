@@ -572,7 +572,7 @@ function PublicStore({data,customer,onLogin}){
     </>}
    </section>)}
    {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
-   </aside>}</div>
+   </div>}</div>
  </main>
 }
 
