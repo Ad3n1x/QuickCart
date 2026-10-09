@@ -299,21 +299,27 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
 
  useEffect(()=>{
    const storeId=data?.store?.id,email=emailOf(customer?.email);
-   if(!storeId||!email){setCustomerOrders([]);setCustomerOrdersHydrated(false);return}
+   // Clear the previous storefront's tracking immediately; never flash another store's orders.
+   setCustomerOrders([]);
+   if(!storeId||!email){setCustomerOrdersHydrated(false);return}
    let cancelled=false;
    setCustomerOrdersHydrated(false);
    const loadCustomerOrders=async()=>{
      try{
        const d=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
        if(cancelled)return;
-       const remote=Array.isArray(d.orders)?d.orders.filter(o=>o.storeId===storeId):[];
+       const remote=Array.isArray(d.orders)?d.orders.filter(o=>String(o.storeId)===String(storeId)): [];
        let cached=[];
-       try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");cached=Array.isArray(saved)?saved:[]}catch{}
+       try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");cached=Array.isArray(saved)?saved.filter(o=>String(o.storeId||storeId)===String(storeId)):[]}catch{}
        const cachedById=new Map(cached.map(o=>[String(o.id),o]));
        setCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"})).slice(0,10));
      }catch{
        if(cancelled)return;
-       try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[])}catch{setCustomerOrders([])}
+       try{
+         const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");
+         const matching=Array.isArray(saved)?saved.filter(o=>String(o.storeId||storeId)===String(storeId)): [];
+         setCustomerOrders(matching.slice(0,10));
+       }catch{setCustomerOrders([])}
      }finally{if(!cancelled)setCustomerOrdersHydrated(true)}
    };
    loadCustomerOrders();
