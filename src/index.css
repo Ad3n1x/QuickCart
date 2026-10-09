@@ -2755,3 +2755,31 @@ button{white-space:normal;line-height:1.25}
   .public-store-page .public-product-actions .public-qty-control button{min-width:32px;min-height:34px}
   .public-store-page .public-product-actions>.primary-button{font-size:13px}
 }
+
+
+/* Shared storefront control keeps cart and order tracking expanded/collapsed as one unit. */
+.public-store-page .public-cart-tracking-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+  gap:8px 10px;
+  max-width:100%;
+  min-height:42px;
+  padding:9px 12px;
+  border:1px solid var(--border,#dce5de);
+  border-radius:12px;
+  background:var(--surface,#fff);
+  color:var(--ink,#17231d);
+  cursor:pointer;
+  text-align:left;
+}
+.public-store-page .public-cart-tracking-toggle>span{font-weight:800}
+.public-store-page .public-cart-tracking-toggle strong{font-size:12px;white-space:nowrap}
+.public-store-page .public-cart-tracking-toggle small{width:100%;color:var(--muted,#68746d);font-size:11px}
+.public-store-page .public-cart-tracking-toggle>svg{flex:0 0 auto;transition:transform .18s ease}
+.public-store-page .public-cart-tracking-toggle>svg.is-expanded{transform:rotate(180deg)}
+@media(max-width:700px){
+  .public-store-page .public-cart-tracking-toggle{width:100%;justify-content:space-between}
+  .public-store-page .public-catalog-head{gap:12px}
+}
