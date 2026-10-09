@@ -34,6 +34,12 @@ check("Production entrypoint includes a render-error boundary",
   /FatalBoundary/.test(main) && /getDerivedStateFromError/.test(main));
 check("Only one Vite configuration is present and GitHub Pages base path is explicit",
   !existsSync("vite.config.ts") && /VITE_GITHUB_PAGES/.test(vite) && /\/QuickCart\//.test(vite));
+check("Tailwind CSS is configured with QuickCart semantic design tokens and utility scanning",
+  Boolean(packageJson.devDependencies?.tailwindcss && packageJson.devDependencies?.postcss && packageJson.devDependencies?.autoprefixer) &&
+  existsSync("tailwind.config.js") && existsSync("postcss.config.js") &&
+  /@tailwind utilities/.test(css) &&
+  /hover:-translate-y-0\.5/.test(app) &&
+  /customer-tracking-toggle inline-flex/.test(app));
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
 check("Storefront carts persist for guests and customers, stay store-scoped, and merge guest items on sign-in",
