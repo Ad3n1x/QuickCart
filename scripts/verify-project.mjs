@@ -129,7 +129,7 @@ check("Startup no longer deletes saved customer order confirmation tokens",
 check("Order-edit controls validate successful server responses, show action-specific loading states, and prevent duplicate requests",
   /if\(busy===order\.id\)return/.test(app) &&
   /setMsg\(e\.message\|\|"Could not update this order/.test(app) &&
-  app.includes('finally{setBusy("")}') &&
+  app.includes('finally{setBusy("");setBusyAction("")}') &&
   /if\(!order\|\|busy\|\|orderEditBusy\)return/.test(app) &&
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
