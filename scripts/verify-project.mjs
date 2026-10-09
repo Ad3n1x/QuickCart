@@ -51,12 +51,13 @@ check("Seller order deletion is scoped to the seller's own store",
   /deleteOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api));
 check("Customer accounts cannot retain seller credentials or enter the seller dashboard",
   /localStorage\.removeItem\("quickcart_token"\);localStorage\.removeItem\("quickcart_store_id"\);localStorage\.removeItem\("quickcart_login_at"\);localStorage\.setItem\("quickcart_customer_token"/.test(app) &&
-  /if\(route\.type!=="app"\|\|!customerSession\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
+  /if\(route\.type!=="app"\|\|!\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
+  /if\(\(route\.type==="app"\|\|route\.type==="auth"\)&&\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return <Landing/.test(app) &&
   /localStorage\.removeItem\("quickcart_customer_token"\);localStorage\.removeItem\("quickcart_customer"\);setCustomerSession\(null\);localStorage\.setItem\("quickcart_token"/.test(app));
 check("Product add-more button gets a full-width row after an item is added",
   /public-product-actions"\+\(qty>0\?" has-quantity":""\)/.test(app) &&
-  /public-product-actions\.has-quantity\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)/.test(css) &&
-  /public-product-actions\.has-quantity>\.primary-button\{[\s\S]*?width:100%/.test(css));
+  /\.public-store-page \.public-product-actions\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)/.test(css) &&
+  /\.public-store-page \.public-product-actions>\.primary-button\{[\s\S]*?width:100%/.test(css));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
