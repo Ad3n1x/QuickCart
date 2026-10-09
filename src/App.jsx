@@ -251,9 +251,9 @@ function CustomerReceiptCard({order}){
  if(!order)return null;
  return <details open className="customer-receipt-card"><summary><FileText size={15}/> Receipt <span>#{String(order.id).slice(0,10)}</span></summary><div className="customer-receipt-paper"><div className="receipt-brand"><Logo size={30}/><div><strong>{order.storeName||"QuickCart Store"}</strong><small>Customer receipt</small></div></div><div className="receipt-meta"><span>Order #{String(order.id).slice(0,12)}</span><span>{order.createdAt?new Date(order.createdAt).toLocaleString():"—"}</span></div>{order.items?.map((x,i)=><div className="receipt-line" key={i}><span>{x.quantity||1}× {x.name}</span><strong>{fmt(Number(x.price||0)*Number(x.quantity||1))}</strong></div>)}<div className="receipt-total"><span>Total</span><strong>{fmt(order.total)}</strong></div>{order.receiptData&&(order.receiptData.merchant||order.receiptData.total||order.receiptData.receiptNo)&&<div className="receipt-foot">Payment receipt: {order.receiptData.merchant||"Uploaded"}{order.receiptData.total?" · "+order.receiptData.total:""}{order.receiptData.receiptNo?" · Ref "+order.receiptData.receiptNo:""}</div>}<div className="receipt-actions"><button className="primary-button" type="button" onClick={print}><Download size={15}/> Save PDF / Print</button><button className="ghost-button" type="button" onClick={()=>saveReceiptImage(order)}><ImageIcon size={15}/> Save image</button></div></div></details>}
 function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
- const[busy,setBusy]=useState(""),[msg,setMsg]=useState(""),[refreshing,setRefreshing]=useState(false),[lastChecked,setLastChecked]=useState(null);
- const confirm=async order=>{setBusy(order.id);setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed successfully.":"Delivery confirmed successfully.");setLastChecked(new Date());onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("")}};
- const modify=async(order,change)=>{if(busy===order.id)return;setBusy(order.id);setMsg("");try{const result=await onModifyOrder?.(order,change);if(!result)throw new Error("The order update did not complete. Please refresh and try again.");setMsg(result.cancelled?"Order cancelled. Product stock and tracking have been updated.":"Order updated. Product stock and tracking have been updated.");setLastChecked(new Date());}catch(e){setMsg(e.message||"Could not update this order. Please try again.");}finally{setBusy("")}};
+ const[busy,setBusy]=useState(""),[busyAction,setBusyAction]=useState(""),[msg,setMsg]=useState(""),[refreshing,setRefreshing]=useState(false),[lastChecked,setLastChecked]=useState(null);
+ const confirm=async order=>{setBusy(order.id);setBusyAction("confirm");setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed successfully.":"Delivery confirmed successfully.");setLastChecked(new Date());onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("");setBusyAction("")}};
+ const modify=async(order,change)=>{if(busy===order.id)return;setBusy(order.id);setBusyAction("update");setMsg("");try{const result=await onModifyOrder?.(order,change);if(!result?.order?.id)throw new Error("The server did not confirm this order update. Refresh tracking and try again.");setMsg(result.cancelled?"Order cancelled. Product stock and tracking have been updated.":"Order updated. Product stock and tracking have been updated.");setLastChecked(new Date());}catch(e){setMsg(e.message||"Could not update this order. Please try again.");}finally{setBusy("");setBusyAction("")}};
  const refresh=async()=>{if(!onRefresh)return;setRefreshing(true);setMsg("");try{await onRefresh();setLastChecked(new Date());setMsg("Order status updated.")}catch{setMsg("Could not update the order status. Check your connection and try again.")}finally{setRefreshing(false)}};
  if(!orders.length)return null;
  return <section id="customer-order-tracking" className="panel customer-order-status">
@@ -276,7 +276,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
       {isPickup&&ready&&<div className="customer-pickup-ready-note"><strong>Ready For Pickup</strong><span>Order #{String(o.id).slice(0,8)} is ready. Collect it from the store, then confirm your pickup below.</span></div>}
       {isPickup&&preparing&&!done&&<div className="customer-pickup-wait-note"><span className="customer-pickup-dot" aria-hidden="true"/><span>We’re waiting for the seller to mark this order ready. This status will update automatically.</span></div>}
       <div className="customer-order-actions">
-       {done?<strong className="customer-confirmed">Confirmed ✓</strong>:action&&actionable?<button className={"primary-button "+(ready?"pickup-confirm-button":"")} disabled={busy===o.id} onClick={()=>!sent?onWhatsAppSent?.(o.id):confirm(o)}>{busy===o.id?"Confirming…":action}</button>:<span className="customer-order-passive-status"><i/>{isPickup?"Preparing Your Order":"Preparing Your Order"}</span>}
+       {done?<strong className="customer-confirmed">Confirmed ✓</strong>:action&&actionable?<button className={"primary-button "+(ready?"pickup-confirm-button":"")} disabled={busy===o.id} onClick={()=>!sent?onWhatsAppSent?.(o.id):confirm(o)}>{busy===o.id?(busyAction==="update"?"Updating…":"Confirming…"):action}</button>:<span className="customer-order-passive-status"><i/>{isPickup?"Preparing Your Order":"Preparing Your Order"}</span>}
        <CustomerReceiptCard order={o}/>
       </div>
     </article>
@@ -286,7 +286,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder}){
  </section>
 }
 function PublicStore({data,customer,onLogin,onStoreRefresh}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState(""),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true),[panelsPreferenceStore,setPanelsPreferenceStore]=useState(""),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
  useEffect(()=>{const storeId=data?.store?.id;if(!storeId)return;try{setPanelsExpanded(sessionStorage.getItem("qc_cart_panels:"+storeId)!=="0")}catch{setPanelsExpanded(true)}setPanelsPreferenceStore(storeId)},[data?.store?.id]);
@@ -525,13 +525,14 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     return {cancelled:!!result.cancelled,order:updated};
   };
  const modifyProductCardOrder=async(order,change)=>{
-   if(!order||busy)return;
-   setBusy(true);setMsg("");
+   if(!order||busy||orderEditBusy)return;
+   setOrderEditBusy(order.id);setMsg("");
    try{
      const result=await modifyCustomerOrder(order,change);
+     if(!result?.order?.id)throw new Error("The server did not confirm this order update. Refresh and try again.");
      setMsg(result.cancelled?"Order cancelled. Product stock and tracking have been updated.":"Order updated. Product stock and tracking have been updated.");
    }catch(e){setMsg(e.message||"Could not update the order. Please refresh and try again.");}
-   finally{setBusy(false)}
+   finally{setOrderEditBusy("")}
  };
 
  const refreshOrders=async()=>{
@@ -583,7 +584,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        <div className="product-info">
         <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
         <strong className="product-price">{fmt(x.price)}</strong>
-        {(()=>{const line=editableOrderLines.find(item=>String(item.id)===String(x.id));return line?<div className="product-order-edit"><span>In your order: <b>{line.quantity}</b></span><button className="ghost-button" type="button" disabled={busy} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id})}>− Reduce 1 from order</button></div>:null})()}
+        {(()=>{const lines=editableOrderLines.filter(item=>String(item.id)===String(x.id));return lines.length?<div className="product-order-edit">{lines.map(line=><div className="product-order-edit-line" key={line.orderId+":"+line.id}><span>Order #{String(line.orderId).slice(0,8)} · <b>{line.quantity}</b> in order</span><button className="ghost-button" type="button" disabled={busy||Boolean(orderEditBusy)} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id})}>{orderEditBusy===line.orderId?"Updating…":"− Reduce 1 from order"}</button></div>)}</div>:null})()}
        </div>
        <div className={"public-product-actions"+(qty>0?" has-quantity":"")}>
         {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
