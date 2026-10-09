@@ -47,8 +47,7 @@ function cleanPath(){const raw=window.location.pathname||"/";return BASE&&raw.st
 function getRoute(){const p=cleanPath();let m=p.match(/^\/store\/([^/]+)\/auth\/(login|signup)\/?$/);if(m)return{type:"store-auth",slug:decodeURIComponent(m[1]),mode:m[2]};m=p.match(/^\/store\/([^/]+)\/?$/);if(m)return{type:"store",slug:decodeURIComponent(m[1])};m=p.match(/^\/auth\/(login|signup)\/?$/);if(m)return{type:"auth",mode:m[1]};m=p.match(/^\/app(?:\/([^/]+))?\/?$/);if(m)return{type:"app",view:routes[m[1]||"overview"]||"dashboard"};return{type:"landing"}}
 function go(path,replace=false){const url=(BASE||"")+path;(replace?history.replaceState:history.pushState).call(history,{}, "",url);dispatchEvent(new PopStateEvent("popstate"))}
 function body(v){return JSON.stringify(v)}
-async function api(path,options={}){
-  const method=String(options.method||"GET").tetR(getRoute());addEventListener("popstate",f);return()=>removeEventListener("popstate",f)},[]);return r}
+function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());addEventListener("popstate",f);return()=>removeEventListener("popstate",f)},[]);return r}
 
 function Logo({size=36}){return <span className="qc-logo" style={{width:size,height:size}} aria-label="QuickCart" role="img"><ShoppingBag size={Math.round(size*.56)}/></span>}
 function Field({label,...p}){return <label className="qc-field"><span>{label}</span><input {...p}/></label>}
