@@ -523,6 +523,15 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     }catch{}
     return {cancelled:!!result.cancelled,order:updated};
   };
+ const modifyProductCardOrder=async(order,change)=>{
+   if(!order||busy)return;
+   setBusy(true);setMsg("");
+   try{
+     const result=await modifyCustomerOrder(order,change);
+     setMsg(result.cancelled?"Order cancelled. Product stock and tracking have been updated.":"Order updated. Product stock and tracking have been updated.");
+   }catch(e){setMsg(e.message||"Could not update the order. Please refresh and try again.");}
+   finally{setBusy(false)}
+ };
 
  const refreshOrders=async()=>{
    const updates=await Promise.all(customerOrders.map(async o=>{
@@ -573,7 +582,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        <div className="product-info">
         <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
         <strong className="product-price">{fmt(x.price)}</strong>
-        {(()=>{const line=editableOrderLines.find(item=>String(item.id)===String(x.id));return line?<div className="product-order-edit"><span>In your order: <b>{line.quantity}</b></span><button className="ghost-button" type="button" disabled={busy} onClick={()=>modifyCustomerOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id}).then(()=>setMsg("Order updated. Product stock and tracking have been updated.")).catch(e=>setMsg(e.message||"Could not update the order."))}>− Reduce 1 from order</button></div>:null})()}
+        {(()=>{const line=editableOrderLines.find(item=>String(item.id)===String(x.id));return line?<div className="product-order-edit"><span>In your order: <b>{line.quantity}</b></span><button className="ghost-button" type="button" disabled={busy} onClick={()=>modifyProductCardOrder(customerOrders.find(o=>o.id===line.orderId),{action:"reduce",itemId:line.id})}>− Reduce 1 from order</button></div>:null})()}
        </div>
        <div className={"public-product-actions"+(qty>0?" has-quantity":"")}>
         {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
