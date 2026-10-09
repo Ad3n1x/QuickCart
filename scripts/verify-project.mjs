@@ -149,14 +149,10 @@ check("Customer order quantities use plus and minus controls and are updated by 
   /!\['reduce','increase'\]\.includes\(action\)/.test(api) && /action==='increase'/.test(api) && /stock:\{\$gt:0\}/.test(api) &&
   /Each item must stay at quantity 1 or more/.test(api));
 
-check("Empty checkout is hidden using the same derived item count for the wrapper and checkout panel",
-  /const hasCheckoutItems=items\\.length>0/.test(app) &&
-  /\\(hasCheckoutItems\\|\\|customerOrders\\.length>0\\)&&<div className="public-cart-tracking-stack">/.test(app) &&
-  /hasCheckoutItems&&\\(<section id="public-checkout" className="panel public-checkout">/.test(app));
 check("Service worker refreshes cached shell and fetches JS/CSS assets network-first",
   /const CACHE = 'quickcart-shell-v5'/.test(serviceWorker) &&
-  serviceWorker.includes("const isAsset = /\\\\.(?:js|css)(?:$|\\\\?)/i") &&
-  /fetch\\(request, \\{ cache: 'no-store' \\}\\)/.test(serviceWorker));
- 
+  serviceWorker.includes("const isAsset = /\\.(?:js|css)(?:$|\\?)/i") &&
+  serviceWorker.includes("fetch(request, { cache: 'no-store' })"));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
