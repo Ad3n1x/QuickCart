@@ -59,10 +59,11 @@ check("Customer accounts cannot retain seller credentials or enter the seller da
   /if\(route\.type!=="app"\|\|!\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
   /if\(\(route\.type==="app"\|\|route\.type==="auth"\)&&\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return <Landing/.test(app) &&
   /localStorage\.removeItem\("quickcart_customer_token"\);localStorage\.removeItem\("quickcart_customer"\);setCustomerSession\(null\);localStorage\.setItem\("quickcart_token"/.test(app));
-check("Product add-more button gets a full-width row after an item is added",
-  /public-product-actions"\+\(qty>0\?" has-quantity":""\)/.test(app) &&
-  /\.public-store-page \.public-product-actions\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)/.test(css) &&
-  /\.public-store-page \.public-product-actions>\.primary-button\{[\s\S]*?width:100%/.test(css));
+check("Product quantity steppers stay visible and responsive without a duplicate add button",
+  app.includes('className="public-product-actions public-product-actions-stepper"') &&
+  /\.public-store-page \.public-product-actions-stepper\{[\s\S]*?justify-content:flex-end/.test(css) &&
+  /\.public-store-page \.public-qty-control button\{[\s\S]*?height:32px/.test(css) &&
+  /@media\(max-width:760px\)[\s\S]*?\.public-store-page \.public-product-actions-stepper\{grid-column:2;grid-row:2\}/.test(css));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
