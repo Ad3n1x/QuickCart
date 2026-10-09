@@ -417,80 +417,8 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
    setBusy(true);setMsg("");
    let whatsappWindow=null;
    try{
-     // Open synchronously from the button click so mobile browsers do not block WhatsApp later.
-     whatsappWindow=window.open("about:blank","_blank");
-     if(whatsappWindow)whatsappWindow.opener=null;
-     const clientOrderKey="quickcart_checkout_client_id:"+String(s.id);const checkoutFingerprint=JSON.stringify({storeId:s.id,customerEmail:emailOf(customer?.email),customerName:customerForm.name.trim(),customerPhone:customerForm.phone.trim(),address:ful==="delivery"?customerForm.address.trim():"Pickup from store",fulfillment:ful,paymentMethod:pay,discountCode:disc?.code||code.trim(),receiptData,items:items.map(x=>({id:x.id,quantity:x.quantity})).sort((a,b)=>String(a.id).localeCompare(String(b.id)))});let savedCheckout=null;try{savedCheckout=JSON.parse(localStorage.getItem(clientOrderKey)||"null")}catch{}let clientOrderId=savedCheckout&&typeof savedCheckout==="object"&&savedCheckout.fingerprint===checkoutFingerprint?savedCheckout.id:"";if(!clientOrderId){clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);}localStorage.setItem(clientOrderKey,JSON.stringify({id:clientOrderId,fingerprint:checkoutFingerprint}));
-     const order=await api("/api/orders",{
-       method:"POST",
-       headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
-       body:body({
-         storeId:s.id,
-         clientOrderId,
-         customerName:customerForm.name.trim(),
-         customerPhone:customerForm.phone.trim(),
-         customerEmail:customer?.email||"",
-         address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
-         fulfillment:ful,
-         paymentMethod:pay,
-         discountCode:disc?.code||code.trim(),
-         receiptData,
-         items:items.map(x=>({id:x.id,quantity:x.quantity}))
-       })
-     });
-     localStorage.setItem("qc_order_token:"+order.orderId,order.confirmationToken);
-     const savedOrder={
-       id:order.orderId,
-       whatsappSent:false,
-       storeName:s.storeName,
-       storeId:s.id,
-       fulfillment:ful,
-       total:Number(order.total??total),
-       status:"new",
-       createdAt:new Date().toISOString(),
-       customerName:customerForm.name.trim(),
-       customerEmail:customer?.email||"",
-       customerPhone:customerForm.phone.trim(),
-       address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
-       paymentMethod:pay,
-       items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),
-       receiptData
-     };
-     setCustomerOrders(xs=>[savedOrder,...xs.filter(x=>x.id!==savedOrder.id)].slice(0,10));
-     setTrackingExpanded(true);
-
-     const receiptLines=(receiptData.merchant||receiptData.total||receiptData.receiptNo)
-       ?["","PAYMENT RECEIPT",
-         receiptData.merchant?"Merchant: "+receiptData.merchant:"",
-         receiptData.date?"Date: "+receiptData.date:"",
-         receiptData.total?"Receipt amount: "+receiptData.total:"",
-         receiptData.tax?"Tax/VAT: "+receiptData.tax:"",
-         receiptData.receiptNo?"Receipt/reference: "+receiptData.receiptNo:""
-       ].filter(Boolean):[];
-     const text=[
-       "🛍️ NEW ORDER — "+s.storeName,"",
-       "Customer: "+customerForm.name,
-       "Phone: "+customerForm.phone,
-       "Email: "+emailOf(customer?.email),
-       "Fulfillment: "+(ful==="delivery"?"Delivery":"Pickup"),
-       ful==="delivery"?"Address: "+customerForm.address:"Address: Pickup from store",
-       "Payment: "+(pay==="bank_transfer"?"Bank transfer":"Pay on delivery"),
-       "",
-       ...items.map(x=>x.quantity+"x "+x.name+" — "+fmt(x.price*x.quantity)),
-       "",
-       "TOTAL: "+fmt(Number(order.total??total)),
-       "Order ID: "+order.orderId,
-       ...receiptLines
-     ].join("\n");
-     let phoneDigits=String(s.vendorPhone||"").replace(/\D/g,"");
-     // WhatsApp requires an international number without a plus sign or local trunk zero.
-     // Normalize common Nigerian local formats while preserving existing country codes.
-     if(phoneDigits.startsWith("00"))phoneDigits=phoneDigits.slice(2);
-     if(phoneDigits.startsWith("0"))phoneDigits="234"+phoneDigits.slice(1);
-     else if(phoneDigits.length===10)phoneDigits="234"+phoneDigits;
-     if(phoneDigits.length<10||phoneDigits.length>15){
-       throw new Error("This store’s WhatsApp number looks invalid. Ask the seller to add a full number with country code in Store settings.");
-     }
+     // Validate the seller WhatsApp destination before creating an order, so a bad
+     // store number cannot leave customers with an order they cannot send to the seller.
      const encodedText=encodeURIComponent(text);
      // Use the short official wa.me click-to-chat URL for WhatsApp and WhatsApp Business.
      // The browser/device chooses the available WhatsApp app or web experience.
