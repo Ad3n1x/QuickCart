@@ -144,7 +144,7 @@ check("Cart and order tracking appear automatically only for the active store's 
   /hasCheckoutItems&&\(<section id="public-checkout" className="panel public-checkout">/.test(app) &&
   /customerOrders\.length>0&&<div className="customer-tracking-wrap">/.test(app) &&
   /setCustomerOrders\(\[\]\);[\s\S]*?setCustomerOrdersHydrated\(false\)/.test(app) &&
-  /saved\.filter\(o=>String\(o\.storeId\|\|storeId\)===String\(storeId\)\)/.test(app) &&
+  /saved\.filter\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(storeId\)\)/.test(app) &&
   /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css));
 check("Customer order quantities use plus and minus controls and are updated by the backend",
   /action:"increase"/.test(app) && /action:"reduce"/.test(app) &&
