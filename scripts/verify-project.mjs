@@ -18,9 +18,9 @@ const api = read("api/index.js");
 const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Vite HTML entry exists and points to the JavaScript React entrypoint",
-  existsSync("src/main.jsx") && /src\/main\.jsx/.test(html) && !/src\/main\.tsx/.test(html));
+  existsSync("src/main.jsx") && !existsSync("src/main.tsx") && !existsSync("src/App.tsx") && /src\/main\.jsx/.test(html) && !/src\/main\.tsx/.test(html));
 check("React entrypoint imports the active app and global stylesheet",
-  /from ["']\.\/App\.jsx["']/.test(main) && /from ["']\.\/index\.css["']/.test(main));
+  /from ["']\.\/App\.jsx["']/.test(main) && /import ["']\.\/index\.css["']/.test(main));
 check("Production entrypoint includes a render-error boundary",
   /FatalBoundary/.test(main) && /getDerivedStateFromError/.test(main));
 check("GitHub Pages base path is configured explicitly",
