@@ -14,6 +14,7 @@ const html = read("index.html");
 const main = read("src/main.jsx");
 const apiClient = read("src/lib/api.js");
 const app = read("src/App.jsx");
+const css = read("src/index.css");
 const vite = read("vite.config.js");
 const api = read("api/index.js");
 const workflow = read(".github/workflows/deploy-pages.yml");
@@ -48,6 +49,14 @@ check("Order idempotency has a database uniqueness constraint",
 check("Seller order deletion is scoped to the seller's own store",
   /app\.delete\('\/api\/orders\/:id',auth/.test(api) &&
   /deleteOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api));
+check("Customer accounts cannot retain seller credentials or enter the seller dashboard",
+  /localStorage\.removeItem\("quickcart_token"\);localStorage\.removeItem\("quickcart_store_id"\);localStorage\.removeItem\("quickcart_login_at"\);localStorage\.setItem\("quickcart_customer_token"/.test(app) &&
+  /if\(route\.type!=="app"\|\|!customerSession\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
+  /localStorage\.removeItem\("quickcart_customer_token"\);localStorage\.removeItem\("quickcart_customer"\);setCustomerSession\(null\);localStorage\.setItem\("quickcart_token"/.test(app));
+check("Product add-more button gets a full-width row after an item is added",
+  /public-product-actions"\+\(qty>0\?" has-quantity":""\)/.test(app) &&
+  /public-product-actions\.has-quantity\{[\s\S]*?grid-template-columns:minmax\(0,1fr\)/.test(css) &&
+  /public-product-actions\.has-quantity>\.primary-button\{[\s\S]*?width:100%/.test(css));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
