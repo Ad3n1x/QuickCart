@@ -75,10 +75,16 @@ function dedupeCustomerOrders(list){
 }
 const routes={overview:"dashboard",dashboard:"dashboard",products:"products",orders:"orders",customers:"customers",analytics:"analytics",discounts:"discounts",receipts:"receipts",settings:"settings",premium:"premium"};
 
-function cleanPath(){const raw=window.location.pathname||"/";const base=BASE||"";const path=base&&raw.startsWith(base)?raw.slice(base.length)||"/":raw;return path.length>1?path.replace(/\/+$/,""):path}
+function cleanPath(){const raw=window.location.pathname||"/";const base=BASE||"";const path=base&&raw.startsWith(base)?raw.slice(base.length)||"/":raw;return path.length>1?path.replace(/\\/+$/,""):path}
 function safeDecode(value){try{return decodeURIComponent(value)}catch{return value}}
-function getRoute(){const p=cleanPath();let m=p.match(/^\/store\/([^/]+)\/auth\/(login|signup)\/?$/);if(m)return{type:"store-auth",slug:safeDecode(m[1]),mode:m[2]};m=p.match(/^\/store\/([^/]+)\/?$/);if(m)return{type:"store",slug:decodeURIComponent(m[1])};m=p.match(/^\/auth\/(login|signup)\/?$/);if(m)return{type:"auth",mode:m[1]};m=p.match(/^\/app(?:\/([^/]+))?\/?$/);if(m)return{type:"app",view:routes[m[1]||"overview"]||"dashboard"};return{type:"landing"}}
-function go(path,replace=false){const url=(BASE||"")+path;(replace?history.replaceState:history.pushState).call(history,{}, "",url);window.dispatchEvent(new Event("popstate"));if(!String(path).includes("#"))window.scrollTo({top:0,behavior:"auto"})}
+const routeMatchers=[
+ {pattern:/^\\/store\\/([^/]+)\\/auth\\/(login|signup)$/,resolve:m=>({type:"store-auth",slug:safeDecode(m[1]),mode:m[2]})},
+ {pattern:/^\\/store\\/([^/]+)$/,resolve:m=>({type:"store",slug:safeDecode(m[1])})},
+ {pattern:/^\\/auth\\/(login|signup)$/,resolve:m=>({type:"auth",mode:m[1]})},
+ {pattern:/^\\/app(?:\\/([^/]+))?$/,resolve:m=>({type:"app",view:routes[m[1]||"overview"]||"dashboard"})}
+];
+function getRoute(){const path=cleanPath();for(const route of routeMatchers){const match=path.match(route.pattern);if(match)return route.resolve(match)}return{type:"landing"}}
+function go(path,replace=false){const target=String(path||"/");const safePath=target.startsWith("/")?target:"/"+target;const url=(BASE||"")+safePath;(replace?history.replaceState:history.pushState).call(history,{},"",url);window.dispatchEvent(new Event("popstate"));if(!safePath.includes("#"))window.scrollTo({top:0,behavior:"auto"})}
 function body(v){return JSON.stringify(v)}
 function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
 
