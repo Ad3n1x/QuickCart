@@ -18,7 +18,7 @@ async function api(path,options={}){
     if(!r.ok){const e=new Error(data.error||"Request failed.");e.status=r.status;e.code=data.code;e.retryAfterSeconds=data.retryAfterSeconds;throw e}
     return data
   }catch(e){
-    if(method==="GET"&&path.startsWith("/api/storefront/")){try{const c=JSON.parse(localStorage.getItem("qc_public_"+path)||"null");if(c?.data)return c.data}catch{}}
+    if(!e?.status&&method==="GET"&&path.startsWith("/api/storefront/")){try{const c=JSON.parse(localStorage.getItem("qc_public_"+path)||"null");if(c?.data)return c.data}catch{}}
     if(e?.name==="AbortError"){
       const timeoutError=new Error(isAuthRequest
         ?"The server is taking longer than usual to wake up. Please try signing in again in a moment."
