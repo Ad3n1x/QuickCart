@@ -170,6 +170,7 @@ check("WhatsApp checkout uses the official wa.me link with encoded order details
   /const encodedText=encodeURIComponent\(text\)/.test(app) &&
   /const whatsappUrl="https:\/\/wa\.me\/"\+phoneDigits\+"\?text="\+encodedText/.test(app) &&
   /phoneDigits\.startsWith\("0"\)\)phoneDigits="234"\+phoneDigits\.slice\(1\)/.test(app) &&
+  app.indexOf('if(phoneDigits.length<10||phoneDigits.length>15)') < app.indexOf('const order=await api("/api/orders"') &&
   !app.includes("https://api.whatsapp.com/send?phone="));
 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
