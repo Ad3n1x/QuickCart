@@ -95,10 +95,13 @@ check("Order tracking appears automatically inline for valid orders from the act
   app.includes('id="customer-order-tracking" className="panel customer-tracking-auto"') &&
   /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app));
 
-check("Customer quantity controls use plus and minus labels instead of remove-one wording",
+check("Every in-stock product card has accessible plus and minus quantity controls without remove-one wording",
   !app.includes("Remove one") &&
+  app.includes('className="public-product-actions public-product-actions-stepper"') &&
   app.includes('aria-label={"Decrease "+x.name+" quantity"}') &&
-  app.includes('aria-label={"Add one "+x.name}'));
+  app.includes('aria-label={"Increase "+x.name+" quantity"}') &&
+  app.includes('disabled={qty<=0}') &&
+  app.includes('disabled={qty>=stock}'));
 
 check("Successful checkout scrolls to automatically rendered order tracking",
   /id="customer-order-tracking" className="panel customer-tracking-auto"/.test(app) &&
