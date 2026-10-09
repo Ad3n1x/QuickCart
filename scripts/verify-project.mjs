@@ -225,5 +225,11 @@ check("Seller order status changes follow fulfillment-specific transitions and t
   /const statuses=\["all","new","confirmed","processing","ready","shipped","delivered","picked_up","cancelled"\]/.test(app) &&
   /o\.fulfillment==="delivery"\?\["shipped","cancelled"\]:\["ready","cancelled"\]/.test(app));
 
+check("Removed obsolete customer tracking modal CSS after switching to automatic inline tracking",
+  !css.includes("customer-tracking-modal") &&
+  !css.includes("public-track-orders-link") &&
+  css.includes(".customer-tracking-auto") &&
+  css.includes(".public-product-actions-stepper"));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
