@@ -102,7 +102,9 @@ check("First product added opens and focuses the shared cart while quantity cont
 check("Server order history remains authoritative after reload while preserving local WhatsApp handoff state",
   /const cachedById=new Map\(cached\.map\(o=>\[String\(o\.id\),o\]\)\)/.test(app) &&
   /whatsappSent:cachedById\.get\(String\(o\.id\)\)\?\.whatsappSent===true/.test(app) &&
-  /setCustomerOrders\(remote\.map\(o=>/.test(app));
+  /setCustomerOrders\(remote\.map\(o=>/.test(app) &&
+  /setCustomerOrders\(current=>freshOrders\.orders\.filter/.test(app) &&
+  /whatsappSent:current\.find\(c=>c\.id===o\.id\)\?\.whatsappSent===true/.test(app));
 check("Customer order reductions and cancellations update the server order and restore product stock",
   /\/api\/orders\/:id\/customer-update/.test(api) &&
   /customerConfirmationTokenHash/.test(api) &&
