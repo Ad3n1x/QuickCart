@@ -15,6 +15,7 @@ const main = read("src/main.jsx");
 const apiClient = read("src/lib/api.js");
 const app = read("src/App.jsx");
 const css = read("src/index.css");
+const serviceWorker = read("public/sw.js");
 const vite = read("vite.config.js");
 const api = read("api/index.js");
 const workflow = read(".github/workflows/deploy-pages.yml");
@@ -138,8 +139,9 @@ check("Order-edit controls validate successful server responses, show action-spe
   /editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app));
 check("Cart and order tracking appear automatically when they contain data, without a show/hide toggle",
   !/public-cart-tracking-toggle|panelsExpanded|panelsPreferenceStore|setPanelsExpanded/.test(app) &&
-  /\(items\.length>0\|\|customerOrders\.length>0\)&&<div className="public-cart-tracking-stack">/.test(app) &&
-  /items\.length>0&&\(<section id="public-checkout" className="panel public-checkout">/.test(app) &&
+  /const hasCheckoutItems=items\.length>0/.test(app) &&
+  /\(hasCheckoutItems\|\|customerOrders\.length>0\)&&<div className="public-cart-tracking-stack">/.test(app) &&
+  /hasCheckoutItems&&\(<section id="public-checkout" className="panel public-checkout">/.test(app) &&
   /customerOrders\.length>0&&<div className="customer-tracking-wrap">/.test(app) &&
   /\.public-cart-tracking-stack \.customer-tracking-wrap\{[\s\S]*?grid-column:1 \/ -1/.test(css));
 check("Customer order quantities use plus and minus controls and are updated by the backend",
@@ -147,5 +149,14 @@ check("Customer order quantities use plus and minus controls and are updated by 
   /!\['reduce','increase'\]\.includes\(action\)/.test(api) && /action==='increase'/.test(api) && /stock:\{\$gt:0\}/.test(api) &&
   /Each item must stay at quantity 1 or more/.test(api));
 
+check("Empty checkout is hidden using the same derived item count for the wrapper and checkout panel",
+  /const hasCheckoutItems=items\\.length>0/.test(app) &&
+  /\\(hasCheckoutItems\\|\\|customerOrders\\.length>0\\)&&<div className="public-cart-tracking-stack">/.test(app) &&
+  /hasCheckoutItems&&\\(<section id="public-checkout" className="panel public-checkout">/.test(app));
+check("Service worker refreshes cached shell and fetches JS/CSS assets network-first",
+  /const CACHE = 'quickcart-shell-v5'/.test(serviceWorker) &&
+  serviceWorker.includes("const isAsset = /\\\\.(?:js|css)(?:$|\\\\?)/i") &&
+  /fetch\\(request, \\{ cache: 'no-store' \\}\\)/.test(serviceWorker));
+ 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
