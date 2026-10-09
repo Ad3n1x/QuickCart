@@ -610,15 +610,15 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
-      return <article className="public-product-card" key={x.id}>
-       <div className="public-product-art">
+      return <article className="public-product-card group overflow-hidden rounded-2xl border border-qc-line bg-qc-surface shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-card focus-within:ring-2 focus-within:ring-qc-accent" key={x.id}>
+       <div className="public-product-art relative overflow-hidden bg-qc-subtle">
         {x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}
         {stock<=0&&<span className="public-stock-pill">Sold out</span>}
         {stock>0&&stock<=5&&<span className="public-stock-pill">Only {stock} left</span>}
        </div>
-       <div className="product-info">
-        <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
-        <strong className="product-price">{fmt(x.price)}</strong>
+       <div className="product-info min-w-0 p-4">
+        <h3 className="text-base font-bold tracking-tight text-qc-ink">{x.name}</h3><p className="mt-1 line-clamp-2 text-sm leading-5 text-qc-muted">{x.description||"Available from this store."}</p>
+        <strong className="product-price mt-2 inline-flex text-lg font-extrabold tracking-tight text-qc-accent">{fmt(x.price)}</strong>
 
        </div>
        <div className={"public-product-actions public-product-actions-stepper"+(qty>0?" has-quantity":"")}>
