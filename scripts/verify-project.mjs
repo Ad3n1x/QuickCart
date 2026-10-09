@@ -166,5 +166,11 @@ check("Service worker refreshes cached shell and fetches JS/CSS assets network-f
   serviceWorker.includes("const isAsset = /\\.(?:js|css)(?:$|\\?)/i") &&
   serviceWorker.includes("fetch(request, { cache: 'no-store' })"));
 
+check("WhatsApp checkout uses the official wa.me link with encoded order details and validated international phone number",
+  /const encodedText=encodeURIComponent\(text\)/.test(app) &&
+  /const whatsappUrl="https:\/\/wa\.me\/"\+phoneDigits\+"\?text="\+encodedText/.test(app) &&
+  /phoneDigits\.startsWith\("0"\)\)phoneDigits="234"\+phoneDigits\.slice\(1\)/.test(app) &&
+  !app.includes("https://api.whatsapp.com/send?phone="));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
