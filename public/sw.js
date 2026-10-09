@@ -20,7 +20,7 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const url = new URL(request.url);
     const cached = await caches.match(request);
-    const isAsset = /\\.(?:js|css)(?:$|\\?)/i.test(url.pathname + url.search);
+    const isAsset = /\.(?:js|css)(?:$|\?)/i.test(url.pathname + url.search);
 
     if (request.mode === 'navigate' || isAsset) {
       try {
