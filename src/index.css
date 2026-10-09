@@ -2854,3 +2854,29 @@ button{white-space:normal;line-height:1.25}
  .public-store-page .public-store-badge{display:none}
  .customer-tracking-modal .customer-tracking-wrap{padding:10px}
 }
+
+
+/* Keep order tracking discoverable on every storefront viewport. */
+.public-store-page .public-nav-actions .public-track-orders-link{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  flex:0 0 auto;
+  visibility:visible;
+  opacity:1;
+  position:relative;
+  z-index:2;
+  min-height:38px;
+  padding:8px 11px;
+  border:1px solid var(--border,#dce5df);
+  border-radius:10px;
+  background:var(--surface,#fff);
+  color:var(--ink,#17231d);
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  .public-store-page .public-nav-actions .public-track-orders-link{display:inline-flex !important;}
+}
