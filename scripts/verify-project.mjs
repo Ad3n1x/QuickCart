@@ -93,8 +93,8 @@ check("Order tracking stays collapsed until explicitly opened and only shows val
   /\[trackingExpanded,setTrackingExpanded\]=useState\(false\)/.test(app) &&
   /setTrackingExpanded\(false\)/.test(app) &&
   /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app) &&
-  /aria-expanded=\{trackingExpanded\}/.test(app) &&
-  /trackingExpanded&&<div className="customer-tracking-wrap"/.test(app) &&
+  /public-track-orders-link/.test(app) &&
+  /trackingExpanded&&customer&&<Modal title="Track your orders"[\\s\\S]*?className="customer-tracking-modal"/.test(app) &&
   /setTrackingExpanded\(true\)/.test(app));
 
 check("Successful checkout scrolls to automatically rendered order tracking",
