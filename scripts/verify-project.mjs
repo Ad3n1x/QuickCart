@@ -82,7 +82,7 @@ check("Restored cart is not cleared before storefront products finish loading",
   /if\(!data\?\.store\|\|!Array\.isArray\(data\?\.products\)\)return;/.test(app));
 
 check("Product additions reopen the shared cart/tracking panel and its collapsed state persists per store session",
-  /if\(Number\(next\)>Number\(cart\[id\]\|\|0\)\)setPanelsExpanded\(true\)/.test(app) &&
+  /const adding=Number\(next\)>Number\(cart\[id\]\|\|0\);\s*if\(adding\)\{setPanelsExpanded\(true\);if\(items\.length===0\)setFocusCartAfterAdd\(true\)\}/.test(app) &&
   /sessionStorage\.getItem\("qc_cart_panels:"\+storeId\)/.test(app) &&
   /sessionStorage\.setItem\("qc_cart_panels:"\+storeId,panelsExpanded\?"1":"0"\)/.test(app));
 check("Guest cart quantities merge with the signed-in customer cart instead of overwriting matching products",
