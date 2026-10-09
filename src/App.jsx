@@ -307,8 +307,11 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
      try{
        const d=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
        if(cancelled)return;
-       const remote=Array.isArray(d.orders)?d.orders.filter(o=>o.storeId===storeId).map(o=>({...o,storeName:data?.store?.storeName||"Store"})):[];
-       setCustomerOrders(remote.slice(0,10));
+       const remote=Array.isArray(d.orders)?d.orders.filter(o=>o.storeId===storeId):[];
+       let cached=[];
+       try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");cached=Array.isArray(saved)?saved:[]}catch{}
+       const cachedById=new Map(cached.map(o=>[String(o.id),o]));
+       setCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"})).slice(0,10));
      }catch{
        if(cancelled)return;
        try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");setCustomerOrders(Array.isArray(saved)?saved.slice(0,10):[])}catch{setCustomerOrders([])}
