@@ -104,7 +104,7 @@ check("Order tracking appears automatically inline for valid orders from the act
 
 check("Every in-stock product card has accessible plus and minus quantity controls without remove-one wording",
   !app.includes("Remove one") &&
-  app.includes("public-product-actions-stepper") &&
+  app.includes("qc-shop-stepper") &&
   app.includes('aria-label={"Decrease "+x.name+" quantity"}') &&
   app.includes('aria-label={"Increase "+x.name+" quantity"}') &&
   app.includes('disabled={qty<=0}') &&
