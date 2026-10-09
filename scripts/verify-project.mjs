@@ -162,7 +162,7 @@ check("Customer order tracking deduplicates repeated order IDs, idempotency keys
   /seenClientIds\.has\(clientKey\)/.test(app) &&
   /Math\.abs\(created-previous\)<=5000/.test(app) &&
   /setCustomerOrders\(dedupeCustomerOrders\(remote\.map/.test(app) &&
-  /setCustomerOrders\(dedupeCustomerOrders\(\[savedOrder,\.\.\.xs\]\)\.slice\(0,10\)\)/.test(app));
+  /setCustomerOrders\(xs=>dedupeCustomerOrders\(\[savedOrder,\.\.\.xs\]\)\.slice\(0,10\)\)/.test(app));
 
 check("Customer order quantities use plus and minus controls and are updated by the backend",
   /action:"increase"/.test(app) && /action:"reduce"/.test(app) &&
