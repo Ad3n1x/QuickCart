@@ -158,18 +158,29 @@ app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
   if(!item)return res.status(404).json({error:'That item is not part of this order.'});
   const items=order.items.map(x=>({...x}));
   const target=items.find(x=>String(x.id)===itemId);
-  if(Number(target.quantity)<=1)items.splice(items.indexOf(target),1);else target.quantity=Number(target.quantity)-1;
-  const reducedSubtotal=items.reduce((sum,x)=>sum+Number(x.price||0)*Number(x.quantity||0),0);
+  const products=database.collection('products');
+  if(action==='reduce'&&Number(target.quantity)<=1)return res.status(400).json({error:'Each item must stay at quantity 1 or more. Cancel the whole order if you no longer need it.'});
+  if(action==='increase'){
+    const stockResult=await products.updateOne({id:item.id,storeId:order.storeId,stock:{$gt:0}},{$inc:{stock:-1}});
+    if(!stockResult.modifiedCount)return res.status(409).json({error:'This item is out of stock. Refresh the store and try again.'});
+    target.quantity=Number(target.quantity)+1;
+  }else{
+    target.quantity=Number(target.quantity)-1;
+  }
+  const subtotal=items.reduce((sum,x)=>sum+Number(x.price||0)*Number(x.quantity||0),0);
   let discount=0;
-  if(order.discountDetails?.type==='percent')discount=Math.round(reducedSubtotal*(Number(order.discountDetails.value||0)/100)*100)/100;
-  else if(order.discountDetails?.type==='fixed')discount=Math.min(reducedSubtotal,Number(order.discountDetails.value||0));
-  else discount=Math.min(reducedSubtotal,Number(order.discount||0));
-  const total=items.length?Math.max(0,Math.round((reducedSubtotal+Number(order.deliveryFee||0)-discount)*100)/100):0;
-  const empty=items.length===0,updatedAt=now(),result=await orders.updateOne(eligible,{$set:{items,subtotal:reducedSubtotal,discount,total,status:empty?'cancelled':order.status,updatedAt}});
-  if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh tracking and try again.'});
-  await database.collection('products').updateOne({id:item.id,storeId:order.storeId},{$inc:{stock:1}});
+  if(order.discountDetails?.type==='percent')discount=Math.round(subtotal*(Number(order.discountDetails.value||0)/100)*100)/100;
+  else if(order.discountDetails?.type==='fixed')discount=Math.min(subtotal,Number(order.discountDetails.value||0));
+  else discount=Math.min(subtotal,Number(order.discount||0));
+  const total=Math.max(0,Math.round((subtotal+Number(order.deliveryFee||0)-discount)*100)/100);
+  const updatedAt=now(),result=await orders.updateOne(eligible,{$set:{items,subtotal,discount,total,updatedAt}});
+  if(!result.modifiedCount){
+    if(action==='increase')await products.updateOne({id:item.id,storeId:order.storeId},{$inc:{stock:1}});
+    return res.status(409).json({error:'This order changed elsewhere. Refresh tracking and try again.'});
+  }
+  if(action==='reduce')await products.updateOne({id:item.id,storeId:order.storeId},{$inc:{stock:1}});
   const updated=await orders.findOne({id:order.id});
-  return res.json({cancelled:empty,order:{id:updated.id,storeId:updated.storeId,items:updated.items,total:updated.total,subtotal:updated.subtotal,discount:updated.discount,status:updated.status,fulfillment:updated.fulfillment,updatedAt:updated.updatedAt,createdAt:updated.createdAt,customerName:updated.customerName,customerEmail:updated.customerEmail,customerPhone:updated.customerPhone,address:updated.address,paymentMethod:updated.paymentMethod,receiptData:updated.receiptData}});
+  return res.json({cancelled:false,order:{id:updated.id,storeId:updated.storeId,items:updated.items,total:updated.total,subtotal:updated.subtotal,discount:updated.discount,status:updated.status,fulfillment:updated.fulfillment,updatedAt:updated.updatedAt,createdAt:updated.createdAt,customerName:updated.customerName,customerEmail:updated.customerEmail,customerPhone:updated.customerPhone,address:updated.address,paymentMethod:updated.paymentMethod,receiptData:updated.receiptData}});
 }catch(error){console.error(error);res.status(500).json({error:'Unable to update this order.'});}});
 app.post('/api/orders/:id/customer-confirm',async(req,res)=>{try{const database=await db(),orders=database.collection('orders');const order=await orders.findOne({id:req.params.id});if(!order)return res.status(404).json({error:'Order not found.'});if(!req.body?.confirmationToken||hashToken(String(req.body.confirmationToken))!==order.customerConfirmationTokenHash)return res.status(403).json({error:'Invalid customer confirmation.'});const target=order.fulfillment==='pickup'?'picked_up':'delivered';if(['cancelled','picked_up','delivered'].includes(order.status))return res.status(400).json({error:'This order has already been completed or cancelled.'});if(order.fulfillment==='pickup'&&order.status!=='ready')return res.status(400).json({error:'The seller must mark this pickup as ready before you can confirm it.'});if(order.fulfillment==='delivery'&&order.status!=='shipped')return res.status(400).json({error:'The seller must mark this order as shipped before you can confirm delivery.'});await orders.updateOne({id:order.id},{$set:{status:target,customerConfirmedAt:now(),updatedAt:now()}});res.json({confirmed:true,status:target,updatedAt:now()});}catch(error){console.error(error);res.status(500).json({error:'Unable to confirm the order.'});}});
 app.post('/api/orders/:id/customer-status',async(req,res)=>{try{const database=await db(),order=await database.collection('orders').findOne({id:req.params.id});if(!order)return res.status(404).json({error:'Order not found.'});if(!req.body?.confirmationToken||hashToken(String(req.body.confirmationToken))!==order.customerConfirmationTokenHash)return res.status(403).json({error:'Invalid customer confirmation token.'});res.json({orderId:order.id,status:order.status,fulfillment:order.fulfillment,total:order.total,updatedAt:order.updatedAt||order.createdAt});}catch(error){console.error(error);res.status(500).json({error:'Unable to retrieve order status.'});}});
