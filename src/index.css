@@ -2996,3 +2996,78 @@ button{white-space:normal;line-height:1.25}
   min-width:0!important;
   max-width:none!important;
 }
+
+
+/* QuickCart customer storefront refresh — compact, clear, responsive. */
+.public-store-page{
+  --shop-ink:#142c22;--shop-muted:#66766d;--shop-line:#e1e9e3;--shop-paper:#fff;--shop-wash:#f5f8f5;--shop-accent:var(--accent,#174c39);
+  width:100%;min-height:100vh;padding:clamp(12px,3vw,30px);background:var(--bg,#f6f8f6);color:var(--shop-ink);box-sizing:border-box;
+}
+.public-store-page *{box-sizing:border-box}
+.public-store-page .public-store-nav,.public-store-page .public-store-hero,.public-store-page .public-store-grid{
+  width:min(1180px,100%);margin-left:auto;margin-right:auto;
+}
+.public-store-page .public-store-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;background:var(--shop-paper);border:1px solid var(--shop-line);border-radius:18px;box-shadow:0 4px 18px rgba(18,45,31,.04)}
+.public-store-page .public-brand{min-width:0;display:flex;align-items:center;gap:12px}
+.public-store-page .public-brand b{display:block;color:var(--shop-ink);font-size:15px;font-weight:800;line-height:1.25}
+.public-store-page .public-brand small{display:block;margin-top:3px;color:var(--shop-muted);font-size:12px}
+.public-store-page .public-nav-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.public-store-page .public-store-badge{padding:7px 10px;border-radius:999px;background:var(--shop-wash);color:var(--shop-muted);font-size:11px;font-weight:700}
+.public-store-page .public-store-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,380px);align-items:end;gap:24px;padding:clamp(22px,4vw,42px) 4px 24px}
+.public-store-page .public-store-hero .eyebrow,.public-store-page .public-catalog-head .eyebrow{color:var(--shop-muted);font-size:10px;font-weight:800;letter-spacing:.14em}
+.public-store-page .public-store-hero h1{margin:8px 0;font-size:clamp(28px,4vw,42px);font-weight:850;letter-spacing:-.045em;line-height:1.05;color:var(--shop-ink)}
+.public-store-page .public-store-hero p{margin:0;color:var(--shop-muted);font-size:14px;line-height:1.6}
+.public-store-page .public-search{display:flex;align-items:center;gap:10px;min-width:0;padding:0 14px;height:48px;border:1px solid var(--shop-line);border-radius:13px;background:var(--shop-paper);color:var(--shop-muted)}
+.public-store-page .public-search input{width:100%;min-width:0;height:100%;border:0!important;outline:0!important;background:transparent!important;color:var(--shop-ink);box-shadow:none!important;font-size:14px}
+.public-store-page .public-store-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;align-items:start}
+.public-store-page .public-catalog{min-width:0;padding:clamp(14px,2vw,22px);border:1px solid var(--shop-line);border-radius:20px;background:var(--shop-paper);box-shadow:0 6px 24px rgba(18,45,31,.035)}
+.public-store-page .public-catalog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.public-store-page .public-catalog-head h2{margin:5px 0;font-size:20px;font-weight:850;letter-spacing:-.025em;color:var(--shop-ink)}
+.public-store-page .public-catalog-head p{margin:0;color:var(--shop-muted);font-size:12px}
+.public-store-page .public-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:14px}
+.public-store-page .qc-shop-card{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;min-width:0;overflow:hidden;border:1px solid var(--shop-line);border-radius:16px;background:var(--shop-paper);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.public-store-page .qc-shop-card:hover{border-color:#c4d6ca;box-shadow:0 8px 24px rgba(18,45,31,.08);transform:translateY(-2px)}
+.public-store-page .qc-shop-image{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1.25/1;min-width:0;overflow:hidden;background:var(--shop-wash)}
+.public-store-page .qc-shop-image img{display:block;width:100%;height:100%;object-fit:cover}
+.public-store-page .qc-shop-image>span:not(.public-stock-pill){font-size:44px}
+.public-store-page .qc-shop-image .public-stock-pill{position:absolute;top:10px;left:10px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.94);color:var(--shop-ink);font-size:10px;font-weight:800}
+.public-store-page .qc-shop-info{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:13px 14px 8px}
+.public-store-page .qc-shop-info h3{width:100%;margin:0;color:var(--shop-ink);font-size:14px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.public-store-page .qc-shop-info p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px;margin:5px 0 10px;color:var(--shop-muted);font-size:12px;line-height:1.45}
+.public-store-page .qc-shop-price{display:block;margin-top:auto;color:var(--shop-accent);font-size:17px;font-weight:900;letter-spacing:-.025em}
+.public-store-page .qc-shop-actions{padding:4px 12px 12px;min-width:0}
+.public-store-page .qc-shop-stepper{display:grid;grid-template-columns:42px minmax(0,1fr) 42px;align-items:center;gap:6px;width:100%;min-width:0;padding:4px;border:1px solid var(--shop-line);border-radius:12px;background:var(--shop-wash)}
+.public-store-page .qc-shop-stepper button{display:flex;align-items:center;justify-content:center;width:42px;min-width:42px;height:40px;min-height:40px;padding:0;border:0;border-radius:9px;background:var(--shop-paper);color:var(--shop-ink);font-size:21px;font-weight:700;cursor:pointer;touch-action:manipulation;transition:background .15s ease,color .15s ease}
+.public-store-page .qc-shop-stepper button:not(:disabled):hover{background:var(--shop-accent);color:white}
+.public-store-page .qc-shop-stepper button:disabled{opacity:.4;cursor:not-allowed}
+.public-store-page .qc-shop-stepper strong{min-width:0;text-align:center;color:var(--shop-ink);font-size:14px;font-weight:850;font-variant-numeric:tabular-nums}
+.public-store-page .customer-tracking-toggle{white-space:nowrap;border-radius:11px}
+.public-store-page .public-cart-tracking-stack{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;width:min(1180px,100%);margin:20px auto 0}
+.public-store-page .public-checkout,.public-store-page .customer-order-status{min-width:0;border:1px solid var(--shop-line);border-radius:18px;background:var(--shop-paper);box-shadow:0 6px 24px rgba(18,45,31,.04)}
+.public-store-page .checkout-heading h2{color:var(--shop-ink);letter-spacing:-.025em}
+.public-store-page .checkout-heading p,.public-store-page .muted{color:var(--shop-muted)}
+.public-store-page .public-store-feedback{width:min(1180px,100%);margin:0 auto 14px;border-radius:12px}
+.public-store-page button:focus-visible,.public-store-page input:focus-visible{outline:3px solid color-mix(in srgb,var(--shop-accent) 35%,transparent);outline-offset:2px}
+@media(min-width:900px){.public-store-page .public-cart-tracking-stack{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.public-store-page .public-cart-tracking-stack:has(>.public-checkout:only-child){grid-template-columns:minmax(0,760px);justify-content:center}}
+@media(max-width:640px){
+ .public-store-page{padding:10px}
+ .public-store-page .public-store-nav{padding:11px 12px;border-radius:14px;align-items:flex-start}
+ .public-store-page .public-store-badge{display:none}
+ .public-store-page .public-brand{gap:8px}
+ .public-store-page .public-store-hero{grid-template-columns:minmax(0,1fr);gap:16px;padding:26px 3px 18px}
+ .public-store-page .public-store-hero h1{font-size:30px}
+ .public-store-page .public-catalog{padding:12px;border-radius:16px}
+ .public-store-page .public-catalog-head{align-items:flex-start;flex-wrap:wrap}
+ .public-store-page .public-catalog-head h2{font-size:18px}
+ .public-store-page .public-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .public-store-page .qc-shop-card{border-radius:13px}
+ .public-store-page .qc-shop-image{aspect-ratio:1/0.9}
+ .public-store-page .qc-shop-info{padding:10px 10px 6px}
+ .public-store-page .qc-shop-info h3{font-size:13px}
+ .public-store-page .qc-shop-info p{font-size:11px;min-height:30px;margin:4px 0 8px}
+ .public-store-page .qc-shop-price{font-size:15px}
+ .public-store-page .qc-shop-actions{padding:4px 8px 9px}
+ .public-store-page .qc-shop-stepper{grid-template-columns:34px minmax(0,1fr) 34px;gap:4px;padding:3px}
+ .public-store-page .qc-shop-stepper button{width:34px;min-width:34px;height:36px;min-height:36px;font-size:19px}
+}
+@media(max-width:360px){.public-store-page .public-product-grid{grid-template-columns:minmax(0,1fr)}.public-store-page .qc-shop-card{grid-template-columns:84px minmax(0,1fr);grid-template-rows:auto auto}.public-store-page .qc-shop-image{grid-row:1/3;aspect-ratio:auto;min-height:130px}.public-store-page .qc-shop-info{padding:12px 10px 4px}.public-store-page .qc-shop-actions{grid-column:2;padding:4px 10px 10px}}
