@@ -20,6 +20,10 @@ const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Vite HTML entry exists and points to the JavaScript React entrypoint",
   existsSync("src/main.jsx") && !existsSync("src/main.tsx") && !existsSync("src/App.tsx") && /src\/main\.jsx/.test(html) && !/src\/main\.tsx/.test(html));
+check("Offline storefront cache is only used for network failures, not HTTP errors",
+  /if\(!e\?\.status&&method===["']GET["']&&path\.startsWith\(["']\/api\/storefront\/["']\)\)/.test(apiClient));
+check("Public storefront cache keys use the same encoded path for reads and writes",
+  /qc_public_["']\+path/.test(apiClient) && /qc_public_\/api\/storefront\/["']\+encodeURIComponent\(route\.slug\)/.test(app));
 check("API client is isolated in a dedicated module and imported by the app",
   /from ["']\.\/lib\/api\.js["']/.test(app) && /export \{ api \}/.test(apiClient) && /AbortController/.test(apiClient) && /isPublicStorefront/.test(apiClient));
 check("React entrypoint imports the active app and global stylesheet",
