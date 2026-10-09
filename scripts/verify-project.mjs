@@ -173,5 +173,15 @@ check("WhatsApp checkout uses the official wa.me link with encoded order details
   app.indexOf('if(phoneDigits.length<10||phoneDigits.length>15)') < app.indexOf('const order=await api("/api/orders"') &&
   !app.includes("https://api.whatsapp.com/send?phone="));
 
+check("Checkout validates WhatsApp destination before opening checkout or creating an order",
+  app.indexOf('if(phoneDigits.length<10||phoneDigits.length>15)') >= 0 &&
+  app.indexOf('if(phoneDigits.length<10||phoneDigits.length>15)') < app.indexOf('const order=await api("/api/orders"') &&
+  app.indexOf('if(phoneDigits.length<10||phoneDigits.length>15)') < app.indexOf('whatsappWindow=window.open("about:blank","_blank")'));
+check("Checkout has a per-store duplicate-submit lock and stable retry idempotency key",
+  /quickcart_checkout_lock:/.test(app) &&
+  /sessionStorage\.getItem\(checkoutLockKey\)==="1"/.test(app) &&
+  /clientOrderId/.test(app) &&
+  /clientOrderKey/.test(app));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
