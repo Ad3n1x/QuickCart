@@ -2837,26 +2837,7 @@ button{white-space:normal;line-height:1.25}
 .product-order-edit-line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 @media(max-width:480px){.customer-order-edit-item,.product-order-edit-line{align-items:center}.order-quantity-control{gap:7px}}
 
-/* Customer order tracking is opened from the storefront navigation in a modal. */
-.public-track-orders-link{gap:6px;border:1px solid var(--border);background:var(--surface);white-space:nowrap}
-.public-track-count{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--accent);color:var(--accent-contrast);font-size:10px;font-weight:900}
-.customer-tracking-modal{width:min(820px,100%);max-height:calc(100dvh - 24px)}
-.customer-tracking-modal .customer-tracking-wrap{padding:16px;min-width:0}
-.customer-tracking-modal .customer-order-status{margin:0}
-.customer-tracking-empty{display:grid;justify-items:center;text-align:center;gap:10px;padding:36px 20px;color:var(--muted)}
-.customer-tracking-empty>svg{color:var(--accent)}
-.customer-tracking-empty h3{margin:0;color:var(--ink);font-size:18px}
-.customer-tracking-empty p{margin:0;max-width:360px;font-size:13px;line-height:1.6}
-@media(max-width:620px){
- .public-store-page .public-store-nav{align-items:flex-start;gap:10px}
- .public-store-page .public-nav-actions{justify-content:flex-end;flex-wrap:wrap;gap:5px}
- .public-store-page .public-track-orders-link{padding:8px 9px}
- .public-store-page .public-store-badge{display:none}
- .customer-tracking-modal .customer-tracking-wrap{padding:10px}
-}
 
-
-/* Keep order tracking discoverable on every storefront viewport. */
 .public-store-page .public-nav-actions .public-track-orders-link{
   display:inline-flex !important;
   align-items:center;
