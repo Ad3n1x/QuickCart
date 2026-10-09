@@ -198,6 +198,8 @@ app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
  if(current.status===status)return res.json({status});
  if(current.status==='cancelled')return res.status(409).json({error:'Cancelled orders cannot be reopened. Create a new order instead.'});
  if(status==='cancelled'&&['shipped','delivered','picked_up'].includes(current.status))return res.status(409).json({error:'This order has already been dispatched or completed and cannot be cancelled.'});
+ const nextStatuses={new:['confirmed','cancelled'],confirmed:['processing','cancelled'],processing:current.fulfillment==='delivery'?['shipped','cancelled']:['ready','cancelled'],ready:['cancelled'],shipped:['delivered'],delivered:[],picked_up:[],cancelled:[]};
+ if(!nextStatuses[current.status]?.includes(status))return res.status(409).json({error:'That status change is not allowed for this order. Refresh the order and choose the next available step.'});
  const result=await orders.updateOne({id:current.id,storeId:store.id,status:current.status},{$set:{status,updatedAt:now()}});
  if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh and try again.'});
  if(status==='cancelled'&&!['cancelled','delivered','picked_up'].includes(current.status)){
