@@ -499,7 +499,6 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
      setDisc(null);
      setCode("");
      setReceiptData({merchant:"",date:"",total:"",tax:"",receiptNo:""});
-     setPanelsExpanded(true);
      requestAnimationFrame(()=>document.getElementById("customer-order-tracking")?.scrollIntoView({behavior:"smooth",block:"start"}));
    }catch(e){
      if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
