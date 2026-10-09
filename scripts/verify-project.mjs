@@ -126,11 +126,14 @@ check("Customer order edits recover securely through a signed-in customer sessio
 check("Startup no longer deletes saved customer order confirmation tokens",
   /localStorage\.setItem\("qc_order_reset_v1","done"\)/.test(app) &&
   !/localStorage\.removeItem\(key\)[^\n]*qc_customer_orders|key\.startsWith\("qc_order_token:"\)[^\n]*removeItem/.test(app));
-check("Order-edit controls report failures and prevent duplicate requests while an update is pending",
+check("Order-edit controls validate successful server responses, show action-specific loading states, and prevent duplicate requests",
   /if\(busy===order\.id\)return/.test(app) &&
   /setMsg\(e\.message\|\|"Could not update this order/.test(app) &&
   app.includes('finally{setBusy("")}') &&
-  /if\(!order\|\|busy\)return/.test(app));
+  /if\(!order\|\|busy\|\|orderEditBusy\)return/.test(app) &&
+  /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
+  /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
+  /editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app));
 check("Customer cart and order tracking render together and collapse together without squeezing the tracking panel",
   /\[panelsExpanded,setPanelsExpanded\]=useState\(true\)/.test(app) &&
   /public-cart-tracking-toggle/.test(app) &&
