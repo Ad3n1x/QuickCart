@@ -225,6 +225,10 @@ check("Seller order status changes follow fulfillment-specific transitions and t
   /const statuses=\["all","new","confirmed","processing","ready","shipped","delivered","picked_up","cancelled"\]/.test(app) &&
   /o\.fulfillment==="delivery"\?\["shipped","cancelled"\]:\["ready","cancelled"\]/.test(app));
 
+check("Customer order refresh results are deduplicated and store-scoped before rendering tracking",
+  /dedupeCustomerOrders\(freshOrders\.orders\.filter\(o=>String\(o\.storeId\)===String\(s\.id\)\)\.map\(o=>/.test(app) &&
+  /current\.find\(c=>String\(c\.id\)===String\(o\.id\)\)/.test(app));
+
 check("Order tracking renders exactly once with one unique tracking anchor and no nested duplicate wrapper",
   (app.match(/id="customer-order-tracking"/g)||[]).length===1 &&
   !app.includes('className="panel customer-tracking-auto"><div className="customer-tracking-wrap">') &&
