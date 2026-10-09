@@ -89,6 +89,14 @@ check("Adding the first product automatically focuses the cart without a cart/tr
 check("Guest cart quantities merge with the signed-in customer cart instead of overwriting matching products",
   /const merged=\{\.\.\.safeSaved\};if\(email\)for\(const \[id,qty\] of Object\.entries\(safeGuest\)\)merged\[id\]=\(Math\.max\(0,Number\(merged\[id\]\)\|\|0\)\+Math\.max\(0,Number\(qty\)\|\|0\)\)/.test(app));
 
+check("Order tracking stays collapsed until explicitly opened and only shows valid orders for the active store",
+  /\[trackingExpanded,setTrackingExpanded\]=useState\(false\)/.test(app) &&
+  /setTrackingExpanded\(false\)/.test(app) &&
+  /customerOrdersHydrated&&customerOrders\.some\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(s\?\.id\)\)/.test(app) &&
+  /aria-expanded=\{trackingExpanded\}/.test(app) &&
+  /trackingExpanded&&<div className="customer-tracking-wrap"/.test(app) &&
+  /setTrackingExpanded\(true\)/.test(app));
+
 check("Successful checkout scrolls to automatically rendered order tracking",
   /id="customer-order-tracking" className="panel customer-order-status"/.test(app) &&
   /requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
