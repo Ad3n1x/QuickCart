@@ -93,6 +93,12 @@ check("Cart/tracking toggle scrolls to the shared panels and successful checkout
   /id="customer-order-tracking" className="panel customer-order-status"/.test(app) &&
   /setPanelsExpanded\(true\);\s*requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
 
+check("First product added opens and focuses the shared cart while quantity controls stay linked to cart state",
+  /\[focusCartAfterAdd,setFocusCartAfterAdd\]=useState\(false\)/.test(app) &&
+  /if\(adding\)\{setPanelsExpanded\(true\);if\(items\.length===0\)setFocusCartAfterAdd\(true\)\}/.test(app) &&
+  /if\(!focusCartAfterAdd\|\|!items\.length\|\|!panelsExpanded\)return;setFocusCartAfterAdd\(false\);requestAnimationFrame\(\(\)=>document\.getElementById\("public-checkout"\)\?\.scrollIntoView/.test(app) &&
+  /onClick=\{\(\)=>updateCart\(x\.id,qty\+1\)\}/.test(app));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
 
