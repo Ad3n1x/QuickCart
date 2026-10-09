@@ -99,6 +99,10 @@ check("First product added opens and focuses the shared cart while quantity cont
   /if\(!focusCartAfterAdd\|\|!items\.length\|\|!panelsExpanded\)return;setFocusCartAfterAdd\(false\);requestAnimationFrame\(\(\)=>document\.getElementById\("public-checkout"\)\?\.scrollIntoView/.test(app) &&
   /onClick=\{\(\)=>updateCart\(x\.id,qty\+1\)\}/.test(app));
 
+check("Server order history remains authoritative after reload while preserving local WhatsApp handoff state",
+  /const cachedById=new Map\(cached\.map\(o=>\[String\(o\.id\),o\]\)\)/.test(app) &&
+  /whatsappSent:cachedById\.get\(String\(o\.id\)\)\?\.whatsappSent===true/.test(app) &&
+  /setCustomerOrders\(remote\.map\(o=>/.test(app));
 check("Customer order reductions and cancellations update the server order and restore product stock",
   /\/api\/orders\/:id\/customer-update/.test(api) &&
   /customerConfirmationTokenHash/.test(api) &&
