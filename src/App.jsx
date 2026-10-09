@@ -331,6 +331,9 @@ function PublicStore({data,customer,onLogin}){
  const ready=Boolean(customer&&items.length&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
 
  useEffect(()=>{
+   // Do not prune a restored cart while storefront products are still loading.
+   // An undefined products payload is a loading state, not an empty catalog.
+   if(!data?.store||!Array.isArray(data?.products))return;
    setCart(prev=>{
      const next={};
      let changed=false;
