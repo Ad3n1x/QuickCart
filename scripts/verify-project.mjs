@@ -78,6 +78,9 @@ check("Deployment workflow checks backend syntax and verifies live sitemap files
   /Verify live SEO files/.test(workflow) &&
   /sitemap\.xml/.test(workflow));
 
+check("Restored cart is not cleared before storefront products finish loading",
+  /if\(!data\?\.store\|\|!Array\.isArray\(data\?\.products\)\)return;/.test(app));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
 
