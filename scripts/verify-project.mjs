@@ -148,14 +148,12 @@ check("Order-edit controls validate successful server responses, show action-spe
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
   /editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app));
-check("Cart appears only when populated and order tracking opens in a navigation-triggered modal for valid active-store orders",
+check("Checkout summary appears only when populated and order tracking is automatic inline for valid active-store orders",
   app.includes("const hasCheckoutItems=items.length>0") &&
   app.includes('hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">') &&
-  app.includes("public-track-orders-link") &&
-  app.includes('title="Track your orders"') &&
-  app.includes('className="customer-tracking-modal"') &&
-  app.includes("setTrackingExpanded(true)") &&
-  app.includes("setTrackingExpanded(false)") &&
+  !app.includes("public-track-orders-link") &&
+  !app.includes('className="customer-tracking-modal"') &&
+  app.includes('id="customer-order-tracking" className="panel customer-tracking-auto"') &&
   /saved\.filter\(o=>o&&o\.id!=null&&o\.storeId!=null&&String\(o\.storeId\)===String\(storeId\)\)/.test(app));
 
 check("Customer order tracking deduplicates repeated order IDs, idempotency keys, and immediate duplicate submissions",
