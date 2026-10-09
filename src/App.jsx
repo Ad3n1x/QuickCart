@@ -492,11 +492,9 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        throw new Error("This store’s WhatsApp number looks invalid. Ask the seller to add a full number with country code in Store settings.");
      }
      const encodedText=encodeURIComponent(text);
-     // Use WhatsApp's official click-to-chat URL. It works with WhatsApp Business
-     // and regular WhatsApp, and lets the device/browser choose the installed app.
-     // Avoid whatsapp:// deep links because they can target the wrong WhatsApp app
-     // or fail on some Android browsers.
-     const whatsappUrl="https://api.whatsapp.com/send?phone="+phoneDigits+"&text="+encodedText;
+     // Use the short official wa.me click-to-chat URL for WhatsApp and WhatsApp Business.
+     // The browser/device chooses the available WhatsApp app or web experience.
+     const whatsappUrl="https://wa.me/"+phoneDigits+"?text="+encodedText;
      if(whatsappWindow&&!whatsappWindow.closed){
        whatsappWindow.location.replace(whatsappUrl);
      }else{
