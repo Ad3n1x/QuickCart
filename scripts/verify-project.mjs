@@ -88,6 +88,11 @@ check("Product additions reopen the shared cart/tracking panel and its collapsed
 check("Guest cart quantities merge with the signed-in customer cart instead of overwriting matching products",
   /const merged=\{\.\.\.safeSaved\};if\(email\)for\(const \[id,qty\] of Object\.entries\(safeGuest\)\)merged\[id\]=\(Math\.max\(0,Number\(merged\[id\]\)\|\|0\)\+Math\.max\(0,Number\(qty\)\|\|0\)\)/.test(app));
 
+check("Cart/tracking toggle scrolls to the shared panels and successful checkout opens live order tracking",
+  /document\.getElementById\(items\.length\?"public-checkout":"customer-order-tracking"\)\?\.scrollIntoView/.test(app) &&
+  /id="customer-order-tracking" className="panel customer-order-status"/.test(app) &&
+  /setPanelsExpanded\(true\);\s*requestAnimationFrame\(\(\)=>document\.getElementById\("customer-order-tracking"\)\?\.scrollIntoView/.test(app));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
 
