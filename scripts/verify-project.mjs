@@ -118,6 +118,22 @@ check("Customer order tracking exposes guarded reduce and cancel actions and ref
   /action:"cancel"/.test(app) &&
   /onStoreRefresh\?\.\(fresh\)/.test(app) &&
   /onStoreRefresh=\{setPublicData\}/.test(app));
+check("Customer order edits recover securely through a signed-in customer session when the per-order token is absent",
+  /const customerToken=localStorage\.getItem\("quickcart_customer_token"\)/.test(app) &&
+  /headers:customerToken\?\{Authorization:"Bearer "\+customerToken\}:\{\}/.test(app) &&
+  /payload\?\.role==='customer'/.test(api) &&
+  /String\(payload\?\.email\|\|''\)\.trim\(\)\.toLowerCase\(\)===String\(order\.customerEmail\|\|''\)\.trim\(\)\.toLowerCase\(\)/.test(api));
+check("Startup no longer deletes saved customer order confirmation tokens",
+  /localStorage\.setItem\("qc_order_reset_v1","done"\)/.test(app) &&
+  !/localStorage\.removeItem\(key\)[^\n]*qc_customer_orders|key\.startsWith\("qc_order_token:"\)[^\n]*removeItem/.test(app));
+check("Order-edit controls report failures and prevent duplicate requests while an update is pending",
+  /if\(busy===order\.id\)return/.test(app) &&
+  /setMsg\(e\.message\|\|"Could not update this order/.test(app) &&
+  /finally\{setBusy\(" "\)\}/.test(app) === false &&
+  /finally\{setBusy\(" "\)\}/.test(app) === false &&
+  /finally\{setBusy\("\)\}/.test(app) === false &&
+  /finally\{setBusy\(""\)\}/.test(app) &&
+  /if\(!order\|\|busy\)return/.test(app));
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
 
