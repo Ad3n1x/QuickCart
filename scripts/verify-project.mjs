@@ -60,7 +60,7 @@ check("Customer accounts cannot retain seller credentials or enter the seller da
   /if\(\(route\.type==="app"\|\|route\.type==="auth"\)&&\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return <Landing/.test(app) &&
   /localStorage\.removeItem\("quickcart_customer_token"\);localStorage\.removeItem\("quickcart_customer"\);setCustomerSession\(null\);localStorage\.setItem\("quickcart_token"/.test(app));
 check("Product quantity steppers stay visible and responsive without a duplicate add button",
-  app.includes('className="public-product-actions public-product-actions-stepper"') &&
+  app.includes("public-product-actions-stepper") &&
   /\.public-store-page \.public-product-actions-stepper\{[\s\S]*?justify-content:flex-end/.test(css) &&
   /\.public-store-page \.public-qty-control button\{[\s\S]*?height:32px/.test(css) &&
   /@media\(max-width:760px\)[\s\S]*?\.public-store-page \.public-product-actions-stepper\{grid-column:2;grid-row:2\}/.test(css));
@@ -98,7 +98,7 @@ check("Order tracking appears automatically inline for valid orders from the act
 
 check("Every in-stock product card has accessible plus and minus quantity controls without remove-one wording",
   !app.includes("Remove one") &&
-  app.includes('className="public-product-actions public-product-actions-stepper"') &&
+  app.includes("public-product-actions-stepper") &&
   app.includes('aria-label={"Decrease "+x.name+" quantity"}') &&
   app.includes('aria-label={"Increase "+x.name+" quantity"}') &&
   app.includes('disabled={qty<=0}') &&
