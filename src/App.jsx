@@ -255,7 +255,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  const confirm=async order=>{setBusy(order.id);setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed successfully.":"Delivery confirmed successfully.");setLastChecked(new Date());onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("")}};
  const refresh=async()=>{if(!onRefresh)return;setRefreshing(true);setMsg("");try{await onRefresh();setLastChecked(new Date());setMsg("Order status updated.")}catch{setMsg("Could not update the order status. Check your connection and try again.")}finally{setRefreshing(false)}};
  if(!orders.length)return null;
- return <section className="panel customer-order-status">
+ return <section id="customer-order-tracking" className="panel customer-order-status">
   <div className="panel-head customer-order-status-head"><div><div className="customer-status-title-row"><span className="eyebrow">ORDER TRACKING</span><span className="customer-live-indicator"><i/>LIVE</span></div><h2>Track Your Orders</h2><p className="muted">Your status updates automatically while you wait. No need to keep refreshing.</p></div><div className="customer-status-head-actions"><span className="customer-last-checked">{lastChecked?"Updated "+lastChecked.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):"Auto-updating"}</span><button className="ghost-button customer-status-refresh" type="button" onClick={refresh} disabled={refreshing}>{refreshing?"Checking…":"Refresh"} <span aria-hidden="true">↻</span></button></div></div>
   <div className="customer-order-list">
    {orders.map(o=>{
@@ -492,6 +492,8 @@ function PublicStore({data,customer,onLogin}){
      setDisc(null);
      setCode("");
      setReceiptData({merchant:"",date:"",total:"",tax:"",receiptNo:""});
+     setPanelsExpanded(true);
+     requestAnimationFrame(()=>document.getElementById("customer-order-tracking")?.scrollIntoView({behavior:"smooth",block:"start"}));
    }catch(e){
      if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
      setMsg(e.message||"Could not create the order.");
@@ -533,7 +535,7 @@ function PublicStore({data,customer,onLogin}){
    <section className="public-catalog">
     <div className="public-catalog-head">
       <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
-      {(items.length>0||customerOrders.length>0)&&<button className="public-cart-jump public-cart-tracking-toggle" type="button" aria-expanded={panelsExpanded} onClick={()=>setPanelsExpanded(v=>!v)}><span>{panelsExpanded?"Collapse":"Show"} cart &amp; tracking</span>{items.length>0&&<strong>{items.reduce((n,x)=>n+x.quantity,0)} · {fmt(total)}</strong>}{customerOrders.length>0&&<small>{customerOrders.length} {customerOrders.length===1?"order":"orders"} tracking</small>}<ChevronDown size={16} className={panelsExpanded?"is-expanded":""}/></button>}
+      {(items.length>0||customerOrders.length>0)&&<button className="public-cart-jump public-cart-tracking-toggle" type="button" aria-expanded={panelsExpanded} onClick={()=>{const next=!panelsExpanded;setPanelsExpanded(next);if(next)requestAnimationFrame(()=>document.getElementById(items.length?"public-checkout":"customer-order-tracking")?.scrollIntoView({behavior:"smooth",block:"start"}))}}><span>{panelsExpanded?"Collapse":"Show"} cart &amp; tracking</span>{items.length>0&&<strong>{items.reduce((n,x)=>n+x.quantity,0)} · {fmt(total)}</strong>}{customerOrders.length>0&&<small>{customerOrders.length} {customerOrders.length===1?"order":"orders"} tracking</small>}<ChevronDown size={16} className={panelsExpanded?"is-expanded":""}/></button>}
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
