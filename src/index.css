@@ -3099,3 +3099,46 @@ button{white-space:normal;line-height:1.25}
  .customer-order-top-actions{width:100%;min-width:0;justify-content:flex-end;flex-wrap:wrap}
  .customer-order-top-actions .customer-dismiss-tracking{min-width:164px;max-width:100%}
 }
+
+
+/* Cross-device order status stays fresh without requiring a page reload. */
+.customer-order-status,.public-checkout,.customer-order-card,.customer-order-list{min-width:0;max-width:100%}
+.customer-order-status-head,.customer-status-head-actions,.customer-order-top,.customer-order-top-actions{min-width:0}
+.customer-order-status-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.customer-status-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.customer-order-list{display:grid;gap:12px}
+.customer-order-list>*{min-width:0;overflow-wrap:anywhere}
+.public-store-page input,.public-store-page select,.public-store-page textarea,.public-store-page button{max-width:100%}
+.public-store-page .public-checkout,.public-store-page .customer-order-status{padding:clamp(12px,2vw,22px)}
+.public-store-page .checkout-heading,.public-store-page .customer-order-status-head{gap:12px}
+.public-store-page .customer-order-status h2,.public-store-page .checkout-heading h2{overflow-wrap:anywhere}
+@media(max-width:640px){
+ .public-store-page .public-store-nav{flex-wrap:wrap;align-items:center}
+ .public-store-page .public-nav-actions{min-width:0;max-width:100%;flex-wrap:wrap;gap:6px}
+ .public-store-page .public-brand{flex:1 1 180px}
+ .public-store-page .public-store-hero{min-width:0}
+ .public-store-page .public-cart-tracking-stack{gap:12px;margin-top:14px}
+ .public-store-page .public-checkout,.public-store-page .customer-order-status{border-radius:14px;padding:12px}
+ .public-store-page .customer-order-status-head{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .public-store-page .customer-status-head-actions{justify-content:space-between;width:100%}
+ .public-store-page .customer-last-checked{font-size:11px}
+ .public-store-page .customer-order-top{align-items:flex-start}
+ .public-store-page .customer-order-top-actions{width:100%;min-width:0;justify-content:flex-start;flex-wrap:wrap}
+ .public-store-page .customer-order-top-actions .customer-dismiss-tracking{min-width:0;width:auto;max-width:100%}
+ .public-store-page .customer-dismiss-hint{white-space:normal;overflow-wrap:anywhere}
+ .public-store-page .public-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .public-store-page .qc-shop-card,.public-store-page .qc-shop-info,.public-store-page .qc-shop-actions{min-width:0}
+}
+@media(max-width:380px){
+ .public-store-page{padding:8px}
+ .public-store-page .public-product-grid{grid-template-columns:minmax(0,1fr)}
+ .public-store-page .qc-shop-card{grid-template-columns:84px minmax(0,1fr)}
+ .public-store-page .qc-shop-image{grid-row:1/3;aspect-ratio:auto;min-height:120px}
+ .public-store-page .qc-shop-actions{grid-column:2}
+ .public-store-page .customer-order-top-actions{justify-content:flex-start}
+ .public-store-page .customer-order-top-actions .customer-dismiss-tracking{min-width:0}
+ .public-store-page .public-checkout input,.public-store-page .public-checkout select{min-width:0;width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .public-store-page *{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+}
