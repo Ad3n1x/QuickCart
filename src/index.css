@@ -3085,3 +3085,17 @@ button{white-space:normal;line-height:1.25}
 .customer-dismiss-tracking:hover{background:#fff0f0;border-color:#e6b5b5;color:#a32626}
 .customer-dismiss-tracking:focus-visible{outline:3px solid color-mix(in srgb,var(--accent,#174c39) 35%,transparent);outline-offset:2px}
 @media(max-width:480px){.customer-order-top-actions{width:100%;justify-content:space-between}.customer-order-top{flex-wrap:wrap;gap:8px}}
+
+
+/* Keep order status and dismiss action readable in narrow tracking cards. */
+.customer-order-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0}
+.customer-order-top>div:first-child{flex:1 1 auto;min-width:0}
+.customer-order-top-actions{display:flex;align-items:flex-start;justify-content:flex-end;gap:8px;flex:0 0 auto;min-width:max-content;max-width:100%;flex-wrap:nowrap}
+.customer-order-top-actions .customer-status-pill{flex:0 0 auto;white-space:nowrap;max-width:100%}
+.customer-order-top-actions .customer-dismiss-tracking{flex:0 0 auto;width:max-content;min-width:164px;max-width:100%;white-space:nowrap;overflow:visible}
+.customer-dismiss-tracking .customer-dismiss-label,.customer-dismiss-tracking .customer-dismiss-hint{display:block;white-space:nowrap;word-break:normal;overflow-wrap:normal}
+@media(max-width:480px){
+ .customer-order-top{gap:8px}
+ .customer-order-top-actions{width:100%;min-width:0;justify-content:flex-end;flex-wrap:wrap}
+ .customer-order-top-actions .customer-dismiss-tracking{min-width:164px;max-width:100%}
+}
