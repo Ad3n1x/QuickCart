@@ -76,3 +76,11 @@ check("Deployment workflow checks backend syntax and verifies live sitemap files
 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
+
+check("Customer cart and order tracking share one expand/collapse control",
+  /\[panelsExpanded,setPanelsExpanded\]=useState\(true\)/.test(app) &&
+  /public-cart-tracking-toggle/.test(app) &&
+  /aria-expanded=\{panelsExpanded\}/.test(app) &&
+  /items\.length>0&&panelsExpanded&&\(/.test(app) &&
+  /panelsExpanded&&customerOrders\.length>0&&<div className="customer-tracking-wrap"/.test(app) &&
+  /\.public-cart-tracking-toggle>svg\.is-expanded/.test(css));
