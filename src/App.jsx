@@ -577,7 +577,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       <Logo size={40}/>
       <div><b>{s.storeName}</b><small>{s.tagline||"Shop directly from this store"}</small></div>
     </div>
-    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={()=>{localStorage.removeItem("quickcart_customer_token");localStorage.removeItem("quickcart_customer");window.location.reload()}}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}{(!customer||(customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))))&&<button className="public-nav-link public-track-orders-link" type="button" onClick={()=>customer?setTrackingExpanded(true):onLogin?.("login")} aria-haspopup="dialog"><Package size={15}/> Track orders{customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))&&<span className="public-track-count">{customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)).length}</span>}</button>}<span className="public-store-badge">QuickCart storefront</span></div>
+    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={()=>{localStorage.removeItem("quickcart_customer_token");localStorage.removeItem("quickcart_customer");window.location.reload()}}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<span className="public-store-badge">QuickCart storefront</span></div>
   </header>
   <section className="public-store-hero">
     <div className="public-store-hero-copy">
@@ -613,7 +613,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
        </div>
        <div className={"public-product-actions"+(qty>0?" has-quantity":"")}>
         {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
-          <button type="button" onClick={()=>updateCart(x.id,qty-1)} aria-label={"Remove one "+x.name}>−</button>
+          <button type="button" onClick={()=>updateCart(x.id,qty-1)} aria-label={"Decrease "+x.name+" quantity"}>−</button>
           <strong>{qty}</strong>
           <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Add one "+x.name}>+</button>
         </div>}
@@ -622,11 +622,11 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       </article>
     })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
-   {(hasCheckoutItems||customerOrders.length>0)&&<div className="public-cart-tracking-stack">
+   {(hasCheckoutItems||(customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))))&&<div className="public-cart-tracking-stack">
    {hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">
     <div className="checkout-heading"><span className="eyebrow">ORDER SUMMARY</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
     {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your order is saved.</strong><span>Sign in to checkout and keep your order history and tracking together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
-      {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
+      {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Decrease "+x.name+" quantity"} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
       <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
       <Field label="Your name" value={customerForm.name} onChange={e=>setCustomerForm({...customerForm,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
       <Field label="Order email" type="email" value={customer?.email||""} readOnly autoComplete="email"/>
@@ -641,7 +641,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
     </>}
    </section>)}
-   {trackingExpanded&&customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))&&<Modal title="Track your orders" subtitle={s.storeName} onClose={()=>setTrackingExpanded(false)} wide className="customer-tracking-modal"><div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div></Modal>}
+   {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))&&<section id="customer-order-tracking" className="panel customer-tracking-auto"><div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div></section>}
    </div>}</div>
  </main>
 }
