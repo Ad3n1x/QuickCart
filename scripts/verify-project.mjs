@@ -23,8 +23,8 @@ check("React entrypoint imports the active app and global stylesheet",
   /from ["']\.\/App\.jsx["']/.test(main) && /import ["']\.\/index\.css["']/.test(main));
 check("Production entrypoint includes a render-error boundary",
   /FatalBoundary/.test(main) && /getDerivedStateFromError/.test(main));
-check("GitHub Pages base path is configured explicitly",
-  /VITE_GITHUB_PAGES/.test(vite) && /\/QuickCart\//.test(vite));
+check("Only one Vite configuration is present and GitHub Pages base path is explicit",
+  !existsSync("vite.config.ts") && /VITE_GITHUB_PAGES/.test(vite) && /\/QuickCart\//.test(vite));
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
 check("Public customer cart cache is scoped to both store and normalized email",
