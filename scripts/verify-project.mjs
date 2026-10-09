@@ -21,7 +21,7 @@ const api = read("api/index.js");
 const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Product modal CSS uses real line breaks and does not contain escaped newline tokens",
-  !css.includes("\\\\n") &&
+  !css.includes("\\n") &&
   css.includes("/* Product add/edit modal polish */") &&
   css.includes(".product-modal{width:min(620px,calc(100vw - 24px))}"));
 
@@ -39,10 +39,10 @@ check("Production entrypoint includes a render-error boundary",
   /FatalBoundary/.test(main) && /getDerivedStateFromError/.test(main));
 check("Only one Vite configuration is present and GitHub Pages base path is explicit",
   !existsSync("vite.config.ts") && /VITE_GITHUB_PAGES/.test(vite) && /\/QuickCart\//.test(vite));
-check("Tailwind CSS is configured with QuickCart semantic design tokens and utility scanning",
-  Boolean(packageJson.devDependencies?.tailwindcss && packageJson.devDependencies?.postcss && packageJson.devDependencies?.autoprefixer) &&
+check("Tailwind v4 PostCSS is configured with QuickCart semantic design tokens and utility scanning",
+  Boolean(packageJson.devDependencies?.tailwindcss && packageJson.devDependencies?.["@tailwindcss/postcss"] && packageJson.devDependencies?.postcss && packageJson.devDependencies?.autoprefixer) &&
   existsSync("tailwind.config.js") && existsSync("postcss.config.js") &&
-  /@tailwind utilities/.test(css) &&
+  /@import ["\']tailwindcss\/utilities["\']/.test(css) &&
   /qc-shop-card/.test(app) &&
   /customer-tracking-toggle/.test(app));
 check("Package exposes build, API-server, and local-development commands",
