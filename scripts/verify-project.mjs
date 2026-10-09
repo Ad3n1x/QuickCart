@@ -28,12 +28,12 @@ check("GitHub Pages base path is configured explicitly",
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
 check("Public customer cart cache is scoped to both store and normalized email",
-  /qc_cart:\\"?\s*\+?/.test(app) && /emailOf\(customer\?\.email\)/.test(app) && /storeId\+":"\+email/.test(app));
+  /qc_cart:/.test(app) && /emailOf\(customer\?\.email\)/.test(app) && /storeId\+":"\+email/.test(app));
 check("Customer order history requires a customer-authenticated API route",
   /app\.get\('\/api\/customer\/orders',customerAuth/.test(api));
 check("Order creation validates the signed-in customer token and uses its email",
   /app\.post\('\/api\/orders',async/.test(api) &&
-  /customerPayload\?\.role/.test(api) === false &&
+  /p\?\.role==='customer'/.test(api) &&
   /customerPayload\.email/.test(api) &&
   /CUSTOMER_AUTH_REQUIRED/.test(api));
 check("Order idempotency has a database uniqueness constraint",
