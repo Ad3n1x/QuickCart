@@ -382,25 +382,14 @@ function PublicStore({data,customer,onLogin}){
 
  const checkout=async()=>{if(busy)return;
    if(!customer){onLogin?.("login");return;}
-   if(!ready||busy)return;
-   const fingerprint=JSON.stringify({storeId:s.id,customerId:customer?.id||customer?.email||"",name:customerForm.name.trim(),phone:customerForm.phone.trim(),email:customer?.email||"",address:ful==="delivery"?customerForm.address.trim():"Pickup from store",fulfillment:ful,paymentMethod:pay,discountCode:disc?.code||code.trim(),items:items.map(x=>({id:x.id,quantity:x.quantity}))});
-   const pendingKey="quickcart_pending_order:"+String(s.id);
-   let pending=null;
-   try{pending=JSON.parse(localStorage.getItem(pendingKey)||"null")}catch{}
-   let clientOrderId=pending?.fingerprint===fingerprint&&pending?.clientOrderId?pending.clientOrderId:null;
-   if(!clientOrderId){
-     clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);
-     try{localStorage.setItem(pendingKey,JSON.stringify({clientOrderId,fingerprint,createdAt:Date.now()}))}catch{}
-   }
-   const checkoutLockKey="quickcart_checkout_lock:"+String(s.id)+":"+clientOrderId;
-   if(sessionStorage.getItem(checkoutLockKey)==="1")return;
-   sessionStorage.setItem(checkoutLockKey,"1");
+   if(!ready||busy)return;const checkoutLockKey="quickcart_checkout_lock:"+String(s.id);if(sessionStorage.getItem(checkoutLockKey)==="1")return;sessionStorage.setItem(checkoutLockKey,"1");
    setBusy(true);setMsg("");
    let whatsappWindow=null;
    try{
      // Open synchronously from the button click so mobile browsers do not block WhatsApp later.
      whatsappWindow=window.open("about:blank","_blank");
      if(whatsappWindow)whatsappWindow.opener=null;
+     const clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);
      const order=await api("/api/orders",{
        method:"POST",
        headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
@@ -479,18 +468,160 @@ function PublicStore({data,customer,onLogin}){
      }else{
        window.location.assign(whatsappUrl);
      }
-     setMsg(order.replayed?"Order already created. WhatsApp checkout opened.":"Order created. WhatsApp checkout opened.");
+     setMsg("Order created. WhatsApp checkout opened.");
      setCart({});
      setDisc(null);
      setCode("");
      setReceiptData({merchant:"",date:"",total:"",tax:"",receiptNo:""});
-     try{localStorage.removeItem(pendingKey)}catch{}
    }catch(e){
      if(whatsappWindow&&!whatsappWindow.closed)whatsappWindow.close();
      setMsg(e.message||"Could not create the order.");
-   }finally{
-     sessionStorage.removeItem(checkoutLockKey);
-     setBusy(false);
-   }
+   }finally{setBusy(false)}
  };
 
+ const refreshOrders=async()=>{
+   const updates=await Promise.all(customerOrders.map(async o=>{
+     try{
+       const token=localStorage.getItem("qc_order_token:"+o.id);
+       if(!token)return o;
+       const d=await api("/api/orders/"+o.id+"/customer-status",{method:"POST",body:body({confirmationToken:token})});
+       return {...o,status:d.status||o.status,updatedAt:d.updatedAt||o.updatedAt};
+     }catch{return o}
+   }));
+   setCustomerOrders(updates);
+ };
+ return <main className="public-store-page">
+  <header className="public-store-nav">
+    <div className="public-brand">
+      <Logo size={40}/>
+      <div><b>{s.storeName}</b><small>{s.tagline||"Shop directly from this store"}</small></div>
+    </div>
+    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={()=>{localStorage.removeItem("quickcart_customer_token");localStorage.removeItem("quickcart_customer");window.location.reload()}}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<span className="public-store-badge">QuickCart storefront</span></div>
+  </header>
+  <section className="public-store-hero">
+    <div className="public-store-hero-copy">
+      <span className="eyebrow">OFFICIAL STOREFRONT</span>
+      <h1>{s.storeName}</h1>
+      <p>{s.tagline||"Browse products and place your order directly."}</p>
+    </div>
+    <div className="public-search">
+      <Search size={17}/>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products by name…" aria-label="Search products"/>
+      {q&&<button type="button" className="public-search-clear" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+    </div>
+  </section>
+  <div className="public-store-grid">
+   <section className="public-catalog">
+    <div className="public-catalog-head">
+      <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
+      {items.length>0&&<a className="public-cart-jump" href="#public-checkout"><span>{items.reduce((n,x)=>n+x.quantity,0)} item{items.reduce((n,x)=>n+x.quantity,0)===1?"":"s"}</span><strong>{fmt(total)}</strong></a>}
+    </div>
+    {visible.length?<div className="public-product-grid">{visible.map(x=>{
+      const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
+      return <article className="public-product-card" key={x.id}>
+       <div className="public-product-art">
+        {x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}
+        {stock<=0&&<span className="public-stock-pill">Sold out</span>}
+        {stock>0&&stock<=5&&<span className="public-stock-pill">Only {stock} left</span>}
+       </div>
+       <div className="product-info">
+        <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
+        <strong className="product-price">{fmt(x.price)}</strong>
+       </div>
+       <div className="public-product-actions">
+        {qty>0&&<div className="public-qty-control" aria-label={"Quantity of "+x.name}>
+          <button type="button" onClick={()=>updateCart(x.id,qty-1)} aria-label={"Remove one "+x.name}>−</button>
+          <strong>{qty}</strong>
+          <button type="button" onClick={()=>updateCart(x.id,qty+1)} disabled={qty>=stock} aria-label={"Add one "+x.name}>+</button>
+        </div>}
+        <button className="primary-button" disabled={stock<=0||qty>=stock} onClick={()=>updateCart(x.id,qty+1)}>{stock>0?(qty?"Add another":"Add to cart"):"Sold out"} {stock>0&&<Plus size={15}/>}</button>
+       </div>
+      </article>
+    })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
+   </section>
+   {items.length>0&&(
+   <aside id="public-checkout" className="panel public-checkout">
+    <div className="checkout-heading"><span className="eyebrow">YOUR CART</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
+    {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your cart is saved.</strong><span>Sign in to continue with your order and keep your order history together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
+      {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Remove one "+x.name} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
+      <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
+      <Field label="Your name" value={customerForm.name} onChange={e=>setCustomerForm({...customerForm,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
+      <PhoneField label="Phone" value={customerForm.phone} onChange={v=>setCustomerForm({...customerForm,phone:v})} required/>
+      {ful==="delivery"&&<Field label="Delivery address" value={customerForm.address} onChange={e=>setCustomerForm({...customerForm,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
+      <div className="choice-block"><b>Payment</b><div className="choice-grid"><button type="button" className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button type="button" className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div>
+      <div className="discount-row"><input value={code} onChange={e=>{setCode(e.target.value.toUpperCase());setDisc(null)}} placeholder="Discount code" aria-label="Discount code"/><button type="button" className="ghost-button" disabled={!code.trim()||!items.length} onClick={apply}>Apply</button></div>
+      {msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"} role="status">{msg}</div>}
+      <CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/>
+      <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
+      <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
+      {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
+    </>}
+   </aside>
+   )}</div>
+   {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
+ </main>
+}
+
+function OrderReceiptModal({order,store,onClose}){if(!order)return null;return <Modal title="Order receipt" onClose={onClose}><div><strong>{store?.storeName||"QuickCart Store"}</strong><p>Receipt #{String(order.id||"").slice(0,12)}</p><p>{order.customerName||"Customer"}</p><p>Total: {fmt(order.total)}</p></div><div className="modal-actions"><button className="primary-button" type="button" onClick={()=>printReceiptDocument(order,store)}><FileText size={17}/> Print receipt</button><button className="ghost-button" type="button" onClick={onClose}>Close</button></div></Modal>}
+
+export default function App(){
+ const route=useRoute();const[boot,setBoot]=useState(true),[user,setUser]=useState(null),[stores,setStores]=useState([]),[store,setStore]=useState(null),[products,setProducts]=useState([]),[orders,setOrders]=useState([]),[plan,setPlan]=useState({plan:"Free"}),[discounts,setDiscounts]=useState([]),[notice,setNotice]=useState(null),[busy,setBusy]=useState(false),[setup,setSetup]=useState(false),[productModal,setProductModal]=useState(null),[share,setShare]=useState(false),[otpOpen,setOtpOpen]=useState(false),[otp,setOtp]=useState(""),[otpEmail,setOtpEmail]=useState(""),[otpError,setOtpError]=useState(""),[otpMessage,setOtpMessage]=useState(""),[otpLoading,setOtpLoading]=useState(false),[otpCooldown,setOtpCooldown]=useState(0),[receiptOrder,setReceiptOrder]=useState(null),[auth,setAuth]=useState({name:"",email:"",password:"",confirmPassword:""}),[authError,setAuthError]=useState(""),[authLoading,setAuthLoading]=useState(false),[payment,setPayment]=useState(null),[paymentError,setPaymentError]=useState(""),[paymentLoading,setPaymentLoading]=useState(false),[discountForm,setDiscountForm]=useState({code:"",type:"percent",value:10,expiresAt:""}),[install,setInstall]=useState(null),[customerSession,setCustomerSession]=useState(()=>{try{return JSON.parse(localStorage.getItem("quickcart_customer")||"null")}catch{return null}});
+ const publicStore=route.type==="store"||route.type==="store-auth";const shareUrl=store?window.location.origin+BASE+"/store/"+store.slug:"";
+ const load=async(clear=true)=>{const token=localStorage.getItem("quickcart_token");if(!token)return false;try{const me=await api("/api/me");const ss=me.stores||(me.store?[me.store]:[]);setUser(me.user);setStores(ss);let id=localStorage.getItem("quickcart_store_id");if(!id&&ss[0]?.id){id=ss[0].id;localStorage.setItem("quickcart_store_id",id)}const active=ss.find(x=>x.id===id)||me.store||null;setStore(active);if(!active){setProducts([]);setOrders([]);return true}const rs=await Promise.allSettled([api("/api/products"),api("/api/orders"),api("/api/plan")]);setProducts(rs[0].status==="fulfilled"?rs[0].value.products||[]:[]);setOrders(rs[1].status==="fulfilled"?rs[1].value.orders||[]:[]);const p=rs[2].status==="fulfilled"?rs[2].value:{plan:"Free"};setPlan(p);if(["Premium","Business"].includes(p.plan))try{setDiscounts((await api("/api/discounts")).discounts||[])}catch{setDiscounts([])}else setDiscounts([]);return true}catch(e){if(clear&&(e.status===401||e.status===404)){localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null)}return false}};
+ useEffect(()=>{(async()=>{if(!publicStore)await load(false);setBoot(false)})()},[publicStore]);
+ useEffect(()=>{if(route.type==="store"||route.type==="store-auth"){api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{try{localStorage.setItem("qc_public_/api/storefront/"+route.slug,JSON.stringify({data:d}))}catch{}}).catch(()=>{})}},[route.type,route.slug]);
+ const[publicData,setPublicData]=useState(null),[publicError,setPublicError]=useState("");useEffect(()=>{if(route.type!=="store"&&route.type!=="store-auth"){setPublicData(null);setPublicError("");return}let on=true;setPublicData(null);setPublicError("");api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{if(on)setPublicData(d)}).catch(e=>{if(on)setPublicError(e.message||"This storefront could not be loaded.")});return()=>{on=false}},[route.type,route.slug]);
+ useEffect(()=>{
+   if(route.type!=="store"&&route.type!=="store-auth"){
+     document.title="QuickCart — Social commerce made simple";
+     const desc="QuickCart helps small businesses create an online store, share one link, and take customer orders.";
+     let m=document.querySelector('meta[name="description"]');if(m)m.setAttribute("content",desc);
+     return;
+   }
+   const s=publicData?.store||publicData?.storefront||{};
+   const name=String(s.name||s.storeName||route.slug.replace(/-/g," ")).trim();
+   const desc=String(s.tagline||("Shop "+name+" online with QuickCart.")).trim().slice(0,160);
+   document.title=name+" — Online Store | QuickCart";
+   let m=document.querySelector('meta[name="description"]');
+   if(!m){m=document.createElement("meta");m.name="description";document.head.appendChild(m)}
+   m.setAttribute("content",desc);
+   let canonical=document.querySelector('link[rel="canonical"]');
+   if(!canonical){canonical=document.createElement("link");canonical.rel="canonical";document.head.appendChild(canonical)}
+   canonical.href=window.location.href.split("?")[0];
+   let ld=document.getElementById("quickcart-store-jsonld");
+   if(!ld){ld=document.createElement("script");ld.id="quickcart-store-jsonld";ld.type="application/ld+json";document.head.appendChild(ld)}
+   ld.textContent=JSON.stringify({"@context":"https://schema.org","@type":"Store","name":name,"url":window.location.href.split("?")[0],"description":desc});
+ },[route.type,route.slug,publicData]);
+ useEffect(()=>{if(route.type==="app"&&!boot&&!user)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user]);
+ useEffect(()=>{if(!store)return;const apply=()=>{const c=localStorage.getItem("quickcart_ui_color:"+store.id)||store.primaryColor||"#12392d";document.documentElement.style.setProperty("--accent",c);document.documentElement.style.setProperty("--accent-2",c);document.documentElement.dataset.theme=localStorage.getItem("quickcart_theme_mode:"+store.id)||"light"};apply();addEventListener("qc-theme",apply);return()=>removeEventListener("qc-theme",apply)},[store?.id,store?.primaryColor]);
+ useEffect(()=>{const f=e=>{e.preventDefault();setInstall(e)};addEventListener("beforeinstallprompt",f);return()=>removeEventListener("beforeinstallprompt",f)},[]);
+ useEffect(()=>{if(otpCooldown<=0)return;const t=setInterval(()=>setOtpCooldown(v=>Math.max(0,v-1)),1000);return()=>clearInterval(t)},[otpCooldown]);
+ useEffect(()=>{if(!user)return;const start=Number(localStorage.getItem("quickcart_login_at"))||Date.now();localStorage.setItem("quickcart_login_at",String(start));let last=Date.now();const touch=()=>last=Date.now();const t=setInterval(()=>{const now=Date.now();if(now-last>=1800000||now-start>=28800000){localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null);go("/auth/login",true)}},15000);["mousedown","keydown","touchstart","scroll"].forEach(x=>addEventListener(x,touch,{passive:true}));return()=>{clearInterval(t);["mousedown","keydown","touchstart","scroll"].forEach(x=>removeEventListener(x,touch))}},[user]);
+ const error=e=>setNotice({title:"Something needs attention",message:e.message||"Please try again."});
+ const authMode=route.type==="auth"?route.mode:"login";
+ const submit=async e=>{e.preventDefault();if(authLoading)return;setAuthError("");const email=emailOf(auth.email),password=String(auth.password||"");if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return setAuthError("Enter a valid email address.");if(!password)return setAuthError("Enter your password.");if(authMode==="signup"){if(!auth.name.trim())return setAuthError("Enter your name.");if(password.length<6)return setAuthError("Password must be at least 6 characters.");if(password!==auth.confirmPassword)return setAuthError("Passwords do not match.")}setAuthLoading(true);try{const d=await api(authMode==="signup"?"/api/auth/signup":"/api/auth/login",{method:"POST",body:body(authMode==="signup"?{name:auth.name.trim(),email,password}:{email,password})});if(authMode==="signup"){setOtpEmail(d.email||email);setOtp("");setOtpError("");setOtpMessage(d.message||"Enter the code from your email.");setOtpOpen(true)}else{localStorage.setItem("quickcart_token",d.token);localStorage.setItem("quickcart_login_at",String(Date.now()));if(!await load(false))throw new Error("Your account could not be loaded.");go("/app/overview",true)}}catch(e){if(e.code==="EMAIL_NOT_VERIFIED"){setOtpEmail(email);setOtpOpen(true);setOtpMessage("Your email needs verification.");setOtpError("")}else setAuthError(e.message||"Unable to sign in.")}finally{setAuthLoading(false)}};
+ const verify=async e=>{e.preventDefault();setOtpLoading(true);setOtpError("");try{const d=await api("/api/auth/verify-otp",{method:"POST",body:body({email:otpEmail,otp})});localStorage.setItem("quickcart_token",d.token);localStorage.setItem("quickcart_login_at",String(Date.now()));if(!await load(false))throw new Error("Your account could not be loaded.");setOtpOpen(false);go("/app/overview",true)}catch(e){setOtpError(e.message||"Invalid code.")}finally{setOtpLoading(false)}};
+ const resend=async()=>{if(otpLoading||otpCooldown)return;setOtpLoading(true);setOtpError("");try{const d=await api("/api/auth/resend-otp",{method:"POST",body:body({email:otpEmail})});setOtpMessage(d.message||"A new code has been sent.");setOtpCooldown(Number(d.cooldownSeconds)||60)}catch(e){setOtpError(e.message||"Could not resend code.");if(e.retryAfterSeconds)setOtpCooldown(e.retryAfterSeconds)}finally{setOtpLoading(false)}};
+ const signout=()=>{localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null);go("/auth/login",true)};
+ const createStore=async(name,slug)=>{setBusy(true);try{const d=await api("/api/store",{method:"POST",body:body({storeName:name,slug:slug||name,tagline:"Shop with us",vendorPhone:"",deliveryFee:0,deliveryEnabled:false,primaryColor:"#12392d"})});localStorage.setItem("quickcart_store_id",d.store.id);setSetup(false);await load(false);go("/app/overview",true)}catch(e){error(e)}finally{setBusy(false)}};
+ const saveProduct=async p=>{setBusy(true);try{const d=productModal?.id?await api("/api/products/"+productModal.id,{method:"PUT",body:body(p)}):await api("/api/products",{method:"POST",body:body(p)});setProducts(xs=>productModal?.id?xs.map(x=>x.id===productModal.id?d.product:x):[d.product,...xs]);setProductModal(null);setNotice({title:"Product saved",message:"Your catalog has been updated."})}catch(e){throw e}finally{setBusy(false)}};
+ const delProduct=async id=>{if(!confirm("Delete this product?"))return;try{await api("/api/products/"+id,{method:"DELETE"});setProducts(xs=>xs.filter(x=>x.id!==id))}catch(e){error(e)}};
+ const setOrder=async(id,status)=>{try{const d=await api("/api/orders/"+id+"/status",{method:"PUT",body:body({status})});setOrders(xs=>xs.map(x=>x.id===id?{...x,status:d.status}:x))}catch(e){error(e)}};
+ const deleteOrder=async id=>{const order=orders.find(x=>x.id===id);if(!order)return;if(!window.confirm("Delete this order permanently? This cannot be undone."))return;setBusy(true);try{await api("/api/orders/"+id,{method:"DELETE"});setOrders(xs=>xs.filter(x=>x.id!==id));setReceiptOrder(x=>x?.id===id?null:x);setNotice({title:"Order deleted",message:"The order was permanently removed from your store."})}catch(e){error(e)}finally{setBusy(false)}};
+ const saveStore=async patch=>{try{const d=await api("/api/store",{method:"PUT",body:body(patch)});setStore(d.store);setStores(xs=>xs.map(x=>x.id===d.store.id?d.store:x));setNotice({title:"Settings saved",message:"Your store changes are live."})}catch(e){error(e)}};
+ const deleteStore=async()=>{if(!store)return;const name=store.storeName||"this store";if(!window.confirm('Delete "'+name+'"? This permanently removes the store, its products, orders and discounts.'))return;setBusy(true);try{await api("/api/store",{method:"DELETE",body:body({storeId:store.id})});const remaining=stores.filter(x=>x.id!==store.id);setStores(remaining);setProducts([]);setOrders([]);setDiscounts([]);if(remaining.length){localStorage.setItem("quickcart_store_id",remaining[0].id);await load(false);go("/app/overview",true)}else{localStorage.removeItem("quickcart_store_id");setStore(null);go("/app/overview",true)}setNotice({title:"Store deleted",message:'"'+name+'" has been deleted.'})}catch(e){error(e)}finally{setBusy(false)}};
+ const selectStore=async id=>{localStorage.setItem("quickcart_store_id",id);setBusy(true);try{await load(false)}finally{setBusy(false)}};
+ const startPlan=async p=>{setPaymentLoading(true);setPaymentError("");try{setPayment(await api("/api/payments/alatpay/plan",{method:"POST",body:body({plan:p})}))}catch(e){setPaymentError(e.message||"Unable to start payment.")}finally{setPaymentLoading(false)}};
+ const refreshPlan=async()=>{try{setPlan(await api("/api/plan"))}catch(e){error(e)}};
+ const cancelPlan=async()=>{try{await api("/api/plan/cancel",{method:"POST"});setPlan({plan:"Free"});setPayment(null)}catch(e){error(e)}};
+ const createDiscount=async()=>{try{const d=await api("/api/discounts",{method:"POST",body:body(discountForm)});setDiscounts(xs=>[d.discount,...xs]);setDiscountForm({code:"",type:"percent",value:10,expiresAt:""})}catch(e){error(e)}};
+ const deleteDiscount=async id=>{try{await api("/api/discounts/"+id,{method:"DELETE"});setDiscounts(xs=>xs.filter(x=>x.id!==id))}catch(e){error(e)}};
+ if(boot)return <Loading/>;
+ if(route.type==="store-auth"||((route.type==="store")&&!customerSession))return <CustomerAuth mode={route.type==="store-auth"?route.mode:"login"} slug={route.slug} onMode={m=>go("/store/"+encodeURIComponent(route.slug)+"/auth/"+m)} onSuccess={c=>{setCustomerSession(c);go("/store/"+encodeURIComponent(route.slug),true)}}/>;
+ if(route.type==="store")return publicError?<main className="public-store-page"><div className="public-store-error"><Logo size={48}/><h1>Storefront unavailable</h1><p>{publicError}</p><button className="primary-button" onClick={()=>window.location.reload()}>Try again</button></div></main>:<><PublicStore data={publicData} customer={customerSession} onLogin={m=>go("/store/"+encodeURIComponent(route.slug)+"/auth/"+m)}/><Notice value={notice} onClose={()=>setNotice(null)}/></>;
+ if(route.type==="auth")return <><Auth mode={authMode} onMode={m=>{setAuthError("");go("/auth/"+m)}} onSubmit={submit} form={auth} setForm={setAuth} error={authError} loading={authLoading}/>{otpOpen&&<Modal title="Verify your email" subtitle={"Enter the 6-digit code sent to "+otpEmail} onClose={()=>setOtpOpen(false)}><form className="stack" onSubmit={verify}><Field label="Verification code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}/>{otpMessage&&<div className="form-success">{otpMessage}</div>}{otpError&&<div className="form-error">{otpError}</div>}<button className="primary-button big" disabled={otpLoading||otp.length!==6}>{otpLoading?"Verifying…":"Verify email"} <Check size={16}/></button><button type="button" className="ghost-button" disabled={otpLoading||otpCooldown>0} onClick={resend}>{otpCooldown?"Resend in "+otpCooldown+"s":"Resend code"}</button></form></Modal>}{/* AUTH */}</>;
+ if(!user)return <Landing onAuth={m=>go("/auth/"+m)} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
+ if(!store)return <><div className="empty-app"><Logo size={50}/><h1>Create your first store.</h1><p>Set up your storefront before adding products and orders.</p><button className="primary-button big" onClick={()=>setSetup(true)}><Store size={17}/> Create store</button></div>{setup&&<StoreSetup loading={busy} onCreate={createStore} onClose={()=>setSetup(false)}/>}</>;
+ const page=route.view==="products"?<Products products={products} onAdd={()=>setProductModal({})} onEdit={x=>setProductModal(x)} onDelete={delProduct}/>:route.view==="orders"?<Orders orders={orders} onStatus={setOrder} onReceipt={setReceiptOrder} onDelete={deleteOrder}/>:route.view==="receipts"?<ReceiptScanner/>:route.view==="customers"?<Customers orders={orders}/>:route.view==="analytics"?<Analytics orders={orders} products={products} plan={plan.plan}/>:route.view==="discounts"?<Discounts plan={plan.plan} discounts={discounts} form={discountForm} setForm={setDiscountForm} onCreate={createDiscount} onDelete={deleteDiscount}/>:route.view==="settings"?<SettingsPage store={store} onSave={saveStore} onDelete={deleteStore}/>:route.view==="premium"?<Premium plan={plan.plan} payment={payment} paymentError={paymentError} paymentLoading={paymentLoading} start={startPlan} refresh={refreshPlan} cancel={cancelPlan}/>:<Overview user={user} store={store} products={products} orders={orders} onAdd={()=>setProductModal({})} onShare={()=>setShare(true)} onStore={()=>go("/store/"+encodeURIComponent(store.slug))} onAnalytics={()=>go("/app/analytics")}/>;
+ return <><DashboardShell user={user} store={store} stores={stores} view={route.view} plan={plan.plan} onSignOut={signout} onSelectStore={selectStore} onNewStore={()=>setSetup(true)}>{busy&&<div className="top-loading-line"/>}{page}</DashboardShell>{receiptOrder&&<OrderReceiptModal order={receiptOrder} store={store} onClose={()=>setReceiptOrder(null)}/>} {setup&&<StoreSetup loading={busy} onCreate={createStore} onClose={()=>setSetup(false)}/>} {productModal&&<ProductModal product={productModal.id?productModal:null} onClose={()=>setProductModal(null)} onSave={saveProduct} busy={busy}/>} {share&&<ShareModal url={shareUrl} onClose={()=>setShare(false)}/>}<Notice value={notice} onClose={()=>setNotice(null)}/></>;
+}
