@@ -284,7 +284,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data,customer,onLogin}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[panelsExpanded,setPanelsExpanded]=useState(true);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId||!email){setCart({});setCartOwner("");return}const owner=storeId+":"+email;try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");setCart(saved&&typeof saved==="object"?saved:{});setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
@@ -527,7 +527,7 @@ function PublicStore({data,customer,onLogin}){
    <section className="public-catalog">
     <div className="public-catalog-head">
       <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
-      {items.length>0&&<a className="public-cart-jump" href="#public-checkout"><span>{items.reduce((n,x)=>n+x.quantity,0)} item{items.reduce((n,x)=>n+x.quantity,0)===1?"":"s"}</span><strong>{fmt(total)}</strong></a>}
+      {(items.length>0||customerOrders.length>0)&&<button className="public-cart-jump public-cart-tracking-toggle" type="button" aria-expanded={panelsExpanded} onClick={()=>setPanelsExpanded(v=>!v)}><span>{panelsExpanded?"Collapse":"Show"} cart &amp; tracking</span>{items.length>0&&<strong>{items.reduce((n,x)=>n+x.quantity,0)} · {fmt(total)}</strong>}{customerOrders.length>0&&<small>{customerOrders.length} {customerOrders.length===1?"order":"orders"} tracking</small>}<ChevronDown size={16} className={panelsExpanded?"is-expanded":""}/></button>}
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
@@ -552,7 +552,7 @@ function PublicStore({data,customer,onLogin}){
       </article>
     })}</div>:<Empty title="No products found" text={q?"Nothing matched “"+q+"”. Try a different search.":"This store has no products available yet."}/>}
    </section>
-   {items.length>0&&(
+   {items.length>0&&panelsExpanded&&(
    <aside id="public-checkout" className="panel public-checkout">
     <div className="checkout-heading"><span className="eyebrow">YOUR CART</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
     {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your cart is saved.</strong><span>Sign in to continue with your order and keep your order history together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
@@ -572,7 +572,7 @@ function PublicStore({data,customer,onLogin}){
     </>}
    </aside>
    )}</div>
-   {customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
+   {panelsExpanded&&customerOrders.length>0&&<div className="customer-tracking-wrap"><CustomerOrderStatus orders={customerOrders} onRefresh={refreshOrders} onWhatsAppSent={id=>setCustomerOrders(xs=>xs.map(o=>o.id===id?{...o,whatsappSent:true}:o))}/></div>}
  </main>
 }
 
