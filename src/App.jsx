@@ -280,11 +280,11 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent}){
  </section>
 }
 function PublicStore({data,customer,onLogin}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false);
+ const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
- useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId||!email){setCart({});return}try{const key="qc_cart:"+storeId+":"+email;const saved=JSON.parse(localStorage.getItem(key)||"{}");setCart(saved&&typeof saved==="object"?saved:{})}catch{setCart({})}},[data?.store?.id,customer?.email]);
- useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId||!email)return;try{localStorage.setItem("qc_cart:"+storeId+":"+email,JSON.stringify(cart))}catch{}},[data?.store?.id,customer?.email,cart]);
+ useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId||!email){setCart({});setCartOwner("");return}const owner=storeId+":"+email;try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");setCart(saved&&typeof saved==="object"?saved:{});setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
+ useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId||!email||cartOwner!==storeId+":"+email)return;try{localStorage.setItem("qc_cart:"+storeId+":"+email,JSON.stringify(cart))}catch{}},[data?.store?.id,customer?.email,cart,cartOwner]);
 
  useEffect(()=>{
    if(!data?.store)return;
