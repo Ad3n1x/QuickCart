@@ -518,7 +518,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh}){
       setMsg(result.cancelled?"Order cancelled. Stock and tracking have been synced.":"Order quantity updated. Product stock and tracking are syncing.");
       try{const fresh=await api("/api/storefront/"+encodeURIComponent(s.slug));onStoreRefresh?.(fresh)}catch{}
       try{const freshOrders=await api("/api/customer/orders",{headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")}});
-        if(Array.isArray(freshOrders.orders))setCustomerOrders(freshOrders.orders.filter(o=>o.storeId===s.id).map(o=>({...o,storeName:s.storeName})).slice(0,10));
+        if(Array.isArray(freshOrders.orders))setCustomerOrders(current=>freshOrders.orders.filter(o=>o.storeId===s.id).map(o=>({...o,whatsappSent:current.find(c=>c.id===o.id)?.whatsappSent===true,storeName:s.storeName})).slice(0,10));
       }catch{}
     }catch(e){setMsg(e.message||"Could not update this order. Please refresh and try again.")}
     finally{setBusy(false)}
