@@ -2921,3 +2921,29 @@ button{white-space:normal;line-height:1.25}
 
 /* Tailwind utility layer; existing semantic styles remain the component foundation. */
 @tailwind utilities;
+
+
+/* Responsive quantity stepper: never overflows narrow product cards. */
+.public-store-page .public-product-actions-stepper{
+  display:flex;align-items:center;justify-content:flex-end;min-width:0;width:100%;gap:8px;
+}
+.public-store-page .public-product-actions-stepper .public-qty-control{
+  display:grid;grid-template-columns:minmax(40px,1fr) minmax(28px,auto) minmax(40px,1fr);
+  align-items:center;gap:4px;width:100%;max-width:220px;min-width:0;min-height:48px;padding:4px;border-radius:12px;
+}
+.public-store-page .public-product-actions-stepper .public-qty-control button{
+  display:flex;align-items:center;justify-content:center;width:100%;min-width:0;height:40px;min-height:40px;padding:0;border-radius:9px;font-size:22px;font-weight:750;line-height:1;touch-action:manipulation;
+}
+.public-store-page .public-product-actions-stepper .public-qty-control strong{
+  display:block;min-width:28px;padding:0 3px;text-align:center;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;
+}
+@media(max-width:560px){
+  .public-store-page .public-product-actions-stepper{padding:8px 10px 12px;justify-content:stretch}
+  .public-store-page .public-product-actions-stepper .public-qty-control{max-width:none;grid-template-columns:minmax(44px,1fr) minmax(30px,auto) minmax(44px,1fr)}
+  .public-store-page .public-product-actions-stepper .public-qty-control button{height:44px;min-height:44px;font-size:24px}
+}
+@media(max-width:360px){
+  .public-store-page .public-product-card{grid-template-columns:64px minmax(0,1fr);gap:8px}
+  .public-store-page .public-product-art{width:64px;height:64px}
+  .public-store-page .public-product-actions-stepper .public-qty-control{grid-template-columns:minmax(42px,1fr) minmax(24px,auto) minmax(42px,1fr);gap:2px}
+}
