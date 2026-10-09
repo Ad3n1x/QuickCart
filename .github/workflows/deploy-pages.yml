@@ -33,6 +33,11 @@ jobs:
         with:
           node-version: 24
 
+      - name: Check backend JavaScript syntax
+        run: |
+          node --check api/index.js
+          node --check server.js
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
