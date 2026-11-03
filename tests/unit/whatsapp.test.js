@@ -37,3 +37,9 @@ test("rejects unsupported statuses, missing order references and invalid numbers
   assert.throws(()=>buildOrderWhatsAppMessage({},"new"),/order reference is required/);
   assert.throws(()=>buildOrderWhatsAppUrl({id:"x",customerPhone:"bad"},"new"),/valid customer WhatsApp number/);
 });
+
+test("supports QuickCart's ready, shipped and picked-up statuses",()=>{
+  assert.match(buildOrderWhatsAppMessage({id:"ready-1"},"ready"),/ready for collection/);
+  assert.match(buildOrderWhatsAppMessage({id:"ship-1"},"shipped"),/dispatched/);
+  assert.match(buildOrderWhatsAppMessage({id:"pickup-1"},"picked_up"),/collected/);
+});
