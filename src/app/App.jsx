@@ -1,11 +1,7 @@
 
-import React,{useEffect,useMemo,useRef,useState} from "react";
+import React,{useEffect,useState} from "react";
 import { api } from "../lib/api.js";
-import PhoneField from "../components/forms/PhoneField.jsx";
-import { fmt } from "../lib/format.js";
-import { orderDisplayTotal,dedupeCustomerOrders } from "../lib/order-utils.js";
-import { escapePrintHtml,printReceiptDocument } from "../lib/receipt.js";
-import { slugify,emailOf } from "../lib/identity.js";
+import { emailOf } from "../lib/identity.js";
 import { body } from "../lib/json.js";
 import { BASE,go } from "../lib/navigation.js";
 import Landing from "../features/marketing/Landing.jsx";
@@ -15,6 +11,7 @@ import ReceiptScanner from "../features/receipts/ReceiptScanner.jsx";
 import OrderReceiptModal from "../features/receipts/OrderReceiptModal.jsx";
 import { DashboardShell, Account, StoreSetup, ProductModal, FeaturePromo, Overview, Products, Orders, Customers, Analytics, SettingsPage, Discounts, Premium, ShareModal } from "../features/dashboard/DashboardViews.jsx";
 
+import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "../components/common/SharedUI.jsx";
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
 
 // Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
@@ -31,8 +28,6 @@ const routeMatchers=[
 function hasCustomerCredentials(){try{return Boolean(localStorage.getItem("quickcart_customer_token")||localStorage.getItem("quickcart_customer"))}catch{return false}}
 function getRoute(){const path=cleanPath();if(/^\/app(?:\/|$)/.test(path)&&hasCustomerCredentials()){const home=(BASE||"")+"/";if(window.location.pathname!==home)history.replaceState({}, "", home);return{type:"landing"}}for(const route of routeMatchers){const match=path.match(route.pattern);if(match)return route.resolve(match)}return{type:"landing"}}
 function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
-
-import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "../components/common/SharedUI.jsx";
 
 export default function App(){
  const route=useRoute();
