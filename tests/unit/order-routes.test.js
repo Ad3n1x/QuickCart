@@ -7,7 +7,7 @@ import { registerOrderRoutes } from "../../server/src/routes/orders.js";
 function createHarness({stock=5}={}) {
  const state={
   products:[{id:"p-1",storeId:"store-1",name:"Classic Tee",price:2500,stock,active:true}],
-  orders:[],customers:[]
+  stores:[{id:"store-1",deliveryEnabled:true,deliveryFee:300}],discounts:[],orders:[],customers:[]
  };
  const products={
   find(filter){return {toArray:async()=>state.products.filter(p=>p.storeId===filter.storeId&&p.active===true)}},
@@ -24,14 +24,16 @@ function createHarness({stock=5}={}) {
   async findOne(filter){return state.orders.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v))||null}
  };
  const customers={async updateOne(filter,update){state.customers.push({filter,update});return {matchedCount:1,modifiedCount:1}}};
- const database={collection(name){return ({products,orders,customers})[name]}};
+ const stores={async findOne(filter){return state.stores.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v))||null}};
+ const discounts={async findOne(filter){return state.discounts.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v))||null}};
+ const database={collection(name){return ({products,orders,customers,stores,discounts})[name]}};
  const app=express();app.use(express.json());
  registerOrderRoutes(app,{
   db:async()=>database,
   auth:(req,_res,next)=>{req.user={sub:"seller-1"};next()},
   customerAuth:(_req,_res,next)=>next(),
   customerTokenFor:()=>"",now:()=>new Date().toISOString(),
-  randomUUID,randomBytes:{toString:()=> "test-confirmation-token"},
+  randomUUID,randomBytes:()=>Buffer.from("test-confirmation-token"),
   hashToken:value=>"hash:"+value,getUserStore:async()=>({id:"store-1",deliveryEnabled:true,deliveryFee:300}),
   jwt:{verify:()=>({role:"customer",sub:"customer-1",email:"customer@example.com"})},
   jwtSecret:"test-secret",emailPattern:/^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -78,5 +80,23 @@ test("custom one-off manual lines do not mutate catalogue inventory",async()=>{
   assert.equal(response.status,201);
   assert.equal(h.state.products[0].stock,5);
   assert.equal(data.order.items[0].inventoryTracked,false);
+ }finally{h.server.close()}
+});
+
+
+test("guest checkout creates an order without a customer account and reserves catalogue stock",async()=>{
+ const h=createHarness({stock:5});
+ try{
+  const response=await fetch((await h.url)+"/api/orders",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({
+   storeId:"store-1",customerName:"Ada",customerPhone:"08012345678",fulfillment:"pickup",paymentMethod:"pay_on_delivery",items:[{id:"p-1",quantity:2}]
+  })});
+  const data=await response.json();
+  assert.equal(response.status,201);
+  assert.equal(data.guestCheckout,true);
+  assert.ok(data.confirmationToken);
+  assert.equal(h.state.products[0].stock,3);
+  assert.equal(h.state.orders.length,1);
+  assert.equal(h.state.orders[0].guestCheckout,true);
+  assert.equal(h.state.orders[0].customerEmail,"");
  }finally{h.server.close()}
 });
