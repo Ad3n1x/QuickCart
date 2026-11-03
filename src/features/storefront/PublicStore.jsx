@@ -102,7 +102,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
  </section>
 }
 function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false);
+ const[q,setQ]=useState(""),[activeCategory,setActiveCategory]=useState("All"),[sortBy,setSortBy]=useState("featured"),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId){setCart({});setCartOwner("");return}const owner=storeId+":"+(email||"guest");try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");const guest=email?JSON.parse(localStorage.getItem("qc_cart:"+storeId+":guest")||"{}"):{};const safeSaved=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};const safeGuest=guest&&typeof guest==="object"&&!Array.isArray(guest)?guest:{};const merged={...safeSaved};if(email)for(const [id,qty] of Object.entries(safeGuest))merged[id]=(Math.max(0,Number(merged[id])||0)+Math.max(0,Number(qty)||0));setCart(email?merged:safeSaved);setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
@@ -179,7 +179,10 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
  },[data?.store?.id,customer?.email,customerOrdersHydrated,customerOrders]);
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
- const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
+ const categoryOf=product=>String(product.category||product.categoryName||product.type||"General").trim()||"General";
+ const categories=["All",...Array.from(new Set(p.map(categoryOf))).sort((a,b)=>a.localeCompare(b))];
+ const visible=p.filter(x=>(activeCategory==="All"||categoryOf(x)===activeCategory)&&(!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()))).sort((a,b)=>sortBy==="price-low"?Number(a.price||0)-Number(b.price||0):sortBy==="price-high"?Number(b.price||0)-Number(a.price||0):String(a.name||"").localeCompare(String(b.name||"")));
+ const cartCount=items.reduce((sum,item)=>sum+item.quantity,0);
  const editableOrderLines=customerOrders.filter(o=>["new","confirmed"].includes(o.status)).flatMap(o=>(o.items||[]).map(item=>({...item,orderId:o.id,orderStatus:o.status})));
  const items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:Math.min(Number(x.stock)||0,Math.max(0,Number(cart[x.id])||0))})).filter(x=>x.quantity>0);
  const subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0);
@@ -395,32 +398,46 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    setCustomerOrders(dedupeCustomerOrders(updates));
  };
  return <main className="public-store-page">
+  <div className="public-store-announcement">Welcome to {s.storeName} <span>·</span> Shop directly from this store</div>
   <header className="public-store-nav">
     <div className="public-brand">
       <Logo size={40}/>
-      <div><b>{s.storeName}</b><small>{s.tagline||"Shop directly from this store"}</small></div>
+      <div><b>{s.storeName}</b><small>{s.tagline||"Your online store"}</small></div>
     </div>
-    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={onSignOut}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<span className="public-store-badge">QuickCart storefront</span></div>
+    <div className="public-nav-search">
+      <Search size={17}/>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products…" aria-label="Search products"/>
+      {q&&<button type="button" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+    </div>
+    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={onSignOut}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<button className="public-cart-button" type="button" disabled={!cartCount} onClick={()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"})}><ShoppingBag size={17}/><span>Cart</span><b>{cartCount}</b></button></div>
   </header>
   <section className="public-store-hero">
     <div className="public-store-hero-copy">
-      <span className="eyebrow">OFFICIAL STOREFRONT</span>
-      <h1>{s.storeName}</h1>
-      <p>{s.tagline||"Browse products and place your order directly."}</p>
+      <span className="public-store-kicker">THE OFFICIAL STORE</span>
+      <h1>Find something <em>you’ll love.</em></h1>
+      <p>{s.tagline||"Explore the collection, choose your favourites and order directly from "+s.storeName+"."}</p>
+      <div className="public-hero-proof"><span><Package size={15}/> {p.length} products</span><span><Check size={15}/> Direct seller ordering</span></div>
     </div>
-    <div className="public-search">
-      <Search size={17}/>
-      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products by name…" aria-label="Search products"/>
-      {q&&<button type="button" className="public-search-clear" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+    <div className="public-hero-search-card">
+      <span>WHAT ARE YOU LOOKING FOR?</span>
+      <div className="public-search">
+        <Search size={18}/>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products by name…" aria-label="Search products"/>
+        {q&&<button type="button" className="public-search-clear" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+      </div>
+      <small>Browse the store’s collection and add your picks to the cart.</small>
     </div>
   </section>
+  <nav className="public-category-nav" aria-label="Product categories">{categories.map(category=><button key={category} type="button" className={activeCategory===category?"active":""} onClick={()=>setActiveCategory(category)}>{category}</button>)}</nav>
   <div className="public-store-grid">
    <section className="public-catalog">
     {msg&&<div className={/could not|cannot|invalid|unable|failed|error/i.test(msg)?"form-error public-store-feedback":"form-success public-store-feedback"} role="status" aria-live="polite">{msg}</div>}
     <div className="public-catalog-head">
-      <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
-      {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&!(o.fulfillment==="pickup"&&o.status==="picked_up"))&&<button type="button" className="ghost-button customer-tracking-toggle" aria-expanded={trackingVisible} aria-controls="customer-order-tracking" onClick={()=>setTrackingVisible(v=>!v)}>{trackingVisible?"Hide order tracking":"Track my orders"} <span aria-hidden="true">{trackingVisible?"−":"+"}</span></button>}
-
+      <div><span className="eyebrow">THE COLLECTION</span><h2>{activeCategory==="All"?"Shop all products":activeCategory}</h2><p>{visible.length} {visible.length===1?"product":"products"} to explore{q?" · matching “"+q+"”":""}.</p></div>
+      <div className="public-catalog-tools">
+       <label className="public-sort-control"><span>Sort</span><select value={sortBy} onChange={e=>setSortBy(e.target.value)} aria-label="Sort products"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label>
+       {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&!(o.fulfillment==="pickup"&&o.status==="picked_up"))&&<button type="button" className="ghost-button customer-tracking-toggle" aria-expanded={trackingVisible} aria-controls="customer-order-tracking" onClick={()=>setTrackingVisible(v=>!v)}>{trackingVisible?"Hide order tracking":"Track my orders"} <span aria-hidden="true">{trackingVisible?"−":"+"}</span></button>}
+      </div>
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
