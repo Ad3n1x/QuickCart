@@ -261,7 +261,7 @@ check("Seller order status changes follow fulfillment-specific transitions and t
   /if\(!nextStatuses\[current\.status\]\?\.includes\(status\)\)return res\.status\(409\)/.test(api) &&
   /const statuses=\["all","new","confirmed","processing","ready","shipped","delivered","picked_up","cancelled"\]/.test(app) &&
   /o\.fulfillment==="delivery"\?\["shipped","cancelled"\]:\["ready","cancelled"\]/.test(app) &&
-  /o\.status==="ready"\?\(o\.fulfillment==="delivery"\?\["cancelled"\]:\["picked_up","cancelled"\]\)/.test(dashboard));
+  /o\.status==="ready"\?\(o\.fulfillment==="delivery"\?\["cancelled"\]:\["picked_up","cancelled"\]\)/.test(app));
 
 check("Customer order refresh results are deduplicated and store-scoped before rendering tracking",
   /dedupeCustomerOrders\(freshOrders\.orders\.filter\(o=>String\(o\.storeId\)===String\(s\.id\)\)\.map\(o=>/.test(app) &&
