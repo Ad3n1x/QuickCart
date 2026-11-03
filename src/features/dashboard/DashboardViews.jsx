@@ -1,6 +1,8 @@
 import React,{useEffect,useMemo,useRef,useState} from "react";
 import { BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon } from "lucide-react";
 import { fmt } from "../../lib/format.js";
+import { slugify,emailOf } from "../../lib/identity.js";
+import { BASE,go } from "../../lib/navigation.js";
 import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "../../components/common/SharedUI.jsx";
 import PhoneField from "../../components/forms/PhoneField.jsx";
 
