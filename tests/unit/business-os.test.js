@@ -47,3 +47,17 @@ test("business APIs do not operate without an owned store",async()=>{
   assert.equal(h.records.businessExpenses.length,0);
  }finally{h.server.close()}
 });
+
+test("supplier listing excludes records belonging to another store",async()=>{
+ const h=harness();
+ h.records.businessSuppliers.push(
+  {id:"own",storeId:"store-a",name:"Own supplier"},
+  {id:"other",storeId:"store-b",name:"Other tenant supplier"}
+ );
+ try{
+  const response=await fetch((await h.url)+"/api/business/suppliers");
+  const data=await response.json();
+  assert.equal(response.status,200);
+  assert.deepEqual(data.suppliers.map(x=>x.id),["own"]);
+ }finally{h.server.close()}
+});
