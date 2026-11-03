@@ -17,7 +17,7 @@ const app = [read("src/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/
 const css = read("src/styles/main.css");
 const serviceWorker = read("public/sw.js");
 const vite = read("vite.config.js");
-const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js")].join("\n");
+const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js"), read("server/src/routes/customer-auth.js"), read("server/src/routes/seller-auth.js"), read("server/src/routes/store.js"), read("server/src/routes/payments.js"), read("server/src/routes/discounts.js"), read("server/src/routes/orders.js")].join("\n");
 const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Product modal CSS uses real line breaks and does not contain escaped newline tokens",
