@@ -144,24 +144,49 @@ app.post('/api/orders/:id/customer-status',async(req,res)=>{try{const database=a
 
 app.get('/api/customer/orders',customerAuth,async(req,res)=>{try{const database=await db(),email=String(req.customer.email||'').trim().toLowerCase();if(!emailPattern.test(email))return res.status(401).json({error:'Customer email is missing from this session.',code:'INVALID_CUSTOMER_EMAIL'});const orders=await database.collection('orders').find({customerEmail:email},{projection:{customerConfirmationTokenHash:0}}).sort({createdAt:-1}).limit(100).toArray();res.json({orders});}catch(error){console.error(error);res.status(500).json({error:'Unable to load customer order history.'});}});
 // Seller-created orders: useful for phone, walk-in, Instagram and WhatsApp sales.
+// Seller-created orders support catalogue items (with stock reservation) and custom one-off items.
 app.post('/api/orders/manual',auth,async(req,res)=>{try{
  const database=await db(),store=await getUserStore(database,req);
  if(!store)return res.status(404).json({error:'Store not found.'});
  const customerName=String(req.body.customerName||'').trim(),customerPhone=String(req.body.customerPhone||'').trim(),customerEmail=String(req.body.customerEmail||'').trim().toLowerCase(),address=String(req.body.address||'').trim(),fulfillment=String(req.body.fulfillment||'pickup');
  const rawItems=Array.isArray(req.body.items)?req.body.items:[];
- if(!customerName||!customerPhone||!rawItems.length)return res.status(400).json({error:'Customer name, WhatsApp number and at least one item are required.'});
+ if(!customerName||!customerPhone||customerPhone.replace(/\\D/g,'').length<7||!rawItems.length)return res.status(400).json({error:'Enter a customer name, valid WhatsApp number and at least one item.'});
+ if(customerEmail&&!emailPattern.test(customerEmail))return res.status(400).json({error:'Enter a valid customer email or leave it blank.'});
  if(!['pickup','delivery'].includes(fulfillment))return res.status(400).json({error:'Choose pickup or delivery.'});
- if(fulfillment==='delivery'&&!address)return res.status(400).json({error:'Enter the delivery address.'});
- const items=rawItems.map(x=>({id:String(x.id||''),name:String(x.name||'').trim(),price:Number(x.price),quantity:Number(x.quantity)}));
- if(items.some(x=>!x.name||!Number.isFinite(x.price)||x.price<0||!Number.isInteger(x.quantity)||x.quantity<1))return res.status(400).json({error:'Each item needs a name, valid price and quantity of at least one.'});
+ if(fulfillment==='delivery'&&(!store.deliveryEnabled||!address))return res.status(400).json({error:'Enable delivery and enter the delivery address before creating this order.'});
+ const catalogue=await database.collection('products').find({storeId:store.id,active:true}).toArray();
+ const byId=new Map(catalogue.map(p=>[String(p.id),p]));
+ const byName=new Map(catalogue.map(p=>[String(p.name||'').trim().toLowerCase(),p]));
+ const items=[];
+ for(const raw of rawItems){
+  const name=String(raw.name||'').trim(),quantity=Number(raw.quantity),price=Number(raw.price);
+  if(!name||!Number.isFinite(price)||price<0||!Number.isInteger(quantity)||quantity<1)return res.status(400).json({error:'Each item needs a name, valid price and quantity of at least one.'});
+  const product=raw.id?byId.get(String(raw.id)):byName.get(name.toLowerCase());
+  if(raw.id&&!product)return res.status(400).json({error:'A selected catalogue item is no longer available. Refresh and try again.'});
+  items.push({id:product?.id||null,name:product?.name||name,price,quantity,inventoryTracked:Boolean(product)});
+ }
+ const requestedByProduct=new Map();
+ for(const item of items)if(item.inventoryTracked)requestedByProduct.set(item.id,(requestedByProduct.get(item.id)||0)+item.quantity);
  const subtotal=Math.round(items.reduce((sum,x)=>sum+x.price*x.quantity,0)*100)/100;
  const deliveryFee=fulfillment==='delivery'?Math.max(0,Number(store.deliveryFee||0)):0;
  const total=Math.round((subtotal+deliveryFee)*100)/100;
- const order={id:randomUUID(),storeId:store.id,clientOrderId:null,source:'manual',customerId:null,customerEmail,customerName,customerPhone,address:address||'Pickup from store',fulfillment,paymentMethod:String(req.body.paymentMethod||'pay_on_delivery'),items,subtotal,deliveryFee,discount:0,discountCode:'',discountDetails:null,total,status:'new',paymentStatus:'pending',createdAt:now(),updatedAt:now()};
- await database.collection('orders').insertOne(order);
- if(customerEmail&&emailPattern.test(customerEmail))await database.collection('customers').updateOne({storeId:store.id,customerEmail},{$set:{storeId:store.id,customerEmail,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});
+ const order={id:randomUUID(),storeId:store.id,clientOrderId:null,source:'manual',customerId:null,customerEmail,customerName,customerPhone,address:address||'Pickup from store',fulfillment,paymentMethod:String(req.body.paymentMethod||'pay_on_delivery'),items,subtotal,deliveryFee,discount:0,discountCode:'',discountDetails:null,total,status:'new',paymentStatus:'pending',inventoryReservation:'reserved',createdAt:now(),updatedAt:now()};
+ const reserved=[];
+ try{
+  for(const [productId,quantity] of requestedByProduct){
+   const result=await database.collection('products').updateOne({id:productId,storeId:store.id,active:true,stock:{$gte:quantity}},{$inc:{stock:-quantity}});
+   if(!result.modifiedCount)throw Object.assign(new Error('Not enough stock for '+(byId.get(productId)?.name||'a selected item')+'.'),{status:409});
+   reserved.push({id:productId,quantity});
+  }
+  await database.collection('orders').insertOne(order);
+ }catch(error){
+  for(const item of reserved)await database.collection('products').updateOne({id:item.id,storeId:store.id},{$inc:{stock:item.quantity}});
+  if(error?.status===409)return res.status(409).json({error:error.message});
+  throw error;
+ }
+ await database.collection('customers').updateOne({storeId:store.id,phone:customerPhone},{$set:{storeId:store.id,name:customerName,phone:customerPhone,email:customerEmail||'',address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});
  res.status(201).json({order});
- }catch(error){console.error(error);res.status(500).json({error:'Unable to create manual order.'});}});
+}catch(error){console.error(error);res.status(500).json({error:'Unable to create manual order.'});}});
 app.get('/api/orders',auth,async(req,res)=>{const database=await db(),store=await getUserStore(database,req);if(!store)return res.json({orders:[]});res.json({orders:await database.collection('orders').find({storeId:store.id}).sort({createdAt:-1}).toArray()});});
 app.delete('/api/orders/:id',auth,async(req,res)=>{try{const database=await db(),store=await getUserStore(database,req);if(!store)return res.status(404).json({error:'Store not found.'});const result=await database.collection('orders').deleteOne({id:req.params.id,storeId:store.id});if(!result.deletedCount)return res.status(404).json({error:'Order not found.'});res.json({deleted:true,orderId:req.params.id});}catch(error){console.error(error);res.status(500).json({error:'Unable to delete order.'});}});
 app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
