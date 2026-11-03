@@ -13,9 +13,9 @@ This release extends the existing QuickCart application. It must not replace the
 ## Workstreams and acceptance criteria
 
 ### 1. WhatsApp order updates (no Meta API)
-- Add configurable message templates for received, confirmed, preparing, dispatched, delivered and cancelled states.
-- Normalize Nigerian phone numbers to international format safely; reject invalid values.
-- Build encoded `https://wa.me/<number>?text=<encoded-message>` links from the seller's authenticated order view.
+- [x] Add shared message templates for received, confirmed, preparing, ready, dispatched/shipped, delivered/picked-up and cancelled states.
+- [x] Normalize Nigerian phone numbers to international format safely; reject invalid values.
+- [x] Build encoded `https://wa.me/<number>?text=<encoded-message>` links from the seller's authenticated order view.
 - Include order reference, store name and relevant delivery details; never expose internal tokens.
 - Record that a message was prepared/opened only where observable. Do not claim it was sent or delivered.
 - Test encoding, phone normalization, missing phone and all supported statuses.
@@ -29,34 +29,42 @@ This release extends the existing QuickCart application. It must not replace the
 - Production verification remains blocked until sandbox evidence is recorded.
 
 ### 3. Finance
-- Store expenses, invoices, cashflow entries and reconciliation records with store ownership, currency, timestamps and immutable audit metadata.
+- [x] Add store-scoped expenses, invoices and a cashflow summary based on provider-verified order payments.
+- [ ] Add immutable finance audit records, cashflow entries and reconciliation workflow.
 - Derive totals from persisted records; distinguish recorded income from provider-confirmed payments.
 - Support invoice status and payment references; avoid silently editing reconciled entries.
 - Add tests for totals, date ranges, duplicate references and cross-store access.
 
 ### 4. Inventory and procurement
-- Record append-only stock movements with reason, quantity, actor and source reference.
-- Add supplier records and purchase orders with draft/submitted/received/cancelled states.
+- [x] Add store-scoped stock adjustment and purchase-receipt movement records with reason, quantity, actor and source reference.
+- [ ] Make movement writes append-only and transactionally safe across all order/stock operations.
+- [x] Add supplier records and draft purchase orders with a receive-stock workflow.
+- [ ] Add submitted/cancelled states, partial receiving and robust duplicate/concurrency recovery.
 - Receiving a purchase order must create stock movements exactly once.
 - Reconcile existing stock quantities before enabling ledger-derived stock as authoritative.
 - Test concurrent reservations, partial receiving, cancellation and duplicate operations.
 
 ### 5. Delivery operations
-- Add delivery assignments, courier/contact details, status timeline and proof/reference fields.
+- [x] Add delivery assignments, courier/contact details, status timeline and tracking reference fields.
+- [ ] Add proof-of-delivery and customer-facing delivery tracking view.
 - Keep assignment and status changes store-scoped and auditable.
 - Support unassigned, assigned, picked-up, in-transit, delivered and failed/cancelled states.
 - Do not claim GPS tracking unless a real location source exists.
 
 ### 6. Marketing
-- Capture attribution with consent-aware first-touch/last-touch fields.
-- Add referral codes with abuse controls and attribution records.
-- Implement abandoned-checkout detection with deduplication and seller-triggered follow-up; no unsolicited automatic messaging.
+- [x] Add basic store-scoped attribution capture.
+- [ ] Connect consent-aware first-touch/last-touch attribution to the checkout conversion path.
+- [x] Add referral-code creation and listing.
+- [ ] Apply referral codes in checkout and add abuse controls/attribution conversion records.
+- [ ] Persist checkout sessions, detect abandoned checkouts with deduplication and prepare seller-triggered follow-up; no unsolicited automatic messaging.
 - Measure funnel conversion from persisted events, not fabricated counters.
 
 ### 7. Seller-approved AI
-- Generate recommendations from store-scoped data with evidence and confidence/context.
+- [x] Add explainable, rules-based store-scoped recommendations with evidence.
+- [ ] Expand recommendation context and quality; these are not generative AI recommendations.
 - Keep recommendations read-only until a seller explicitly approves an action.
-- Record proposed action, input snapshot/reference, approver, timestamp, outcome and reversal where applicable.
+- [x] Record seller approval/dismissal decisions with store, recommendation, actor and timestamp; approval does not execute the action.
+- [ ] Add action snapshots, execution outcomes and reversal records for future explicitly approved operations.
 - No autonomous payment, pricing, customer messaging or inventory mutation.
 
 ### 8. Security, privacy and E2E
