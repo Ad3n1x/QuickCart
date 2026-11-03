@@ -1,3 +1,0 @@
-# Frontend feature modules
-
-Create one directory per business capability: `auth`, `storefront`, `products`, `orders`, `customers`, `analytics`, `discounts`, `payments`, `subscriptions`, and `settings`. Each module may contain `components/`, `hooks/`, `pages/`, `services/`, and `index.js` as needed. Keep reusable primitives in `../components`; avoid giant barrel exports and cross-feature imports of internal files. Extract from the current `src/App.jsx` incrementally, preserving behavior and route contracts.
