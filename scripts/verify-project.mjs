@@ -177,12 +177,18 @@ check("Order-edit controls validate successful server responses, show action-spe
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
   /customer-cancel-order/.test(app));
-check("Customer order tracking is collapsed by default and can be toggled open or hidden; product cards do not contain order-edit rows",
+check("Customer and guest order tracking is collapsed by default and can be toggled open or hidden; product cards do not contain order-edit rows",
   /\[trackingVisible,setTrackingVisible\]=useState\(false\)/.test(app) &&
   /trackingVisible\?"Hide order tracking":"Track my orders"/.test(app) &&
-  /trackingVisible&&customer&&customerOrdersHydrated/.test(app) &&
+  /trackingVisible&&customerOrdersHydrated/.test(app) &&
   !/editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app) &&
   /qc-shop-stepper/.test(app));
+check("Guest checkout is available without a customer account and keeps order tracking on the same device",
+  /const ready=Boolean\(hasCheckoutItems&&ful&&customerForm\.name\.trim\(\)&&customerForm\.phone\.trim\(\)/.test(app) &&
+  /Checkout as guest/.test(app) &&
+  /qc_guest_orders:/.test(app) &&
+  /guestCheckout:!customer/.test(app) &&
+  !/if\(!customer\)\{onLogin\?\.\("login"\);return;\}/.test(app));
 check("Checkout summary appears only when populated and order tracking is automatic inline for valid active-store orders",
   app.includes("const hasCheckoutItems=items.length>0") &&
   app.includes('hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">') &&
