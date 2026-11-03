@@ -1,0 +1,29 @@
+name: QuickCart refactor checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [refactor/modular-mern-structure]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check server modules and project invariants
+        run: npm run check
+      - name: Run unit tests
+        run: npm test
+      - name: Build frontend
+        run: npm run build
