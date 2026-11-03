@@ -15,6 +15,7 @@ import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity
 import { PLAN_CONFIG,planFor,planStoreLimit } from "../server/src/config/plans.js";
 import { createVerificationEmailSender } from "../server/src/services/email.js";
 import { createPaymentServices } from "../server/src/services/payments.js";
+import { getUserStore } from "../server/src/services/stores.js";
 
 const app = express();
 
@@ -46,8 +47,6 @@ const db = createDatabaseConnection(mongoUri);
 const { tokenFor, auth, hashToken, customerTokenFor, customerAuth } = createAuthServices(jwtSecret);
 const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const { uniquePaymentReference, createAlatPayVirtualAccount } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
-
-async function getUserStore(database, req) { const stores=database.collection('stores'); const requestedId=String(req.headers['x-store-id']||''); if(requestedId){ const selected=await stores.findOne({id:requestedId,userId:req.user.sub}); if(selected)return selected; } return stores.findOne({userId:req.user.sub},{sort:{createdAt:1}}); }
 
 app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail);if(!ready)return res.status(503).json({ok:false,database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable'});res.json({ok:true,database:'connected',authentication:'configured',emailProvider:'configured'});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
 
