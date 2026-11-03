@@ -181,8 +181,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
  const categoryOf=product=>String(product.category||product.categoryName||product.type||"General").trim()||"General";
  const categories=["All",...Array.from(new Set(p.map(categoryOf))).sort((a,b)=>a.localeCompare(b))];
- const visible=p.filter(x=>(activeCategory==="All"||categoryOf(x)===activeCategory)&&(!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()))).sort((a,b)=>sortBy==="price-low"?Number(a.price||0)-Number(b.price||0):sortBy==="price-high"?Number(b.price||0)-Number(a.price||0):String(a.name||"").localeCompare(String(b.name||"")));
- const cartCount=items.reduce((sum,item)=>sum+item.quantity,0);
+ const visible=p.filter(x=>(activeCategory==="All"||categoryOf(x)===activeCategory)&&(!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()))).sort((a,b)=>sortBy==="price-low"?Number(a.price||0)-Number(b.price||0):sortBy==="price-high"?Number(b.price||0)-Number(a.price||0):sortBy==="name"?String(a.name||"").localeCompare(String(b.name||"")):0);
  const editableOrderLines=customerOrders.filter(o=>["new","confirmed"].includes(o.status)).flatMap(o=>(o.items||[]).map(item=>({...item,orderId:o.id,orderStatus:o.status})));
  const items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:Math.min(Number(x.stock)||0,Math.max(0,Number(cart[x.id])||0))})).filter(x=>x.quantity>0);
  const subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0);
@@ -190,6 +189,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
  const discount=Number(disc?.amount||0);
  const total=Math.max(0,subtotal+delivery-discount);
  const hasCheckoutItems=items.length>0;
+ const cartCount=items.reduce((sum,item)=>sum+item.quantity,0);
  const ready=Boolean(customer&&hasCheckoutItems&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
 
  useEffect(()=>{
