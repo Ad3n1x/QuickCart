@@ -13,7 +13,7 @@ const packageJson = JSON.parse(read("package.json"));
 const html = read("index.html");
 const main = read("src/main.jsx");
 const apiClient = read("src/lib/api.js");
-const app = [read("src/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js"), read("src/lib/navigation.js"), read("src/features/dashboard/DashboardViews.jsx"), read("src/features/storefront/PublicStore.jsx"), read("src/features/auth/AuthViews.jsx"), read("src/features/marketing/Landing.jsx"), read("src/features/receipts/ReceiptScanner.jsx"), read("src/features/receipts/OrderReceiptModal.jsx"), read("src/components/common/SharedUI.jsx"), read("src/components/forms/PhoneField.jsx")].join("\n");
+const app = [read("src/App.jsx"), read("src/app/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js"), read("src/lib/navigation.js"), read("src/features/dashboard/DashboardViews.jsx"), read("src/features/storefront/PublicStore.jsx"), read("src/features/auth/AuthViews.jsx"), read("src/features/marketing/Landing.jsx"), read("src/features/receipts/ReceiptScanner.jsx"), read("src/features/receipts/OrderReceiptModal.jsx"), read("src/components/common/SharedUI.jsx"), read("src/components/forms/PhoneField.jsx")].join("\n");
 const css = read("src/styles/main.css");
 const serviceWorker = read("public/sw.js");
 const vite = read("vite.config.js");
@@ -31,8 +31,8 @@ check("Offline storefront cache is only used for network failures, not HTTP erro
   /if\(!e\?\.status&&method===["']GET["']&&path\.startsWith\(["']\/api\/storefront\/["']\)\)/.test(apiClient));
 check("Public storefront cache keys use the same encoded path for reads and writes",
   /qc_public_["']\+path/.test(apiClient) && /qc_public_\/api\/storefront\/["']\+encodeURIComponent\(route\.slug\)/.test(app));
-check("API client is isolated in a dedicated module and imported by the app",
-  /from ["']\.\/lib\/api\.js["']/.test(app) && /export \{ api \}/.test(apiClient) && /AbortController/.test(apiClient) && /isPublicStorefront/.test(apiClient));
+check("API client is isolated in a dedicated module and imported by feature modules",
+  app.includes("lib/api.js") && /export \\{ api \\}/.test(apiClient) && /AbortController/.test(apiClient) && /isPublicStorefront/.test(apiClient));
 check("React entrypoint imports the active app and global stylesheet",
   /from ["']\.\/App\.jsx["']/.test(main) && /import ["']\.\/index\.css["']/.test(main));
 check("Production entrypoint includes a render-error boundary",
