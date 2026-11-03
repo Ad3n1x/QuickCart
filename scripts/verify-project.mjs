@@ -296,5 +296,14 @@ check("API infrastructure and external services are isolated from route registra
   /export function createDatabaseConnection/.test(read("server/src/config/database.js")) &&
   /export function createAuthServices/.test(read("server/src/middleware/auth.js")));
 
+
+check("Manual catalogue orders reserve stock safely and roll back partial reservations",
+  /inventoryTracked:Boolean\(product\)/.test(api) &&
+  /requestedByProduct\.set\(item\.id/.test(api) &&
+  /stock:\{\$gte:quantity\}/.test(api) &&
+  /reserved\.push\(\{id:productId,quantity\}\)/.test(api) &&
+  /for\(const item of reserved\)await database\.collection\('products'\)\.updateOne/.test(api) &&
+  /inventoryReservation:'reserved'/.test(api));
+
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
