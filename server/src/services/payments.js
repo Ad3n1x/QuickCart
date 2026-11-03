@@ -1,4 +1,5 @@
 export function createPaymentServices({secretKey,businessId,baseUrl="https://apibox.alatpay.ng/bank-transfer"}) {
+ const alatPaySecretKey=secretKey,alatPayBusinessId=businessId,alatPayBaseUrl=baseUrl;
  function makePaymentReference(){return Math.random().toString(36).slice(2,7).toUpperCase().padEnd(5,'X').slice(0,5);}
 async function uniquePaymentReference(database){for(let i=0;i<20;i++){const reference=makePaymentReference();if(!await database.collection('users').findOne({$or:[{pendingPlanPaymentReference:reference},{pendingPlanPaymentTransactionId:reference}]}))return reference;}throw new Error('Could not create a unique payment reference.');}
 
