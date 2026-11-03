@@ -55,11 +55,15 @@ check("Storefront carts persist for guests and customers, stay store-scoped, and
   /localStorage\.removeItem\("qc_cart:"\+storeId\+":guest"\)/.test(app));
 check("Customer order history requires a customer-authenticated API route",
   /app\.get\('\/api\/customer\/orders',customerAuth/.test(api));
-check("Order creation validates the signed-in customer token and uses its email",
+check("Guest checkout accepts customer details without registration while validating optional customer sessions",
   /app\.post\('\/api\/orders',async/.test(api) &&
-  /p\?\.role==='customer'/.test(api) &&
-  /customerPayload\.email/.test(api) &&
-  /CUSTOMER_AUTH_REQUIRED/.test(api));
+  /customerPayload\?\.sub\|\|null/.test(api) &&
+  /guestCheckout:!customerPayload/.test(api) &&
+  /customerName\|\|!customerPhone/.test(api) &&
+  /customerConfirmationTokenHash/.test(api) &&
+  /INVALID_CUSTOMER_SESSION/.test(api));
+check("Guest checkout sends no empty bearer token and does not require customer registration",
+  /headers:\{Authorization:localStorage\.getItem\("quickcart_customer_token"\)\?"Bearer "\+localStorage\.getItem\("quickcart_customer_token"\):""\}/.test(app));
 check("Order idempotency has a database uniqueness constraint",
   /createIndex\(\{storeId:1,clientOrderId:1\},\{unique:true/.test(api));
 check("Seller order deletion is scoped to the seller's own store",
