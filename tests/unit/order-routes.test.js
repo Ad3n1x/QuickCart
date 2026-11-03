@@ -21,7 +21,8 @@ function createHarness({stock=5}={}) {
  };
  const orders={
   async insertOne(order){state.orders.push(structuredClone(order));return {insertedId:order.id}},
-  async findOne(filter){return state.orders.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v))||null}
+  async findOne(filter){return state.orders.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v))||null},
+  async updateOne(filter,update){const row=state.orders.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v));if(!row)return {modifiedCount:0};Object.assign(row,update.$set||{});return {modifiedCount:1}}
  };
  const customers={async updateOne(filter,update){state.customers.push({filter,update});return {matchedCount:1,modifiedCount:1}}};
  const stores={async findOne(filter){return state.stores.find(x=>Object.entries(filter).every(([k,v])=>x[k]===v))||null}};
@@ -98,5 +99,28 @@ test("guest checkout creates an order without a customer account and reserves ca
   assert.equal(h.state.orders.length,1);
   assert.equal(h.state.orders[0].guestCheckout,true);
   assert.equal(h.state.orders[0].customerEmail,"");
+ }finally{h.server.close()}
+});
+
+
+test("pickup orders can be marked picked up after being made ready",async()=>{
+ const h=createHarness();
+ h.state.orders.push({id:"pickup-1",storeId:"store-1",status:"ready",fulfillment:"pickup",items:[]});
+ try{
+  const response=await fetch((await h.url)+"/api/orders/pickup-1/status",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({status:"picked_up"})});
+  const data=await response.json();
+  assert.equal(response.status,200);
+  assert.equal(data.status,"picked_up");
+  assert.equal(h.state.orders[0].status,"picked_up");
+ }finally{h.server.close()}
+});
+
+test("delivery orders cannot be marked picked up",async()=>{
+ const h=createHarness();
+ h.state.orders.push({id:"delivery-1",storeId:"store-1",status:"ready",fulfillment:"delivery",items:[]});
+ try{
+  const response=await fetch((await h.url)+"/api/orders/delivery-1/status",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify({status:"picked_up"})});
+  assert.equal(response.status,409);
+  assert.equal(h.state.orders[0].status,"ready");
  }finally{h.server.close()}
 });
