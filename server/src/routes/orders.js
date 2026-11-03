@@ -190,7 +190,7 @@ app.post('/api/orders/manual',auth,async(req,res)=>{try{
 app.get('/api/orders',auth,async(req,res)=>{const database=await db(),store=await getUserStore(database,req);if(!store)return res.json({orders:[]});res.json({orders:await database.collection('orders').find({storeId:store.id}).sort({createdAt:-1}).toArray()});});
 app.delete('/api/orders/:id',auth,async(req,res)=>{try{const database=await db(),store=await getUserStore(database,req);if(!store)return res.status(404).json({error:'Store not found.'});const orders=database.collection('orders'),current=await orders.findOne({id:req.params.id,storeId:store.id});if(!current)return res.status(404).json({error:'Order not found.'});if(!['cancelled','delivered','picked_up'].includes(current.status))return res.status(409).json({error:'Cancel or complete this order before deleting it so reserved inventory is reconciled safely.'});const result=await orders.deleteOne({id:req.params.id,storeId:store.id,status:current.status});if(!result.deletedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh and try again.'});res.json({deleted:true,orderId:req.params.id});}catch(error){console.error(error);res.status(500).json({error:'Unable to delete order.'});}});
 app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
- const allowed=['new','confirmed','processing','ready','shipped','delivered','cancelled'],status=String(req.body.status||'');
+ const allowed=['new','confirmed','processing','ready','picked_up','shipped','delivered','cancelled'],status=String(req.body.status||'');
  if(!allowed.includes(status))return res.status(400).json({error:'Invalid order status.'});
  const database=await db(),store=await getUserStore(database,req);
  if(!store)return res.status(404).json({error:'Store not found.'});
@@ -199,7 +199,7 @@ app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
  if(current.status===status)return res.json({status});
  if(current.status==='cancelled')return res.status(409).json({error:'Cancelled orders cannot be reopened. Create a new order instead.'});
  if(status==='cancelled'&&['shipped','delivered','picked_up'].includes(current.status))return res.status(409).json({error:'This order has already been dispatched or completed and cannot be cancelled.'});
- const nextStatuses={new:['confirmed','cancelled'],confirmed:['processing','cancelled'],processing:current.fulfillment==='delivery'?['shipped','cancelled']:['ready','cancelled'],ready:['cancelled'],shipped:['delivered'],delivered:[],picked_up:[],cancelled:[]};
+ const nextStatuses={new:['confirmed','cancelled'],confirmed:['processing','cancelled'],processing:current.fulfillment==='delivery'?['shipped','cancelled']:['ready','cancelled'],ready:current.fulfillment==='delivery'?['cancelled']:['picked_up','cancelled'],shipped:['delivered'],delivered:[],picked_up:[],cancelled:[]};
  if(!nextStatuses[current.status]?.includes(status))return res.status(409).json({error:'That status change is not allowed for this order. Refresh the order and choose the next available step.'});
  const result=await orders.updateOne({id:current.id,storeId:store.id,status:current.status},{$set:{status,updatedAt:now()}});
  if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh and try again.'});
