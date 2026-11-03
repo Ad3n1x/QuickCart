@@ -1,78 +1,15 @@
 
 import React,{useEffect,useMemo,useRef,useState} from "react";
 import { api } from "./lib/api.js";
+import PhoneField from "./components/forms/PhoneField.jsx";
+import { fmt } from "./lib/format.js";
+import { orderDisplayTotal,dedupeCustomerOrders } from "./lib/order-utils.js";
+import { escapePrintHtml,printReceiptDocument } from "./lib/receipt.js";
+import { slugify,emailOf } from "./lib/identity.js";
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
 
 // Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
 const BASE=(import.meta.env.BASE_URL||"/").replace(/\/$/,"")||(typeof window!=="undefined"&&window.location.hostname==="ad3n1x.github.io"?"/QuickCart":"");
-const fmt=n=>new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(n)||0);
-const PHONE_COUNTRIES=[
-  ["NG","Nigeria","+234"],["GH","Ghana","+233"],["KE","Kenya","+254"],["ZA","South Africa","+27"],["US","United States","+1"],["CA","Canada","+1"],["GB","United Kingdom","+44"],["AE","UAE","+971"],["IN","India","+91"],["DE","Germany","+49"],["FR","France","+33"],["AU","Australia","+61"]
-];
-function splitPhone(value){
-  const raw=String(value||"").trim();
-  const match=PHONE_COUNTRIES.find(([,label,code])=>raw.startsWith(code));
-  if(match)return {code:match[2],number:raw.slice(match[2].length).replace(/\D/g,"")};
-  if(raw.startsWith("0"))return {code:"+234",number:raw.slice(1).replace(/\D/g,"")};
-  return {code:"+234",number:raw.replace(/\D/g,"")};
-}
-function joinPhone(code,number){
-  return String(code||"+234")+String(number||"").replace(/\D/g,"").replace(/^0+/,"");
-}
-function PhoneField({label="Phone",value,onChange,required=false}){
-  const initial=splitPhone(value),[code,setCode]=useState(initial.code),[number,setNumber]=useState(initial.number);
-  useEffect(()=>{const next=splitPhone(value);setCode(next.code);setNumber(next.number)},[value]);
-  const update=(nextCode,nextNumber)=>{setCode(nextCode);setNumber(nextNumber);onChange?.(joinPhone(nextCode,nextNumber));};
-  return <div className="phone-field"><span>{label}</span><div className="phone-input"><select aria-label="Country code" value={code} onChange={e=>update(e.target.value,number)}>{PHONE_COUNTRIES.map(([iso,name,c])=><option key={iso} value={c}>{iso} {c} · {name}</option>)}</select><input type="tel" inputMode="tel" autoComplete="tel" required={required} value={number} onChange={e=>update(code,e.target.value)} placeholder="8012345678"/></div></div>
-}
-function escapePrintHtml(value){
-  return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-}
-function orderDisplayTotal(order){
-  if(!order)return 0;
-  const stored=Number(order.total);
-  if(Number.isFinite(stored)&&stored>0)return stored;
-  const subtotal=Number(order.subtotal);
-  if(Number.isFinite(subtotal)&&subtotal>0)return Math.max(0,subtotal+Number(order.deliveryFee||0)-Number(order.discount||0));
-  const itemTotal=(Array.isArray(order.items)?order.items:[]).reduce((sum,item)=>sum+Math.max(0,Number(item.price)||0)*Math.max(0,Number(item.quantity)||0),0);
-  return itemTotal>0?Math.max(0,itemTotal+Number(order.deliveryFee||0)-Number(order.discount||0)):Math.max(0,Number.isFinite(stored)?stored:0);
-}
-function printReceiptDocument(order,store){
-  if(!order)return;
-  const popup=window.open("","_blank","width=520,height=760");
-  if(!popup){window.alert("Please allow pop-ups to print the receipt.");return}
-  const items=Array.isArray(order.items)?order.items:[];
-  const rows=items.map(x=>`<div class="row"><span>${escapePrintHtml(x.quantity||1)}× ${escapePrintHtml(x.name||"Item")}</span><b>${escapePrintHtml(fmt(Number(x.price||0)*Number(x.quantity||1)))}</b></div>`).join("");
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Receipt ${escapePrintHtml(String(order.id||"").slice(0,12))}</title><style>
-  @page{size:A4 portrait;margin:12mm}*{box-sizing:border-box}body{margin:0;background:#fff;color:#15221c;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}.receipt{width:186mm;max-width:100%;margin:0 auto}.brand{display:flex;gap:9px;align-items:center;padding-bottom:12px;border-bottom:1px dashed #999}.brand strong,.brand small{display:block}.brand small{color:#68736e;font-size:10px;margin-top:2px}.meta,.customer{display:grid;gap:4px;padding:11px 0;border-bottom:1px dashed #999;font-size:10px}.meta{display:flex;justify-content:space-between;gap:8px}.customer strong{font-size:11px}.row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:10px}.total{display:flex;justify-content:space-between;padding:12px 0;border-top:2px solid #15221c;font-size:14px}.foot{text-align:center;padding-top:10px;border-top:1px dashed #999;color:#68736e;font-size:9px;line-height:1.5}
-  </style></head><body><main class="receipt"><div class="brand"><div><strong>${escapePrintHtml(store?.storeName||"QuickCart Store")}</strong><small>${escapePrintHtml(store?.tagline||"Thank you for your order")}</small></div></div><div class="meta"><span>Receipt #${escapePrintHtml(String(order.id||"").slice(0,12))}</span><span>${escapePrintHtml(order.createdAt?new Date(order.createdAt).toLocaleString():"—")}</span></div><div class="customer"><strong>${escapePrintHtml(order.customerName||"Customer")}</strong><span>${escapePrintHtml(order.customerPhone||"")}</span><span>${escapePrintHtml(order.address||"—")}</span></div><div>${rows}</div><div class="total"><span>Total</span><b>${escapePrintHtml(fmt(orderDisplayTotal(order)))}</b></div><div class="foot">Payment: ${escapePrintHtml(String(order.paymentMethod||"Pay on delivery").replaceAll("_"," "))}<br>Status: ${escapePrintHtml(order.status||"new")}<br><br>Powered by QuickCart</div></main><script>window.addEventListener("load",()=>{setTimeout(()=>{window.focus();window.print()},120)});window.addEventListener("afterprint",()=>window.close());<\/script></body></html>`;
-  popup.document.open();popup.document.write(html);popup.document.close();
-}
-const slugify=v=>String(v||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48);
-const emailOf=v=>String(v||"").trim().toLowerCase().replace(/[\u200B-\u200D\uFEFF]/g,"");
-function dedupeCustomerOrders(list){
- const seenIds=new Set(),seenClientIds=new Set(),recentFingerprints=new Map();
- return (Array.isArray(list)?list:[]).filter(order=>{
-  if(!order||order.id==null)return false;
-  // Never render malformed/empty order records as customer orders or receipts.
-  if(!Array.isArray(order.items)||order.items.length===0)return false;
-  const id=String(order.id);
-  if(seenIds.has(id))return false;
-  const storeId=String(order.storeId||""),clientOrderId=String(order.clientOrderId||"").trim();
-  const clientKey=clientOrderId?storeId+":"+clientOrderId:"";
-  if(clientKey&&seenClientIds.has(clientKey))return false;
-  const items=(Array.isArray(order.items)?order.items:[]).map(item=>({id:String(item.id??item.productId??item.name??""),quantity:Number(item.quantity)||1})).sort((a,b)=>a.id.localeCompare(b.id)||a.quantity-b.quantity);
-  const fingerprint=JSON.stringify({storeId,email:String(order.customerEmail||"").trim().toLowerCase(),fulfillment:order.fulfillment||"pickup",total:Number(order.total)||0,items});
-  const created=Date.parse(order.createdAt||order.updatedAt||"");
-  const previous=recentFingerprints.get(fingerprint);
-  // Hide accidental double submissions created within a few seconds, without merging later repeat purchases.
-  if(Number.isFinite(created)&&previous!=null&&Math.abs(created-previous)<=5000)return false;
-  seenIds.add(id);
-  if(clientKey)seenClientIds.add(clientKey);
-  if(Number.isFinite(created))recentFingerprints.set(fingerprint,created);
-  return true;
-});
-}
 const routes={overview:"dashboard",dashboard:"dashboard",products:"products",orders:"orders",customers:"customers",analytics:"analytics",discounts:"discounts",receipts:"receipts",settings:"settings",premium:"premium"};
 
 function cleanPath(){const raw=window.location.pathname||"/";const base=BASE||"";const path=base&&raw.startsWith(base)?raw.slice(base.length)||"/":raw;return path.length>1?path.replace(/\/+$/,""):path}
