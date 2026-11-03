@@ -1,16 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { randomUUID } from 'node:crypto';
-
-const app = express();
 import { createDatabaseConnection } from "../server/src/config/database.js";
 import { createAuthServices } from "../server/src/middleware/auth.js";
 import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity.js";
 import { PLAN_CONFIG,planFor,planStoreLimit } from "../server/src/config/plans.js";
 import { createVerificationEmailSender } from "../server/src/services/email.js";
 import { createPaymentServices } from "../server/src/services/payments.js";
+
+const app = express();
 
 const frontendUrl = process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app';
 const allowedOrigins = new Set([frontendUrl, 'https://quick-cart-adeniran-victor-adebowales-projects.vercel.app', 'https://quick-cart-git-main-adeniran-victor-adebowales-projects.vercel.app', 'https://quick-cart-three-chi.vercel.app', 'https://ad3n1x.github.io', 'http://localhost:5173', 'http://localhost:4173']);
