@@ -1,5 +1,87 @@
-export function registerOrderRoutes(app,{db,auth,customerAuth,customerTokenFor,now,randomUUID,randomBytes,hashToken,getUserStore,jwt,jwtSecret,emailPattern}) {
-app.post('/api/orders',async(req,res)=>{try{const database=await db(),customerAuthHeader=String(req.headers.authorization||''),customerToken=customerAuthHeader.startsWith('Bearer ')?customerAuthHeader.slice(7).trim():'',customerPayload=customerToken?(()=>{try{const p=jwt.verify(customerToken,jwtSecret);return p?.role==='customer'?p:null;}catch{return null;}})():null;if(!customerPayload||!customerPayload.sub||!emailPattern.test(String(customerPayload.email||'')))return res.status(401).json({error:'Sign in with your verified customer account before placing an order.',code:'CUSTOMER_AUTH_REQUIRED'});const storeId=String(req.body.storeId||''),requested=Array.isArray(req.body.items)?req.body.items:[],clientOrderId=String(req.body.clientOrderId||'').trim(),customerName=String(req.body.customerName||'').trim(),customerPhone=String(req.body.customerPhone||'').trim(),customerEmail=String(customerPayload.email||'').trim().toLowerCase(),address=String(req.body.address||'').trim(),fulfillment=String(req.body.fulfillment||'pickup'),discountCode=String(req.body.discountCode||'').trim().toUpperCase();if(!storeId||!customerName||!requested.length)return res.status(400).json({error:'Store, customer name and at least one item are required.'});if(clientOrderId){const existing=await database.collection('orders').findOne({storeId,clientOrderId,customerEmail});if(existing){const replayToken=hashToken(clientOrderId+String(jwtSecret||''));res.status(200).json({orderId:existing.id,subtotal:existing.subtotal,deliveryFee:existing.deliveryFee,discount:existing.discount,total:existing.total,confirmationToken:replayToken,replayed:true});return;}}const store=await database.collection('stores').findOne({id:storeId});if(!store)return res.status(404).json({error:'Store not found.'});const deliveryEnabled=store.deliveryEnabled!==false;if(!['pickup','delivery'].includes(fulfillment))return res.status(400).json({error:'Invalid fulfilment option.'});if(fulfillment==='delivery'&&!deliveryEnabled)return res.status(400).json({error:'This store does not offer delivery.'});if(fulfillment==='delivery'&&!address)return res.status(400).json({error:'Delivery address is required.'});const productIds=requested.map(item=>String(item.id||'')).filter(Boolean);const products=await database.collection('products').find({storeId,active:true,id:{$in:productIds}}).toArray();const byId=new Map(products.map(product=>[product.id,product]));const items=[];for(const raw of requested){const product=byId.get(String(raw.id||'')),quantity=Number(raw.quantity);if(!product||!Number.isInteger(quantity)||quantity<1)return res.status(400).json({error:'One of the selected products is no longer available.'});if(Number(product.stock)<quantity)return res.status(409).json({error:product.name+' does not have enough stock.'});items.push({id:product.id,name:product.name,price:Number(product.price||0),quantity});}const subtotal=items.reduce((sum,item)=>sum+item.price*item.quantity,0);const deliveryFee=fulfillment==='delivery'&&deliveryEnabled?Math.max(0,Number(store.deliveryFee||0)):0;let discount=0,discountDetails=null;if(discountCode){const record=await database.collection('discounts').findOne({storeId,code:discountCode,active:true});if(!record)return res.status(400).json({error:'Invalid discount code.'});if(record.expiresAt&&new Date(record.expiresAt)<=new Date())return res.status(400).json({error:'Discount has expired.'});discount=record.type==='percent'?subtotal*(Number(record.value)/100):Math.min(subtotal,Number(record.value)||0);discount=Math.round(discount*100)/100;discountDetails={code:record.code,type:record.type,value:record.value};}const total=Math.max(0,Math.round((subtotal+deliveryFee-discount)*100)/100);const confirmationToken=clientOrderId?hashToken(clientOrderId+String(jwtSecret||'')):randomBytes(24).toString('hex');const order={id:randomUUID(),storeId,clientOrderId:clientOrderId||null,customerId:customerPayload.sub,customerEmail:String(customerPayload.email||'').trim().toLowerCase(),customerName,customerPhone,address,fulfillment,paymentMethod:String(req.body.paymentMethod||'pay_on_delivery'),items,subtotal,deliveryFee,discount,discountCode:discountDetails?.code||'',discountDetails,total,status:'new',paymentStatus:'pending',receiptData:req.body.receiptData&&typeof req.body.receiptData==='object'?{merchant:String(req.body.receiptData.merchant||''),date:String(req.body.receiptData.date||''),total:String(req.body.receiptData.total||''),tax:String(req.body.receiptData.tax||''),receiptNo:String(req.body.receiptData.receiptNo||'')}:null,customerConfirmationTokenHash:hashToken(confirmationToken),customerConfirmedAt:null,createdAt:now()};const changed=[];try{for(const item of items){const result=await database.collection('products').updateOne({id:item.id,storeId,active:true,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity}});if(!result.modifiedCount)throw Object.assign(new Error(item.name+' does not have enough stock.'),{status:409});changed.push(item);}await database.collection('orders').insertOne(order);}catch(error){for(const item of changed)await database.collection('products').updateOne({id:item.id,storeId},{$inc:{stock:item.quantity}});if(error?.status===409)return res.status(409).json({error:error.message});if(error?.code===11000&&clientOrderId){const existing=await database.collection('orders').findOne({storeId,clientOrderId,customerEmail});if(existing){res.status(200).json({orderId:existing.id,subtotal:existing.subtotal,deliveryFee:existing.deliveryFee,discount:existing.discount,total:existing.total,confirmationToken:hashToken(clientOrderId+String(jwtSecret||'')),replayed:true});return;}}throw error;}await database.collection('customers').updateOne({storeId,customerEmail},{$set:{storeId,customerId:customerPayload.sub,customerEmail,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});res.status(201).json({orderId:order.id,subtotal,deliveryFee,discount,total,confirmationToken});}catch(error){console.error(error);res.status(500).json({error:'Unable to create order.'});}});
+app.post('/api/orders',async(req,res)=>{try{
+ const database=await db();
+ const customerAuthHeader=String(req.headers.authorization||'').trim();
+ const hasBearer=customerAuthHeader.toLowerCase().startsWith('bearer ');
+ const customerToken=hasBearer?customerAuthHeader.slice(7).trim():'';
+ let customerPayload=null;
+ if(customerToken){
+  try{const payload=jwt.verify(customerToken,jwtSecret);if(payload?.role==='customer'&&payload?.sub&&emailPattern.test(String(payload.email||'')))customerPayload=payload;}catch{}
+  if(!customerPayload)return res.status(401).json({error:'Your customer session is invalid. Sign in again or continue as a guest.',code:'INVALID_CUSTOMER_SESSION'});
+ }
+ const storeId=String(req.body.storeId||'').trim();
+ const requested=Array.isArray(req.body.items)?req.body.items:[];
+ const clientOrderId=String(req.body.clientOrderId||'').trim();
+ const customerName=String(req.body.customerName||'').trim();
+ const customerPhone=String(req.body.customerPhone||'').trim();
+ const suppliedEmail=String(req.body.customerEmail||'').trim().toLowerCase();
+ const customerEmail=customerPayload?String(customerPayload.email||'').trim().toLowerCase():(emailPattern.test(suppliedEmail)?suppliedEmail:'');
+ const address=String(req.body.address||'').trim();
+ const fulfillment=String(req.body.fulfillment||'pickup');
+ const discountCode=String(req.body.discountCode||'').trim().toUpperCase();
+ if(!storeId||!customerName||!customerPhone||!requested.length)return res.status(400).json({error:'Store, customer name, phone number and at least one item are required.'});
+ if(customerPhone.replace(/\D/g,'').length<7)return res.status(400).json({error:'Enter a valid customer phone number.'});
+ if(clientOrderId){
+  const existing=await database.collection('orders').findOne({storeId,clientOrderId,customerEmail});
+  if(existing){
+   const replayToken=hashToken(clientOrderId+String(jwtSecret||''));
+   res.status(200).json({orderId:existing.id,subtotal:existing.subtotal,deliveryFee:existing.deliveryFee,discount:existing.discount,total:existing.total,confirmationToken:replayToken,replayed:true});
+   return;
+  }
+ }
+ const store=await database.collection('stores').findOne({id:storeId});
+ if(!store)return res.status(404).json({error:'Store not found.'});
+ const deliveryEnabled=store.deliveryEnabled!==false;
+ if(!['pickup','delivery'].includes(fulfillment))return res.status(400).json({error:'Invalid fulfilment option.'});
+ if(fulfillment==='delivery'&&!deliveryEnabled)return res.status(400).json({error:'This store does not offer delivery.'});
+ if(fulfillment==='delivery'&&!address)return res.status(400).json({error:'Delivery address is required.'});
+ const productIds=requested.map(item=>String(item.id||'')).filter(Boolean);
+ const products=await database.collection('products').find({storeId,active:true,id:{$in:productIds}}).toArray();
+ const byId=new Map(products.map(product=>[product.id,product]));
+ const items=[];
+ for(const raw of requested){
+  const product=byId.get(String(raw.id||'')),quantity=Number(raw.quantity);
+  if(!product||!Number.isInteger(quantity)||quantity<1)return res.status(400).json({error:'One of the selected products is no longer available.'});
+  if(Number(product.stock)<quantity)return res.status(409).json({error:product.name+' does not have enough stock.'});
+  items.push({id:product.id,name:product.name,price:Number(product.price||0),quantity});
+ }
+ const subtotal=Math.round(items.reduce((sum,item)=>sum+item.price*item.quantity,0)*100)/100;
+ const deliveryFee=fulfillment==='delivery'&&deliveryEnabled?Math.max(0,Number(store.deliveryFee||0)):0;
+ let discount=0,discountDetails=null;
+ if(discountCode){
+  const record=await database.collection('discounts').findOne({storeId,code:discountCode,active:true});
+  if(!record)return res.status(400).json({error:'Invalid discount code.'});
+  if(record.expiresAt&&new Date(record.expiresAt)<=new Date())return res.status(400).json({error:'Discount has expired.'});
+  discount=record.type==='percent'?subtotal*(Number(record.value)/100):Math.min(subtotal,Number(record.value)||0);
+  discount=Math.round(discount*100)/100;
+  discountDetails={code:record.code,type:record.type,value:record.value};
+ }
+ const total=Math.max(0,Math.round((subtotal+deliveryFee-discount)*100)/100);
+ const confirmationToken=clientOrderId?hashToken(clientOrderId+String(jwtSecret||'')):randomBytes(24).toString('hex');
+ const order={id:randomUUID(),storeId,clientOrderId:clientOrderId||null,customerId:customerPayload?.sub||null,customerEmail,customerName,customerPhone,address,fulfillment,paymentMethod:String(req.body.paymentMethod||'pay_on_delivery'),items,subtotal,deliveryFee,discount,discountCode:discountDetails?.code||'',discountDetails,total,status:'new',paymentStatus:'pending',receiptData:req.body.receiptData&&typeof req.body.receiptData==='object'?{merchant:String(req.body.receiptData.merchant||''),date:String(req.body.receiptData.date||''),total:String(req.body.receiptData.total||''),tax:String(req.body.receiptData.tax||''),receiptNo:String(req.body.receiptData.receiptNo||'')}:null,customerConfirmationTokenHash:hashToken(confirmationToken),customerConfirmedAt:null,guestCheckout:!customerPayload,createdAt:now()};
+ const changed=[];
+ try{
+  for(const item of items){
+   const result=await database.collection('products').updateOne({id:item.id,storeId,active:true,stock:{$gte:item.quantity}},{$inc:{stock:-item.quantity}});
+   if(!result.modifiedCount)throw Object.assign(new Error(item.name+' does not have enough stock.'),{status:409});
+   changed.push(item);
+  }
+  await database.collection('orders').insertOne(order);
+ }catch(error){
+  for(const item of changed)await database.collection('products').updateOne({id:item.id,storeId},{$inc:{stock:item.quantity}});
+  if(error?.status===409)return res.status(409).json({error:error.message});
+  if(error?.code===11000&&clientOrderId){
+   const existing=await database.collection('orders').findOne({storeId,clientOrderId,customerEmail});
+   if(existing){res.status(200).json({orderId:existing.id,subtotal:existing.subtotal,deliveryFee:existing.deliveryFee,discount:existing.discount,total:existing.total,confirmationToken:hashToken(clientOrderId+String(jwtSecret||'')),replayed:true});return;}
+  }
+  throw error;
+ }
+ if(customerEmail){
+  await database.collection('customers').updateOne({storeId,customerEmail},{$set:{storeId,customerId:customerPayload?.sub||null,customerEmail,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});
+ }else{
+  await database.collection('customers').updateOne({storeId,phone:customerPhone},{$set:{storeId,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});
+ }
+ res.status(201).json({orderId:order.id,subtotal,deliveryFee,discount,total,confirmationToken,guestCheckout:!customerPayload});
+}catch(error){console.error(error);res.status(500).json({error:'Unable to create order.'});}});
 
 app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
   const database=await db(),orders=database.collection('orders'),confirmationToken=String(req.body?.confirmationToken||''),action=String(req.body?.action||'');
