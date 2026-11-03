@@ -1,0 +1,2 @@
+// Store selection is always scoped to the authenticated seller.
+export async function getUserStore(database, req) { const stores=database.collection('stores'); const requestedId=String(req.headers['x-store-id']||''); if(requestedId){ const selected=await stores.findOne({id:requestedId,userId:req.user.sub}); if(selected)return selected; } return stores.findOne({userId:req.user.sub},{sort:{createdAt:1}}); }
