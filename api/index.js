@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-import { randomUUID } from 'node:crypto';
+import jwt from 'jsonwebtoken';
+import { randomUUID,randomBytes } from 'node:crypto';
 import { registerCustomerAuthRoutes } from "../server/src/routes/customer-auth.js";
 import { registerSellerAuthRoutes } from "../server/src/routes/seller-auth.js";
 import { registerStoreRoutes } from "../server/src/routes/store.js";
@@ -41,12 +42,17 @@ if (!brevoFromEmail) console.warn('BREVO_FROM_EMAIL is not configured.');
 if (!alatPaySecretKey) console.warn('ALATPAY_SECRET_KEY is not configured.');
 if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 
+const db = createDatabaseConnection(mongoUri);
+const { tokenFor, auth, hashToken, customerTokenFor, customerAuth } = createAuthServices(jwtSecret);
+const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
+const { uniquePaymentReference, createAlatPayVirtualAccount } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
+
 async function getUserStore(database, req) { const stores=database.collection('stores'); const requestedId=String(req.headers['x-store-id']||''); if(requestedId){ const selected=await stores.findOne({id:requestedId,userId:req.user.sub}); if(selected)return selected; } return stores.findOne({userId:req.user.sub},{sort:{createdAt:1}}); }
 
 app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail);if(!ready)return res.status(503).json({ok:false,database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable'});res.json({ok:true,database:'connected',authentication:'configured',emailProvider:'configured'});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
 
 
-const routeDependencies = { db, auth, customerAuth, customerTokenFor, tokenFor, hashToken, emailPattern, createOtp, sendVerificationEmail, bcrypt, randomUUID, now, slugify, planFor, planStoreLimit, PLAN_CONFIG, uniquePaymentReference, createAlatPayVirtualAccount, getUserStore };
+const routeDependencies = { db, auth, customerAuth, customerTokenFor, tokenFor, hashToken, emailPattern, createOtp, sendVerificationEmail, bcrypt, randomUUID, randomBytes, jwt, jwtSecret, now, slugify, planFor, planStoreLimit, PLAN_CONFIG, uniquePaymentReference, createAlatPayVirtualAccount, getUserStore };
 registerCustomerAuthRoutes(app, routeDependencies);
 registerSellerAuthRoutes(app, routeDependencies);
 registerStoreRoutes(app, routeDependencies);
