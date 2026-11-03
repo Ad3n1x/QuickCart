@@ -50,7 +50,7 @@ Working branch: `implementation/business-os-phase-1`
 1. **Analytics were summaries, not actual graphs.** The base dashboard calculated totals and status/product counts from orders but did not provide time-series charts or reporting-period controls. Phase 1 adds real order-backed sales and volume graphs using the recorded order timestamps and totals; empty periods show an honest empty state.
 2. **The dashboard header was forced to fixed positioning by a later CSS override**, with compensating top padding on the content. Phase 1 restores sticky document flow and removes the extra content offset to prevent the header from covering page text.
 3. **WhatsApp updates are seller-triggered drafts**, not automatic delivery notifications. The current UI opens a pre-filled WhatsApp chat. Official WhatsApp Business Platform integration, approved templates, opt-in tracking and message delivery logs remain future work.
-4. **Manual order creation does not currently apply the same stock reservation/deduction path as customer checkout.** This must be reconciled before inventory reporting is treated as authoritative.
+4. **Manual order inventory handling.** Phase 1 now matches seller-entered manual line items to active catalogue products by product ID (when supplied) or exact normalized product name. Matching lines reserve stock with conditional updates and roll back partial reservations if order creation fails. Custom one-off lines remain explicitly untracked rather than silently changing catalogue stock.
 5. **Inventory and order writes are not consistently wrapped in database transactions.** Review transaction support and implement safe reservation/rollback semantics before high-volume use.
 6. **The current analytics page receives the seller's order list and computes metrics in the browser.** This is real order data, but large-scale analytics should move to indexed server-side aggregation with bounded date ranges and pagination.
 
@@ -69,12 +69,13 @@ Working branch: `implementation/business-os-phase-1`
 - The invariant checker now covers guest checkout.
 - The analytics page now provides selectable 7/30/90-day order-backed sales and order-volume graphs, payment-received totals, product performance and status breakdowns.
 - The dashboard header now uses sticky document flow rather than fixed positioning with a manual content offset.
-- Additional regression checks cover analytics and layout behaviour.
+- Additional regression checks cover analytics, layout behaviour and manual-order stock reservations.
+- Seller-created manual orders now reserve stock for matched catalogue items, roll back partial reservations on failure, and upsert customer records by store and phone. Custom one-off lines are retained without pretending to adjust catalogue inventory.
 
 ## Remaining roadmap
 
 1. Resolve payment callback authenticity and idempotent payment-event processing.
-2. Make manual orders participate in stock reservation, inventory movements and customer CRM consistently.
+2. Expand inventory movement history and transactional order/inventory writes; manual catalogue-order stock reservation and basic phone-based CRM upsert are now implemented.
 3. Add backend analytics aggregation and reporting APIs.
 4. Add order status notification preferences, official WhatsApp integration and delivery message templates.
 5. Build customer CRM, expenses, invoices, suppliers, purchase orders and delivery workflows.
