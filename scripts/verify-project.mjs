@@ -271,7 +271,7 @@ check("Client utilities and shared UI are extracted into importable modules",
   /export function splitPhone/.test(read("src/lib/phone.js")) &&
   /export function joinPhone/.test(read("src/lib/phone.js")) &&
   /export const emailOf/.test(read("src/lib/identity.js")) &&
-  /export function PhoneField/.test(read("src/components/forms/PhoneField.jsx"))===false &&
+  /export default PhoneField/.test(read("src/components/forms/PhoneField.jsx")) &&
   /export function Modal/.test(read("src/components/common/SharedUI.jsx")));
 check("Global stylesheet keeps the Vite entrypoint while Tailwind config resolves from the new location",
   /@import ["']\.\/styles\/main\.css["']/.test(read("src/index.css")) &&
