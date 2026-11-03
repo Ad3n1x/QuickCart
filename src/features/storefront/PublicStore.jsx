@@ -277,7 +277,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
      const clientOrderKey="quickcart_checkout_client_id:"+String(s.id);const checkoutFingerprint=JSON.stringify({storeId:s.id,customerEmail:emailOf(customer?.email),customerName:customerForm.name.trim(),customerPhone:customerForm.phone.trim(),address:ful==="delivery"?customerForm.address.trim():"Pickup from store",fulfillment:ful,paymentMethod:pay,discountCode:disc?.code||code.trim(),receiptData,items:items.map(x=>({id:x.id,quantity:x.quantity})).sort((a,b)=>String(a.id).localeCompare(String(b.id)))});let savedCheckout=null;try{savedCheckout=JSON.parse(localStorage.getItem(clientOrderKey)||"null")}catch{}let clientOrderId=savedCheckout&&typeof savedCheckout==="object"&&savedCheckout.fingerprint===checkoutFingerprint?savedCheckout.id:"";if(!clientOrderId){clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);}localStorage.setItem(clientOrderKey,JSON.stringify({id:clientOrderId,fingerprint:checkoutFingerprint}));
      const order=await api("/api/orders",{
        method:"POST",
-       headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
+       headers:{Authorization:localStorage.getItem("quickcart_customer_token")?"Bearer "+localStorage.getItem("quickcart_customer_token"):""},
        body:body({
          storeId:s.id,
          clientOrderId,
