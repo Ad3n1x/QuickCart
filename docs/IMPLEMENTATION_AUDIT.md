@@ -27,7 +27,7 @@ Working branch: `implementation/business-os-phase-1`
 - Discounts and existing monetization configuration.
 - Receipt scanning and receipt generation.
 - Seller dashboard, customer list and basic order-derived analytics.
-- WhatsApp status message drafting through a seller-triggered `wa.me` link.
+- WhatsApp status message drafting through a seller-triggered `wa.me` link, now routed through a shared Nigerian-number normalizer and status template helper.
 
 ## Launch-free state confirmed
 
@@ -78,10 +78,10 @@ Working branch: `implementation/business-os-phase-1`
 2. Expand inventory movement history and transactional order/inventory writes; manual catalogue-order stock reservation and basic phone-based CRM upsert are now implemented.
 3. Add backend analytics aggregation and reporting APIs.
 4. Add order status notification preferences, official WhatsApp integration and delivery message templates.
-5. Build customer CRM, expenses, invoices, suppliers, purchase orders and delivery workflows.
-6. Add marketing attribution, referrals and consent-aware abandoned-checkout recovery.
-7. Add seller-approved AI recommendations and auditable action proposals.
-8. Add integration/E2E tests, restore tests, monitoring and production smoke tests.
+5. Expand the Business OS APIs and workspace: expenses, invoices, cashflow summary, supplier directory, purchase orders, stock adjustment journal, delivery assignments, referral codes and explainable seller-reviewed recommendations now have initial scoped endpoints and dashboard screens. These need deeper workflows, reconciliation and E2E validation before production use.
+6. Marketing attribution capture and referral-code management endpoints are present; attribution is not yet fully connected to checkout conversion, and abandoned-checkout session creation/recovery is not complete. Do not claim abandoned-cart recovery is live.
+7. Rules-based seller recommendations and approval/dismissal audit records are present. These are not an LLM agent and approvals do not execute actions. Expand audit context and approved-action workflows only with explicit seller confirmation.
+8. Add broader integration/E2E tests, restore tests, monitoring and production smoke tests. New route tests currently cover the initial expense endpoints only.
 9. Validate NDPA privacy notices, data retention, data-subject request handling and processor agreements.
 10. Validate deployment health on the existing Vercel/Render services before any production release.
 
