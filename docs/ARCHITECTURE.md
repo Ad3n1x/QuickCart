@@ -29,10 +29,12 @@ QuickCart remains a modular monolith: one React/Vite client, one Express API, an
 - Preserve order idempotency, payment verification, and webhook signature checks.
 - Never commit environment secrets or production credentials.
 
-## Client target
+## Client structure
+
+The active Vite client remains in the root `src/` directory so the current deployment root, public assets and PWA paths do not need to change during this refactor.
 
 ```text
-client/src/
+src/
   app/                 # App composition, router, providers
   features/
     auth/
@@ -56,7 +58,7 @@ client/src/
   utils/
 ```
 
-The current `src/main.jsx` remains the live Vite entrypoint during migration. Move it only after Vite's root, base path, public assets, PWA/service-worker paths, and GitHub Pages workflow have been updated and tested together.
+`src/main.jsx` remains the live Vite entrypoint. A separate `client/` directory is intentionally not introduced until Vite's root, base path, public assets, PWA/service-worker paths, and GitHub Pages workflow can be migrated and tested together.
 
 ## Server target
 
