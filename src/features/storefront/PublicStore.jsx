@@ -315,13 +315,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
        total:Number(order.total??total),
        status:"new",
        createdAt:new Date().toISOString(),
-       customerName:customerForm.name.trim(),
-       customerEmail:customer?.email||"",
-       customerPhone:customerForm.phone.trim(),
-       address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
-       paymentMethod:pay,
-       items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),
-       receiptData
+       items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity}))
      };
      setCustomerOrders(xs=>dedupeCustomerOrders([savedOrder,...xs]).slice(0,10));
      setTrackingVisible(true);
