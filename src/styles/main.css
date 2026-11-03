@@ -3320,3 +3320,34 @@ button{white-space:normal;line-height:1.25}
  .landing-nav-actions{grid-row:2!important;justify-content:flex-start!important}
  .landing-nav-links{grid-row:3!important}
 }
+
+
+/* Business OS Phase 1: prevent the fixed header from covering the document flow. */
+.app-topbar{position:sticky!important;top:0!important;left:auto!important;right:auto!important;width:100%!important}
+.app-content{padding-top:0!important}
+.analytics-range{display:grid;gap:5px;min-width:145px;color:var(--muted);font-size:11px;font-weight:750}
+.analytics-range select{min-height:40px;padding:8px 11px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px}
+.analytics-charts{margin-bottom:14px}
+.analytics-chart-panel{min-width:0;overflow:hidden}
+.analytics-chart{display:block;width:100%;height:auto;min-height:190px;margin-top:12px;overflow:visible}
+.chart-gridline{stroke:var(--border);stroke-width:1;stroke-dasharray:5 7}
+.chart-sales-line{stroke:var(--accent);filter:drop-shadow(0 5px 7px color-mix(in srgb,var(--accent) 18%,transparent))}
+.chart-sales-point{fill:var(--surface);stroke:var(--accent);stroke-width:4}
+.chart-axis-label{fill:var(--muted);font-size:22px}
+.chart-footnote{margin:10px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.analytics-bars{height:220px;display:flex;align-items:flex-end;gap:clamp(2px,.6vw,7px);padding:12px 2px 0;border-bottom:1px solid var(--border);overflow:hidden}
+.analytics-bar-column{height:100%;min-width:0;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}
+.analytics-bar-column>span{width:min(100%,22px);min-height:0;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 45%,var(--surface)));transition:height .2s ease}
+.analytics-bar-column small{height:14px;color:var(--muted);font-size:9px;white-space:nowrap}
+.analytics-empty{min-height:230px;display:grid;place-items:center;text-align:center}
+.analytics-empty .empty-state{max-width:420px;padding:28px}
+.analytics-empty h2{margin:12px 0 6px}
+.analytics-empty p{color:var(--muted);line-height:1.6}
+@media(max-width:760px){
+ .analytics-range{width:100%;grid-template-columns:auto minmax(0,1fr);align-items:center}
+ .analytics-range select{width:100%}
+ .analytics-chart-panel{padding:15px}
+ .analytics-chart{min-height:150px}
+ .analytics-bars{height:180px}
+ .analytics-bar-column small{font-size:8px}
+}
