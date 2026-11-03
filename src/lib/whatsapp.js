@@ -3,9 +3,12 @@ const STATUS_MESSAGES = {
   confirmed: "Your order has been confirmed.",
   processing: "Your order is being prepared.",
   preparing: "Your order is being prepared.",
+  ready: "Your pickup order is ready for collection.",
   dispatched: "Your order has been dispatched and is on its way.",
+  shipped: "Your order has been dispatched and is on its way.",
   "in-transit": "Your order is on its way.",
   delivered: "Your order has been delivered. Thank you for shopping with us!",
+  picked_up: "Your pickup order has been collected. Thank you for shopping with us!",
   cancelled: "Your order has been cancelled. Please contact the store if you need help."
 };
 
@@ -42,7 +45,7 @@ export function buildOrderWhatsAppMessage(order, status, storeName = "the store"
     `Order: ${reference}`,
     `Store: ${String(storeName || "the store").trim()}`
   ];
-  if (key === "dispatched" || key === "in-transit") {
+  if (key === "dispatched" || key === "shipped" || key === "in-transit") {
     const delivery = String(order?.deliveryNote || order?.trackingReference || "").trim();
     if (delivery) lines.push(`Delivery details: ${delivery}`);
   }
