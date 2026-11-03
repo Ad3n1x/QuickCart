@@ -13,11 +13,11 @@ const packageJson = JSON.parse(read("package.json"));
 const html = read("index.html");
 const main = read("src/main.jsx");
 const apiClient = read("src/lib/api.js");
-const app = read("src/App.jsx");
-const css = read("src/index.css");
+const app = [read("src/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js")].join("\n");
+const css = read("src/styles/main.css");
 const serviceWorker = read("public/sw.js");
 const vite = read("vite.config.js");
-const api = read("api/index.js");
+const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js")].join("\n");
 const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Product modal CSS uses real line breaks and does not contain escaped newline tokens",
@@ -266,6 +266,23 @@ check("Seller API authentication rejects customer-role JWTs rather than treating
   /payload\.role==='customer'/.test(api) &&
   /SELLER_AUTH_REQUIRED/.test(api) &&
   /function customerAuth\(/.test(api));
+
+check("Client utilities and shared UI are extracted into importable modules",
+  /export function splitPhone/.test(read("src/lib/phone.js")) &&
+  /export function joinPhone/.test(read("src/lib/phone.js")) &&
+  /export const emailOf/.test(read("src/lib/identity.js")) &&
+  /export function PhoneField/.test(read("src/components/forms/PhoneField.jsx"))===false &&
+  /export function Modal/.test(read("src/components/common/SharedUI.jsx")));
+check("Global stylesheet keeps the Vite entrypoint while Tailwind config resolves from the new location",
+  /@import ["']\.\/styles\/main\.css["']/.test(read("src/index.css")) &&
+  /@config ["']\.\.\/\.\.\/tailwind\.config\.js["']/.test(css));
+check("API infrastructure and external services are isolated from route registration",
+  /createDatabaseConnection/.test(read("api/index.js")) &&
+  /createAuthServices/.test(read("api/index.js")) &&
+  /createVerificationEmailSender/.test(read("api/index.js")) &&
+  /createPaymentServices/.test(read("api/index.js")) &&
+  /export function createDatabaseConnection/.test(read("server/src/config/database.js")) &&
+  /export function createAuthServices/.test(read("server/src/middleware/auth.js")));
 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);
