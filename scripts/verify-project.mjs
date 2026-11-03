@@ -66,9 +66,11 @@ check("Guest checkout sends no empty bearer token and does not require customer 
   /headers:\{Authorization:localStorage\.getItem\("quickcart_customer_token"\)\?"Bearer "\+localStorage\.getItem\("quickcart_customer_token"\):""\}/.test(app));
 check("Order idempotency has a database uniqueness constraint",
   /createIndex\(\{storeId:1,clientOrderId:1\},\{unique:true/.test(api));
-check("Seller order deletion is scoped to the seller's own store",
+check("Seller order deletion is store-scoped and only allowed after inventory is reconciled",
   /app\.delete\('\/api\/orders\/:id',auth/.test(api) &&
-  /deleteOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api));
+  /findOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api) &&
+  /!\['cancelled','delivered','picked_up'\]\.includes\(current\.status\)/.test(api) &&
+  /deleteOne\(\{id:req\.params\.id,storeId:store\.id,status:current\.status\}\)/.test(api));
 check("Customer accounts cannot retain seller credentials or enter the seller dashboard",
   /localStorage\.removeItem\("quickcart_token"\);localStorage\.removeItem\("quickcart_store_id"\);localStorage\.removeItem\("quickcart_login_at"\);localStorage\.setItem\("quickcart_customer_token"/.test(app) &&
   /if\(route\.type!=="app"\|\|!\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
