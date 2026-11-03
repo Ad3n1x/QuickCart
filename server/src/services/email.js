@@ -1,4 +1,5 @@
 export function createVerificationEmailSender({apiKey,fromEmail,fromName="QuickCart"}) {
+ const brevoApiKey=apiKey,brevoFromEmail=fromEmail,brevoFromName=fromName;
  async function sendVerificationEmail(email,name,otp){
  if(!brevoApiKey) throw new Error('BREVO_API_KEY is not configured.');
  if(!brevoFromEmail) throw new Error('BREVO_FROM_EMAIL is not configured.');
