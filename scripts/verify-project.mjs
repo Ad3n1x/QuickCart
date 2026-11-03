@@ -32,7 +32,7 @@ check("Offline storefront cache is only used for network failures, not HTTP erro
 check("Public storefront cache keys use the same encoded path for reads and writes",
   /qc_public_["']\+path/.test(apiClient) && /qc_public_\/api\/storefront\/["']\+encodeURIComponent\(route\.slug\)/.test(app));
 check("API client is isolated in a dedicated module and imported by feature modules",
-  app.includes("lib/api.js") && /export \\{ api \\}/.test(apiClient) && /AbortController/.test(apiClient) && /isPublicStorefront/.test(apiClient));
+  app.includes("lib/api.js") && /export \{ api \}/.test(apiClient) && /AbortController/.test(apiClient) && /isPublicStorefront/.test(apiClient));
 check("React entrypoint imports the active app and global stylesheet",
   /from ["']\.\/App\.jsx["']/.test(main) && /import ["']\.\/index\.css["']/.test(main));
 check("Production entrypoint includes a render-error boundary",
