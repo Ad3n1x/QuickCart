@@ -79,6 +79,14 @@ check("Customer storefront uses the new responsive product card and full-width q
   /qc-shop-stepper/.test(app) &&
   /\.qc-shop-stepper\{display:grid;grid-template-columns:42px minmax\(0,1fr\) 42px/.test(css) &&
   /@media\(max-width:640px\)[\s\S]*?\.qc-shop-stepper/.test(css));
+check("Dashboard header remains in document flow and content has no fixed-header compensation gap",
+  /\.app-topbar\{position:sticky!important;top:0!important/.test(css) &&
+  /\.app-content\{padding-top:0!important\}/.test(css));
+check("Analytics graphs use real order timestamps and totals with selectable reporting periods",
+  /new Date\(order\.createdAt\)/.test(app) &&
+  /Number\(order\.total\|\|0\)/.test(app) &&
+  /Last 7 days/.test(app) && /Last 30 days/.test(app) && /Last 90 days/.test(app) &&
+  /chart-sales-line/.test(css) && /analytics-bars/.test(css));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
