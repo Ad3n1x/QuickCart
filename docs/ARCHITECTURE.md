@@ -1,5 +1,19 @@
 # QuickCart architecture
 
+## Implemented on the refactor branch
+
+The live root entrypoints are deliberately retained for compatibility, but the implementation has begun moving behind them:
+
+- `src/App.jsx` is now a compatibility export; app composition lives in `src/app/App.jsx`.
+- Seller dashboard views, public storefront/order tracking, landing/authentication and receipt views are separated under `src/features/`.
+- Shared UI primitives and phone input are under `src/components/`; formatting, identity, order, receipt, navigation and JSON helpers are under `src/lib/`.
+- The global stylesheet lives in `src/styles/main.css`; `src/index.css` remains the stable Vite stylesheet entrypoint.
+- `api/index.js` remains the Vercel-compatible Express entrypoint and now composes separate route modules under `server/src/routes/`.
+- MongoDB connection, auth middleware/services, email, payments, plans, store lookup and identity helpers are isolated under `server/src/`.
+- A pull-request CI workflow runs syntax/invariant checks and a Vite production build.
+
+This is still a modular monolith. The migration has not been merged or switched to a new deployment root. API contract and browser regression verification must pass before merge.
+
 ## Target
 
 QuickCart remains a modular monolith: one React/Vite client, one Express API, and one MongoDB database. Features are isolated by business domain; deployment remains compatible with the existing GitHub/Vercel/Render workflow.
@@ -88,10 +102,10 @@ Only put genuinely environment-neutral schemas/constants in `shared`. Do not sha
 | Existing source | Target |
 |---|---|
 | `src/main.jsx` | `client/src/main.jsx` (after Vite/deployment migration) |
-| `src/App.jsx` | `client/src/app/App.jsx`, then feature pages/components |
-| `src/index.css` | `client/src/styles/` and feature-level styles |
+| `src/App.jsx` | `src/app/App.jsx` (root file is a compatibility export); features under `src/features/` |
+| `src/index.css` | `src/styles/main.css` (root file is a stable import shim) |
 | `src/lib/api.js` | `client/src/lib/api/` |
-| `api/index.js` | `server/src/app.js` plus domain modules |
+| `api/index.js` | Vercel-compatible composition root registering `server/src/routes/*` and `server/src/services/*` |
 | `server.js` | `server/src/server.js` |
 | `public/` | `client/public/` (after PWA and base-path verification) |
 | `backend/` | Audit separately; do not mix its AppDeploy SDK implementation into the Express runtime |
