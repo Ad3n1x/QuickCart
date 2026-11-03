@@ -9,6 +9,7 @@ import { registerStoreRoutes } from "../server/src/routes/store.js";
 import { registerPaymentRoutes } from "../server/src/routes/payments.js";
 import { registerDiscountRoutes } from "../server/src/routes/discounts.js";
 import { registerOrderRoutes } from "../server/src/routes/orders.js";
+import { registerBusinessOsRoutes } from "../server/src/routes/business-os.js";
 import { createDatabaseConnection } from "../server/src/config/database.js";
 import { createAuthServices } from "../server/src/middleware/auth.js";
 import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity.js";
@@ -57,5 +58,6 @@ registerStoreRoutes(app, routeDependencies);
 registerPaymentRoutes(app, routeDependencies);
 registerDiscountRoutes(app, routeDependencies);
 registerOrderRoutes(app, routeDependencies);
+registerBusinessOsRoutes(app, routeDependencies);
 
 export default app;
