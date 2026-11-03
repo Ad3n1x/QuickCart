@@ -1,0 +1,3 @@
+# Backend domain modules
+
+Create one module per domain: `auth`, `users`, `stores`, `products`, `orders`, `customers`, `analytics`, `payments`, `subscriptions`, and `notifications`. A module can contain `*.routes.js`, `*.controller.js`, `*.service.js`, `*.repository.js`, and `*.validation.js`. Routes define HTTP contracts, controllers translate HTTP to application calls, services own business rules, and repositories own MongoDB queries. Keep authentication and store-ownership checks server-side. Extract incrementally from the existing `api/index.js`.
