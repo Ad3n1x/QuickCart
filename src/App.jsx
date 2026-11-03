@@ -12,6 +12,7 @@ import Landing from "./features/marketing/Landing.jsx";
 import { Auth,CustomerAuth } from "./features/auth/AuthViews.jsx";
 import PublicStore from "./features/storefront/PublicStore.jsx";
 import ReceiptScanner from "./features/receipts/ReceiptScanner.jsx";
+import OrderReceiptModal from "./features/receipts/OrderReceiptModal.jsx";
 import { DashboardShell, Account, StoreSetup, ProductModal, FeaturePromo, Overview, Products, Orders, Customers, Analytics, SettingsPage, Discounts, Premium, ShareModal } from "./features/dashboard/DashboardViews.jsx";
 
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
@@ -32,8 +33,6 @@ function getRoute(){const path=cleanPath();if(/^\/app(?:\/|$)/.test(path)&&hasCu
 function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
 
 import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "./components/common/SharedUI.jsx";
-
-function OrderReceiptModal({order,store,onClose}){if(!order)return null;return <Modal title="Order receipt" onClose={onClose}><div><strong>{store?.storeName||"QuickCart Store"}</strong><p>Receipt #{String(order.id||"").slice(0,12)}</p><p>{order.customerName||"Customer"}</p><p>Total: {fmt(order.total)}</p></div><div className="modal-actions"><button className="primary-button" type="button" onClick={()=>printReceiptDocument(order,store)}><FileText size={17}/> Print receipt</button><button className="ghost-button" type="button" onClick={onClose}>Close</button></div></Modal>}
 
 export default function App(){
  const route=useRoute();
