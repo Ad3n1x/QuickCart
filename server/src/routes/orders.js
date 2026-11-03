@@ -1,3 +1,4 @@
+export function registerOrderRoutes(app,{db,auth,customerAuth,customerTokenFor,now,randomUUID,randomBytes,hashToken,getUserStore,jwt,jwtSecret,emailPattern}) {
 app.post('/api/orders',async(req,res)=>{try{
  const database=await db();
  const customerAuthHeader=String(req.headers.authorization||'').trim();
