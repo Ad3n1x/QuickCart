@@ -60,6 +60,25 @@ app.post('/api/orders/:id/customer-confirm',async(req,res)=>{try{const database=
 app.post('/api/orders/:id/customer-status',async(req,res)=>{try{const database=await db(),order=await database.collection('orders').findOne({id:req.params.id});if(!order)return res.status(404).json({error:'Order not found.'});if(!req.body?.confirmationToken||hashToken(String(req.body.confirmationToken))!==order.customerConfirmationTokenHash)return res.status(403).json({error:'Invalid customer confirmation token.'});res.json({orderId:order.id,status:order.status,fulfillment:order.fulfillment,total:order.total,updatedAt:order.updatedAt||order.createdAt});}catch(error){console.error(error);res.status(500).json({error:'Unable to retrieve order status.'});}});
 
 app.get('/api/customer/orders',customerAuth,async(req,res)=>{try{const database=await db(),email=String(req.customer.email||'').trim().toLowerCase();if(!emailPattern.test(email))return res.status(401).json({error:'Customer email is missing from this session.',code:'INVALID_CUSTOMER_EMAIL'});const orders=await database.collection('orders').find({customerEmail:email},{projection:{customerConfirmationTokenHash:0}}).sort({createdAt:-1}).limit(100).toArray();res.json({orders});}catch(error){console.error(error);res.status(500).json({error:'Unable to load customer order history.'});}});
+// Seller-created orders: useful for phone, walk-in, Instagram and WhatsApp sales.
+app.post('/api/orders/manual',auth,async(req,res)=>{try{
+ const database=await db(),store=await getUserStore(database,req);
+ if(!store)return res.status(404).json({error:'Store not found.'});
+ const customerName=String(req.body.customerName||'').trim(),customerPhone=String(req.body.customerPhone||'').trim(),customerEmail=String(req.body.customerEmail||'').trim().toLowerCase(),address=String(req.body.address||'').trim(),fulfillment=String(req.body.fulfillment||'pickup');
+ const rawItems=Array.isArray(req.body.items)?req.body.items:[];
+ if(!customerName||!customerPhone||!rawItems.length)return res.status(400).json({error:'Customer name, WhatsApp number and at least one item are required.'});
+ if(!['pickup','delivery'].includes(fulfillment))return res.status(400).json({error:'Choose pickup or delivery.'});
+ if(fulfillment==='delivery'&&!address)return res.status(400).json({error:'Enter the delivery address.'});
+ const items=rawItems.map(x=>({id:String(x.id||''),name:String(x.name||'').trim(),price:Number(x.price),quantity:Number(x.quantity)}));
+ if(items.some(x=>!x.name||!Number.isFinite(x.price)||x.price<0||!Number.isInteger(x.quantity)||x.quantity<1))return res.status(400).json({error:'Each item needs a name, valid price and quantity of at least one.'});
+ const subtotal=Math.round(items.reduce((sum,x)=>sum+x.price*x.quantity,0)*100)/100;
+ const deliveryFee=fulfillment==='delivery'?Math.max(0,Number(store.deliveryFee||0)):0;
+ const total=Math.round((subtotal+deliveryFee)*100)/100;
+ const order={id:randomUUID(),storeId:store.id,clientOrderId:null,source:'manual',customerId:null,customerEmail,customerName,customerPhone,address:address||'Pickup from store',fulfillment,paymentMethod:String(req.body.paymentMethod||'pay_on_delivery'),items,subtotal,deliveryFee,discount:0,discountCode:'',discountDetails:null,total,status:'new',paymentStatus:'pending',createdAt:now(),updatedAt:now()};
+ await database.collection('orders').insertOne(order);
+ if(customerEmail&&emailPattern.test(customerEmail))await database.collection('customers').updateOne({storeId:store.id,customerEmail},{$set:{storeId:store.id,customerEmail,name:customerName,phone:customerPhone,address,updatedAt:now()},$setOnInsert:{createdAt:now()}},{upsert:true});
+ res.status(201).json({order});
+ }catch(error){console.error(error);res.status(500).json({error:'Unable to create manual order.'});}});
 app.get('/api/orders',auth,async(req,res)=>{const database=await db(),store=await getUserStore(database,req);if(!store)return res.json({orders:[]});res.json({orders:await database.collection('orders').find({storeId:store.id}).sort({createdAt:-1}).toArray()});});
 app.delete('/api/orders/:id',auth,async(req,res)=>{try{const database=await db(),store=await getUserStore(database,req);if(!store)return res.status(404).json({error:'Store not found.'});const result=await database.collection('orders').deleteOne({id:req.params.id,storeId:store.id});if(!result.deletedCount)return res.status(404).json({error:'Order not found.'});res.json({deleted:true,orderId:req.params.id});}catch(error){console.error(error);res.status(500).json({error:'Unable to delete order.'});}});
 app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
