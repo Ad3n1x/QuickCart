@@ -3379,7 +3379,7 @@ button{white-space:normal;line-height:1.25}
 .public-hero-search-card .public-search{width:100%;min-height:49px;margin:13px 0 10px;padding:0 13px;border:1px solid #dfe8e1;border-radius:11px;background:#fff}
 .public-hero-search-card .public-search input{font-size:12px}
 .public-hero-search-card>small{color:#7b8980;font-size:10px;line-height:1.5}
-.public-category-nav{position:sticky;top:78px;z-index:20;display:flex;gap:8px;max-width:1280px;margin:0 auto;padding:10px 24px 16px;overflow-x:auto;background:#f7f8f6;scrollbar-width:none}
+.public-category-nav{position:sticky;top:108px;z-index:20;display:flex;gap:8px;max-width:1280px;margin:0 auto;padding:10px 24px 16px;overflow-x:auto;background:#f7f8f6;scrollbar-width:none}
 .public-category-nav::-webkit-scrollbar{display:none}
 .public-category-nav button{flex:0 0 auto;min-height:36px;padding:0 15px;border:1px solid #e1e8e2;border-radius:99px;background:#fff;color:#53665a;font-size:11px;font-weight:750;white-space:nowrap}
 .public-category-nav button.active{border-color:#173c31;background:#173c31;color:#fff}
