@@ -26,13 +26,7 @@ function go(path,replace=false){const target=String(path||"/");const safePath=ta
 function body(v){return JSON.stringify(v)}
 function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
 
-function Logo({size=36}){return <span className="qc-logo" style={{width:size,height:size}} aria-label="QuickCart" role="img"><ShoppingBag size={Math.round(size*.56)}/></span>}
-function Field({label,...p}){return <label className="qc-field"><span>{label}</span><input {...p}/></label>}
-function Password({value,onChange,label="Password"}){const[s,setS]=useState(false);return <label className="qc-field"><span>{label}</span><div className="qc-password"><input type={s?"text":"password"} value={value} onChange={e=>onChange(e.target.value)} autoComplete="current-password"/><button type="button" onClick={()=>setS(v=>!v)} aria-label={s?"Hide password":"Show password"}>{s?<EyeOff size={17}/>:<Eye size={17}/>}</button></div></label>}
-function Loading({label="Loading QuickCart…"}){return <div className="qc-loading"><span className="qc-spinner"/>{label}</div>}
-function Empty({title,text,action}){return <div className="qc-empty"><Package size={25}/><h3>{title}</h3><p>{text}</p>{action}</div>}
-function Notice({value,onClose}){if(!value)return null;return <div className="qc-notice" role="status"><div><strong>{value.title}</strong><span>{value.message}</span></div><button type="button" onClick={onClose}><X size={16}/></button></div>}
-function Modal({title,subtitle,onClose,children,wide=false,className=""}){useEffect(()=>{const f=e=>e.key==="Escape"&&onClose?.();addEventListener("keydown",f);const old=document.body.style.overflow;document.body.style.overflow="hidden";return()=>{removeEventListener("keydown",f);document.body.style.overflow=old}},[onClose]);return <div className="qc-modal-backdrop" onMouseDown={e=>e.target===e.currentTarget&&onClose?.()}><section className={"qc-modal"+(wide?" wide":"")+(className?" "+className:"")} role="dialog" aria-modal="true" aria-label={title}><header><div><h2>{title}</h2>{subtitle&&<p>{subtitle}</p>}</div><button type="button" className="icon-button" onClick={onClose} aria-label="Close"><X size={18}/></button></header><div className="qc-modal-body">{children}</div></section></div>}
+import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "./components/common/SharedUI.jsx";
 
 function Landing({onAuth,canInstall,onInstall}){
  const scroll=id=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"});
