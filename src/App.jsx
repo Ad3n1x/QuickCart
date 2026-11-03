@@ -7,6 +7,7 @@ import { orderDisplayTotal,dedupeCustomerOrders } from "./lib/order-utils.js";
 import { escapePrintHtml,printReceiptDocument } from "./lib/receipt.js";
 import { slugify,emailOf } from "./lib/identity.js";
 import { body } from "./lib/json.js";
+import { BASE,go } from "./lib/navigation.js";
 import Landing from "./features/marketing/Landing.jsx";
 import { Auth,CustomerAuth } from "./features/auth/AuthViews.jsx";
 import ReceiptScanner from "./features/receipts/ReceiptScanner.jsx";
@@ -15,7 +16,6 @@ import { DashboardShell, Account, StoreSetup, ProductModal, FeaturePromo, Overvi
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
 
 // Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
-const BASE=(import.meta.env.BASE_URL||"/").replace(/\/$/,"")||(typeof window!=="undefined"&&window.location.hostname==="ad3n1x.github.io"?"/QuickCart":"");
 const routes={overview:"dashboard",dashboard:"dashboard",products:"products",orders:"orders",customers:"customers",analytics:"analytics",discounts:"discounts",receipts:"receipts",settings:"settings",premium:"premium"};
 
 function cleanPath(){const raw=window.location.pathname||"/";const base=BASE||"";const path=base&&raw.startsWith(base)?raw.slice(base.length)||"/":raw;return path.length>1?path.replace(/\/+$/,""):path}
@@ -28,7 +28,6 @@ const routeMatchers=[
 ];
 function hasCustomerCredentials(){try{return Boolean(localStorage.getItem("quickcart_customer_token")||localStorage.getItem("quickcart_customer"))}catch{return false}}
 function getRoute(){const path=cleanPath();if(/^\/app(?:\/|$)/.test(path)&&hasCustomerCredentials()){const home=(BASE||"")+"/";if(window.location.pathname!==home)history.replaceState({}, "", home);return{type:"landing"}}for(const route of routeMatchers){const match=path.match(route.pattern);if(match)return route.resolve(match)}return{type:"landing"}}
-function go(path,replace=false){const target=String(path||"/");const safePath=target.startsWith("/")?target:"/"+target;const url=(BASE||"")+safePath;(replace?history.replaceState:history.pushState).call(history,{},"",url);window.dispatchEvent(new Event("popstate"));if(!safePath.includes("#"))window.scrollTo({top:0,behavior:"auto"})}
 function useRoute(){const[r,setR]=useState(getRoute());useEffect(()=>{const f=()=>setR(getRoute());window.addEventListener("popstate",f);return()=>window.removeEventListener("popstate",f)},[]);return r}
 
 import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "./components/common/SharedUI.jsx";
