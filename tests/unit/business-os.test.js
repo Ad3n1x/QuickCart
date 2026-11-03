@@ -98,3 +98,25 @@ test("cashflow includes paid invoices in net cashflow",async()=>{
   assert.equal(data.netCashflow,1300);
  }finally{h.server.close()}
 });
+
+
+test("paid invoices cannot be reverted to unpaid states",async()=>{
+ const h=harness();
+ h.records.businessInvoices.push({id:"invoice-paid",storeId:"store-a",status:"paid",amount:900,paidAt:"2026-11-03T10:00:00.000Z"});
+ try{
+  const response=await fetch((await h.url)+"/api/business/invoices/invoice-paid",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"issued"})});
+  assert.equal(response.status,409);
+  assert.equal(h.records.businessInvoices[0].status,"paid");
+ }finally{h.server.close()}
+});
+
+test("delivery status cannot move backwards after delivery",async()=>{
+ const h=harness();
+ h.records.deliveries.push({id:"delivery-1",storeId:"store-a",orderId:"order-1",status:"delivered",timeline:[{status:"delivered"}]});
+ try{
+  const response=await fetch((await h.url)+"/api/business/deliveries/delivery-1",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"in_transit"})});
+  assert.equal(response.status,409);
+  assert.equal(h.records.deliveries[0].status,"delivered");
+  assert.equal(h.records.deliveries[0].timeline.length,1);
+ }finally{h.server.close()}
+});
