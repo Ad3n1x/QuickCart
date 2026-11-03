@@ -1,0 +1,3 @@
+export const PLAN_CONFIG={Free:{price:0,storeLimit:3,features:['Branded storefront','Products and orders','WhatsApp checkout','Basic analytics']},Premium:{price:4999,storeLimit:5,features:['Everything in Free','Advanced analytics','Discounts and promotions','Up to 5 storefronts']},Business:{price:9999,storeLimit:null,features:['Everything in Premium','Unlimited storefronts','Business analytics','Priority support']}};
+export function planFor(user){const raw=PLAN_CONFIG[user?.plan]?user.plan:'Free';const expiresAt=user?.planExpiresAt||null;const paidActive=user?.subscription===true&&!!expiresAt&&new Date(expiresAt)>new Date();return raw==='Free'?'Free':(paidActive?raw:'Free');}
+export function planStoreLimit(plan){return PLAN_CONFIG[plan]?.storeLimit??3;}
