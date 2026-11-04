@@ -2,6 +2,7 @@
 import React,{useEffect,useState} from "react";
 import { api } from "../lib/api.js";
 import { body } from "../lib/json.js";
+import { emailOf } from "../lib/identity.js";
 import { BASE,go } from "../lib/navigation.js";
 import Landing from "../features/marketing/Landing.jsx";
 import { Auth,CustomerAuth } from "../features/auth/AuthViews.jsx";
