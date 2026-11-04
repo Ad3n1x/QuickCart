@@ -55,16 +55,22 @@ check("Storefront carts persist for guests and customers, stay store-scoped, and
   /localStorage\.removeItem\("qc_cart:"\+storeId\+":guest"\)/.test(app));
 check("Customer order history requires a customer-authenticated API route",
   /app\.get\('\/api\/customer\/orders',customerAuth/.test(api));
-check("Order creation validates the signed-in customer token and uses its email",
+check("Guest checkout accepts customer details without registration while validating optional customer sessions",
   /app\.post\('\/api\/orders',async/.test(api) &&
-  /p\?\.role==='customer'/.test(api) &&
-  /customerPayload\.email/.test(api) &&
-  /CUSTOMER_AUTH_REQUIRED/.test(api));
+  /customerPayload\?\.sub\|\|null/.test(api) &&
+  /guestCheckout:!customerPayload/.test(api) &&
+  /customerName\|\|!customerPhone/.test(api) &&
+  /customerConfirmationTokenHash/.test(api) &&
+  /INVALID_CUSTOMER_SESSION/.test(api));
+check("Guest checkout sends no empty bearer token and does not require customer registration",
+  /headers:\{Authorization:localStorage\.getItem\("quickcart_customer_token"\)\?"Bearer "\+localStorage\.getItem\("quickcart_customer_token"\):""\}/.test(app));
 check("Order idempotency has a database uniqueness constraint",
   /createIndex\(\{storeId:1,clientOrderId:1\},\{unique:true/.test(api));
-check("Seller order deletion is scoped to the seller's own store",
+check("Seller order deletion is store-scoped and only allowed after inventory is reconciled",
   /app\.delete\('\/api\/orders\/:id',auth/.test(api) &&
-  /deleteOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api));
+  /findOne\(\{id:req\.params\.id,storeId:store\.id\}\)/.test(api) &&
+  /!\['cancelled','delivered','picked_up'\]\.includes\(current\.status\)/.test(api) &&
+  /deleteOne\(\{id:req\.params\.id,storeId:store\.id,status:current\.status\}\)/.test(api));
 check("Customer accounts cannot retain seller credentials or enter the seller dashboard",
   /localStorage\.removeItem\("quickcart_token"\);localStorage\.removeItem\("quickcart_store_id"\);localStorage\.removeItem\("quickcart_login_at"\);localStorage\.setItem\("quickcart_customer_token"/.test(app) &&
   /if\(route\.type!=="app"\|\|!\(customerSession\|\|localStorage\.getItem\("quickcart_customer_token"\)\)\)return;localStorage\.removeItem\("quickcart_token"\)/.test(app) &&
@@ -75,6 +81,14 @@ check("Customer storefront uses the new responsive product card and full-width q
   /qc-shop-stepper/.test(app) &&
   /\.qc-shop-stepper\{display:grid;grid-template-columns:42px minmax\(0,1fr\) 42px/.test(css) &&
   /@media\(max-width:640px\)[\s\S]*?\.qc-shop-stepper/.test(css));
+check("Dashboard header remains in document flow and content has no fixed-header compensation gap",
+  /\.app-topbar\{position:sticky!important;top:0!important/.test(css) &&
+  /\.app-content\{padding-top:0!important\}/.test(css));
+check("Analytics graphs use real order timestamps and totals with selectable reporting periods",
+  /new Date\(order\.createdAt\)/.test(app) &&
+  /Number\(order\.total\|\|0\)/.test(app) &&
+  /Last 7 days/.test(app) && /Last 30 days/.test(app) && /Last 90 days/.test(app) &&
+  /chart-sales-line/.test(css) && /analytics-bars/.test(css));
 check("Customer checkout defaults to pickup",
   /\[ful,setFul\]=useState\("pickup"\)/.test(app));
 check("Checkout retries reuse an idempotency key only for the same cart and checkout details",
@@ -163,12 +177,18 @@ check("Order-edit controls validate successful server responses, show action-spe
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
   /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
   /customer-cancel-order/.test(app));
-check("Customer order tracking is collapsed by default and can be toggled open or hidden; product cards do not contain order-edit rows",
+check("Customer and guest order tracking is collapsed by default and can be toggled open or hidden; product cards do not contain order-edit rows",
   /\[trackingVisible,setTrackingVisible\]=useState\(false\)/.test(app) &&
   /trackingVisible\?"Hide order tracking":"Track my orders"/.test(app) &&
-  /trackingVisible&&customer&&customerOrdersHydrated/.test(app) &&
+  /trackingVisible&&customerOrdersHydrated/.test(app) &&
   !/editableOrderLines\.filter\(item=>String\(item\.id\)===String\(x\.id\)\)/.test(app) &&
   /qc-shop-stepper/.test(app));
+check("Guest checkout is available without a customer account and keeps order tracking on the same device",
+  /const ready=Boolean\(hasCheckoutItems&&ful&&customerForm\.name\.trim\(\)&&customerForm\.phone\.trim\(\)/.test(app) &&
+  /Checkout as guest/.test(app) &&
+  /qc_guest_orders:/.test(app) &&
+  /guestCheckout:!customer/.test(app) &&
+  !/if\(!customer\)\{onLogin\?\.\("login"\);return;\}/.test(app));
 check("Checkout summary appears only when populated and order tracking is automatic inline for valid active-store orders",
   app.includes("const hasCheckoutItems=items.length>0") &&
   app.includes('hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">') &&
@@ -237,10 +257,11 @@ check("Seller order status cannot reopen cancelled orders or cancel already disp
 
 
 check("Seller order status changes follow fulfillment-specific transitions and tracking includes picked-up orders",
-  /const nextStatuses=\{new:\[\x27confirmed\x27,\x27cancelled\x27\],confirmed:\[\x27processing\x27,\x27cancelled\x27\],processing:current\.fulfillment===\x27delivery\x27\?\[\x27shipped\x27,\x27cancelled\x27\]:\[\x27ready\x27,\x27cancelled\x27\],ready:\[\x27cancelled\x27\],shipped:\[\x27delivered\x27\],delivered:\[\],picked_up:\[\],cancelled:\[\]\}/.test(api) &&
+  /const nextStatuses=\{new:\[\x27confirmed\x27,\x27cancelled\x27\],confirmed:\[\x27processing\x27,\x27cancelled\x27\],processing:current\.fulfillment===\x27delivery\x27\?\[\x27shipped\x27,\x27cancelled\x27\]:\[\x27ready\x27,\x27cancelled\x27\],ready:current\.fulfillment===\x27delivery\x27\?\[\x27cancelled\x27\]:\[\x27picked_up\x27,\x27cancelled\x27\],shipped:\[\x27delivered\x27\],delivered:\[\],picked_up:\[\],cancelled:\[\]\}/.test(api) &&
   /if\(!nextStatuses\[current\.status\]\?\.includes\(status\)\)return res\.status\(409\)/.test(api) &&
   /const statuses=\["all","new","confirmed","processing","ready","shipped","delivered","picked_up","cancelled"\]/.test(app) &&
-  /o\.fulfillment==="delivery"\?\["shipped","cancelled"\]:\["ready","cancelled"\]/.test(app));
+  /o\.fulfillment==="delivery"\?\["shipped","cancelled"\]:\["ready","cancelled"\]/.test(app) &&
+  /o\.status==="ready"\?\(o\.fulfillment==="delivery"\?\["cancelled"\]:\["picked_up","cancelled"\]\)/.test(app));
 
 check("Customer order refresh results are deduplicated and store-scoped before rendering tracking",
   /dedupeCustomerOrders\(freshOrders\.orders\.filter\(o=>String\(o\.storeId\)===String\(s\.id\)\)\.map\(o=>/.test(app) &&
@@ -283,6 +304,15 @@ check("API infrastructure and external services are isolated from route registra
   /createPaymentServices/.test(read("api/index.js")) &&
   /export function createDatabaseConnection/.test(read("server/src/config/database.js")) &&
   /export function createAuthServices/.test(read("server/src/middleware/auth.js")));
+
+
+check("Manual catalogue orders reserve stock safely and roll back partial reservations",
+  /inventoryTracked:Boolean\(product\)/.test(api) &&
+  /requestedByProduct\.set\(item\.id/.test(api) &&
+  /stock:\{\$gte:quantity\}/.test(api) &&
+  /reserved\.push\(\{id:productId,quantity\}\)/.test(api) &&
+  /for\(const item of reserved\)await database\.collection\('products'\)\.updateOne/.test(api) &&
+  /inventoryReservation:'reserved'/.test(api));
 
 console.log(`QuickCart project checks passed: ${checks.length}/${checks.length}`);
 for (const label of checks) console.log(`✓ ${label}`);

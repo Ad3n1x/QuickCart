@@ -102,7 +102,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
  </section>
 }
 function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
- const[q,setQ]=useState(""),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false);
+ const[q,setQ]=useState(""),[activeCategory,setActiveCategory]=useState("All"),[sortBy,setSortBy]=useState("featured"),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
  useEffect(()=>{const storeId=data?.store?.id,email=emailOf(customer?.email);if(!storeId){setCart({});setCartOwner("");return}const owner=storeId+":"+(email||"guest");try{const saved=JSON.parse(localStorage.getItem("qc_cart:"+owner)||"{}");const guest=email?JSON.parse(localStorage.getItem("qc_cart:"+storeId+":guest")||"{}"):{};const safeSaved=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved:{};const safeGuest=guest&&typeof guest==="object"&&!Array.isArray(guest)?guest:{};const merged={...safeSaved};if(email)for(const [id,qty] of Object.entries(safeGuest))merged[id]=(Math.max(0,Number(merged[id])||0)+Math.max(0,Number(qty)||0));setCart(email?merged:safeSaved);setCartOwner(owner)}catch{setCart({});setCartOwner(owner)}},[data?.store?.id,customer?.email]);
@@ -147,7 +147,14 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    const storeId=data?.store?.id,email=emailOf(customer?.email);
    // Clear the previous storefront's tracking immediately; never flash another store's orders.
    setCustomerOrders([]);
-   if(!storeId||!email){setCustomerOrdersHydrated(false);return}
+   if(!storeId){setCustomerOrdersHydrated(false);return}
+   if(!email){
+     let cancelled=false;setCustomerOrdersHydrated(false);
+     try{const saved=JSON.parse(localStorage.getItem("qc_guest_orders:"+storeId)||"[]");if(!cancelled)setCustomerOrders(dedupeCustomerOrders(Array.isArray(saved)?saved.filter(o=>o&&String(o.storeId)===String(storeId)):[]).slice(0,10));}
+     catch{if(!cancelled)setCustomerOrders([])}
+     if(!cancelled)setCustomerOrdersHydrated(true);
+     return()=>{cancelled=true};
+   }
    let cancelled=false;
    setCustomerOrdersHydrated(false);
    const loadCustomerOrders=async()=>{
@@ -174,12 +181,17 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
 
  useEffect(()=>{
    const storeId=data?.store?.id,email=emailOf(customer?.email);
-   if(!storeId||!email||!customerOrdersHydrated)return;
-   try{localStorage.setItem("qc_customer_orders:"+storeId+":"+email,JSON.stringify(customerOrders.slice(0,10)))}catch{}
+   if(!storeId||!customerOrdersHydrated)return;
+   try{
+     if(email)localStorage.setItem("qc_customer_orders:"+storeId+":"+email,JSON.stringify(customerOrders.slice(0,10)));
+     else localStorage.setItem("qc_guest_orders:"+storeId,JSON.stringify(customerOrders.filter(o=>o?.guestCheckout||!o?.customerEmail).slice(0,10)));
+   }catch{}
  },[data?.store?.id,customer?.email,customerOrdersHydrated,customerOrders]);
 
  const s=data?.store||null,p=Array.isArray(data?.products)?data.products:[],deliveryEnabled=s?s.deliveryEnabled!==false:false;
- const visible=p.filter(x=>!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()));
+ const categoryOf=product=>String(product.category||product.categoryName||product.type||"General").trim()||"General";
+ const categories=["All",...Array.from(new Set(p.map(categoryOf))).sort((a,b)=>a.localeCompare(b))];
+ const visible=p.filter(x=>(activeCategory==="All"||categoryOf(x)===activeCategory)&&(!q||String(x.name||"").toLowerCase().includes(q.trim().toLowerCase()))).sort((a,b)=>sortBy==="price-low"?Number(a.price||0)-Number(b.price||0):sortBy==="price-high"?Number(b.price||0)-Number(a.price||0):sortBy==="name"?String(a.name||"").localeCompare(String(b.name||"")):0);
  const editableOrderLines=customerOrders.filter(o=>["new","confirmed"].includes(o.status)).flatMap(o=>(o.items||[]).map(item=>({...item,orderId:o.id,orderStatus:o.status})));
  const items=p.filter(x=>cart[x.id]).map(x=>({...x,quantity:Math.min(Number(x.stock)||0,Math.max(0,Number(cart[x.id])||0))})).filter(x=>x.quantity>0);
  const subtotal=items.reduce((a,x)=>a+Number(x.price||0)*x.quantity,0);
@@ -187,7 +199,8 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
  const discount=Number(disc?.amount||0);
  const total=Math.max(0,subtotal+delivery-discount);
  const hasCheckoutItems=items.length>0;
- const ready=Boolean(customer&&hasCheckoutItems&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
+ const cartCount=items.reduce((sum,item)=>sum+item.quantity,0);
+ const ready=Boolean(hasCheckoutItems&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
 
  useEffect(()=>{
    // Do not prune a restored cart while storefront products are still loading.
@@ -257,7 +270,6 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
  };
 
  const checkout=async()=>{if(busy)return;
-   if(!customer){onLogin?.("login");return;}
    if(!ready||busy)return;const checkoutLockKey="quickcart_checkout_lock:"+String(s.id);if(sessionStorage.getItem(checkoutLockKey)==="1")return;sessionStorage.setItem(checkoutLockKey,"1");
    setBusy(true);setMsg("");
    let whatsappWindow=null;
@@ -277,7 +289,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
      const clientOrderKey="quickcart_checkout_client_id:"+String(s.id);const checkoutFingerprint=JSON.stringify({storeId:s.id,customerEmail:emailOf(customer?.email),customerName:customerForm.name.trim(),customerPhone:customerForm.phone.trim(),address:ful==="delivery"?customerForm.address.trim():"Pickup from store",fulfillment:ful,paymentMethod:pay,discountCode:disc?.code||code.trim(),receiptData,items:items.map(x=>({id:x.id,quantity:x.quantity})).sort((a,b)=>String(a.id).localeCompare(String(b.id)))});let savedCheckout=null;try{savedCheckout=JSON.parse(localStorage.getItem(clientOrderKey)||"null")}catch{}let clientOrderId=savedCheckout&&typeof savedCheckout==="object"&&savedCheckout.fingerprint===checkoutFingerprint?savedCheckout.id:"";if(!clientOrderId){clientOrderId=globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():"qc-"+Date.now()+"-"+Math.random().toString(36).slice(2);}localStorage.setItem(clientOrderKey,JSON.stringify({id:clientOrderId,fingerprint:checkoutFingerprint}));
      const order=await api("/api/orders",{
        method:"POST",
-       headers:{Authorization:"Bearer "+(localStorage.getItem("quickcart_customer_token")||"")},
+       headers:{Authorization:localStorage.getItem("quickcart_customer_token")?"Bearer "+localStorage.getItem("quickcart_customer_token"):""},
        body:body({
          storeId:s.id,
          clientOrderId,
@@ -295,6 +307,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
      localStorage.setItem("qc_order_token:"+order.orderId,order.confirmationToken);
      const savedOrder={
        id:order.orderId,
+       guestCheckout:!customer,
        whatsappSent:false,
        storeName:s.storeName,
        storeId:s.id,
@@ -302,15 +315,10 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
        total:Number(order.total??total),
        status:"new",
        createdAt:new Date().toISOString(),
-       customerName:customerForm.name.trim(),
-       customerEmail:customer?.email||"",
-       customerPhone:customerForm.phone.trim(),
-       address:ful==="delivery"?customerForm.address.trim():"Pickup from store",
-       paymentMethod:pay,
-       items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity})),
-       receiptData
+       items:items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity}))
      };
      setCustomerOrders(xs=>dedupeCustomerOrders([savedOrder,...xs]).slice(0,10));
+     setTrackingVisible(true);
 
      const receiptLines=(receiptData.merchant||receiptData.total||receiptData.receiptNo)
        ?["","PAYMENT RECEIPT",
@@ -395,32 +403,46 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    setCustomerOrders(dedupeCustomerOrders(updates));
  };
  return <main className="public-store-page">
+  <div className="public-store-announcement">Welcome to {s.storeName} <span>·</span> Shop directly from this store</div>
   <header className="public-store-nav">
     <div className="public-brand">
       <Logo size={40}/>
-      <div><b>{s.storeName}</b><small>{s.tagline||"Shop directly from this store"}</small></div>
+      <div><b>{s.storeName}</b><small>{s.tagline||"Your online store"}</small></div>
     </div>
-    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={onSignOut}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<span className="public-store-badge">QuickCart storefront</span></div>
+    <div className="public-nav-search">
+      <Search size={17}/>
+      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products…" aria-label="Search products"/>
+      {q&&<button type="button" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+    </div>
+    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={onSignOut}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<button className="public-cart-button" type="button" disabled={!cartCount} onClick={()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"})}><ShoppingBag size={17}/><span>Cart</span><b>{cartCount}</b></button></div>
   </header>
   <section className="public-store-hero">
     <div className="public-store-hero-copy">
-      <span className="eyebrow">OFFICIAL STOREFRONT</span>
-      <h1>{s.storeName}</h1>
-      <p>{s.tagline||"Browse products and place your order directly."}</p>
+      <span className="public-store-kicker">THE OFFICIAL STORE</span>
+      <h1>Find something <em>you’ll love.</em></h1>
+      <p>{s.tagline||"Explore the collection, choose your favourites and order directly from "+s.storeName+"."}</p>
+      <div className="public-hero-proof"><span><Package size={15}/> {p.length} products</span><span><Check size={15}/> Direct seller ordering</span></div>
     </div>
-    <div className="public-search">
-      <Search size={17}/>
-      <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products by name…" aria-label="Search products"/>
-      {q&&<button type="button" className="public-search-clear" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+    <div className="public-hero-search-card">
+      <span>WHAT ARE YOU LOOKING FOR?</span>
+      <div className="public-search">
+        <Search size={18}/>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products by name…" aria-label="Search products"/>
+        {q&&<button type="button" className="public-search-clear" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
+      </div>
+      <small>Browse the store’s collection and add your picks to the cart.</small>
     </div>
   </section>
+  <nav className="public-category-nav" aria-label="Product categories">{categories.map(category=><button key={category} type="button" className={activeCategory===category?"active":""} onClick={()=>setActiveCategory(category)}>{category}</button>)}</nav>
   <div className="public-store-grid">
    <section className="public-catalog">
     {msg&&<div className={/could not|cannot|invalid|unable|failed|error/i.test(msg)?"form-error public-store-feedback":"form-success public-store-feedback"} role="status" aria-live="polite">{msg}</div>}
     <div className="public-catalog-head">
-      <div><span className="eyebrow">STORE PRODUCTS</span><h2>Choose your products</h2><p>{visible.length} {visible.length===1?"product":"products"} available{q?" · matching “"+q+"”":""}.</p></div>
-      {customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&!(o.fulfillment==="pickup"&&o.status==="picked_up"))&&<button type="button" className="ghost-button customer-tracking-toggle" aria-expanded={trackingVisible} aria-controls="customer-order-tracking" onClick={()=>setTrackingVisible(v=>!v)}>{trackingVisible?"Hide order tracking":"Track my orders"} <span aria-hidden="true">{trackingVisible?"−":"+"}</span></button>}
-
+      <div><span className="eyebrow">THE COLLECTION</span><h2>{activeCategory==="All"?"Shop all products":activeCategory}</h2><p>{visible.length} {visible.length===1?"product":"products"} to explore{q?" · matching “"+q+"”":""}.</p></div>
+      <div className="public-catalog-tools">
+       <label className="public-sort-control"><span>Sort</span><select value={sortBy} onChange={e=>setSortBy(e.target.value)} aria-label="Sort products"><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label>
+       {customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&!(o.fulfillment==="pickup"&&o.status==="picked_up"))&&<button type="button" className="ghost-button customer-tracking-toggle" aria-expanded={trackingVisible} aria-controls="customer-order-tracking" onClick={()=>setTrackingVisible(v=>!v)}>{trackingVisible?"Hide order tracking":"Track my orders"} <span aria-hidden="true">{trackingVisible?"−":"+"}</span></button>}
+      </div>
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
@@ -446,12 +468,13 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    </section>
    {(hasCheckoutItems||(customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id))))&&<div className="public-cart-tracking-stack">
    {hasCheckoutItems&&(<section id="public-checkout" className="panel public-checkout">
-    <div className="checkout-heading"><span className="eyebrow">ORDER SUMMARY</span><h2>{customer?"Complete your order":"Sign in to checkout"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"Create or sign in to your customer account before checkout."}</p></div>
-    {!customer?<div className="customer-checkout-gate"><div className="customer-checkout-gate-icon"><UserRound size={22}/></div><strong>Your order is saved.</strong><span>Sign in to checkout and keep your order history and tracking together.</span><button className="primary-button big full" type="button" onClick={()=>onLogin?.("login")}>Sign in to checkout <LogIn size={17}/></button><button className="ghost-button full" type="button" onClick={()=>onLogin?.("signup")}>Create customer account</button></div>:<>
+    <div className="checkout-heading"><span className="eyebrow">ORDER SUMMARY</span><h2>{customer?"Complete your order":"Checkout as guest"}</h2><p className="muted">{customer?"One checkout, then continue to WhatsApp.":"No account required. Enter your details and send your order directly to the seller."}</p></div>
+    {!customer&&<div className="form-note">Guest checkout is available. Order tracking is saved on this device, so keep this browser data to revisit it.</div>}
+    <>
       {items.map(x=><div className="checkout-line" key={x.id}><span><b>{x.quantity}×</b> {x.name}</span><div><button type="button" aria-label={"Decrease "+x.name+" quantity"} onClick={()=>updateCart(x.id,x.quantity-1)}>−</button><strong>{fmt(x.price*x.quantity)}</strong><button type="button" aria-label={"Add one "+x.name} disabled={x.quantity>=Number(x.stock||0)} onClick={()=>updateCart(x.id,x.quantity+1)}>+</button></div></div>)}
       <div className="choice-block"><b>How would you like to receive your order?</b><div className="choice-grid">{deliveryEnabled&&<button type="button" className={ful==="delivery"?"choice active":"choice"} onClick={()=>setFul("delivery")}><Truck size={15}/> Delivery</button>}<button type="button" className={ful==="pickup"?"choice active":"choice"} onClick={()=>setFul("pickup")}><Store size={15}/> Pickup</button></div>{!deliveryEnabled&&<p className="muted">This seller offers pickup only.</p>}</div>
       <Field label="Your name" value={customerForm.name} onChange={e=>setCustomerForm({...customerForm,name:e.target.value})} placeholder="Full name" autoComplete="name"/>
-      <Field label="Order email" type="email" value={customer?.email||""} readOnly autoComplete="email"/>
+      {customer&&<Field label="Account email" type="email" value={customer.email||""} readOnly autoComplete="email"/>}
       <PhoneField label="Phone" value={customerForm.phone} onChange={v=>setCustomerForm({...customerForm,phone:v})} required/>
       {ful==="delivery"&&<Field label="Delivery address" value={customerForm.address} onChange={e=>setCustomerForm({...customerForm,address:e.target.value})} placeholder="Full address" autoComplete="street-address"/>}
       <div className="choice-block"><b>Payment</b><div className="choice-grid"><button type="button" className={pay==="pay_on_delivery"?"choice active":"choice"} onClick={()=>setPay("pay_on_delivery")}>Pay on delivery</button><button type="button" className={pay==="bank_transfer"?"choice active":"choice"} onClick={()=>setPay("bank_transfer")}>Bank transfer</button></div>{pay==="bank_transfer"&&<div className="payment-box">{s.paymentQrUrl&&<img src={s.paymentQrUrl} alt="Payment QR"/>}<strong>Transfer details</strong><span>{s.paymentDetails||"Seller has not added transfer instructions yet."}</span></div>}</div>
@@ -461,9 +484,9 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
       <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
-    </>}
+    </>
    </section>)}
-   {trackingVisible&&customer&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>o.id===id?{...o,whatsappSent:true}:o)))} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
+   {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>o.id===id?{...o,whatsappSent:true}:o)))} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
    </div>}</div>
  </main>
 }
