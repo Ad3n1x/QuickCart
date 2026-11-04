@@ -1,0 +1,29 @@
+.analytics-chart-wrap { position: relative; min-width: 0; }
+.analytics-chart { display: block; width: 100%; overflow: visible; }
+.analytics-chart .chart-hit-target { cursor: crosshair; outline: none; }
+.analytics-chart .chart-hit-target:focus-visible { stroke: var(--accent); stroke-width: 3; }
+.analytics-chart-tooltip {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  gap: 4px;
+  min-width: 142px;
+  max-width: 190px;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 12px 30px rgba(12, 31, 22, .16);
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  font-size: 12px;
+  line-height: 1.35;
+}
+.analytics-chart-tooltip strong { font-size: 12px; }
+.analytics-chart-tooltip span { color: var(--muted); }
+.analytics-chart-tooltip span b { color: var(--ink); font-size: 13px; }
+.analytics-bars .analytics-bar-column { cursor: help; }
+@media (max-width: 600px) {
+  .analytics-chart-tooltip { min-width: 120px; padding: 8px 10px; font-size: 11px; }
+}
