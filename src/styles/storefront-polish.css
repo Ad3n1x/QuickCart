@@ -229,3 +229,177 @@
   .qc-shop-card, .qc-shop-image img, .public-cart-button, .public-category-nav button,
   .qc-shop-stepper button { transition: none !important; }
 }
+
+
+/* Responsive storefront shell + integrated header */
+.public-store-page {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  background:
+    radial-gradient(900px 420px at 90% 0%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 72%),
+    var(--bg);
+}
+.public-store-page > * { min-width: 0; }
+.public-store-announcement {
+  width: 100%;
+  padding: 9px 16px;
+  text-align: center;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--bg) 82%, var(--surface));
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.public-store-nav {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 14px max(18px, calc((100vw - 1320px) / 2));
+  display: grid;
+  grid-template-columns: minmax(180px, auto) minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: clamp(12px, 2vw, 28px);
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 58%, transparent);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  box-shadow: none;
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+}
+.public-brand { min-width: 0; }
+.public-brand > div { min-width: 0; }
+.public-nav-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: min(100%, 560px);
+  min-width: 0;
+  justify-self: center;
+  padding: 0 13px;
+  min-height: 44px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+}
+.public-nav-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.public-nav-search input:focus { box-shadow: none; }
+.public-nav-search button { flex: 0 0 auto; }
+.public-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(7px, 1vw, 14px);
+  min-width: 0;
+}
+.public-nav-actions > * { flex: 0 0 auto; }
+.public-store-hero {
+  width: min(1320px, 100%);
+  margin-inline: auto;
+  padding: clamp(38px, 6vw, 76px) clamp(18px, 3vw, 38px) clamp(30px, 4vw, 52px);
+}
+.public-category-nav {
+  top: 72px;
+  width: min(1320px, 100%);
+  margin-inline: auto;
+  padding-inline: clamp(14px, 2.5vw, 28px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.public-store-grid {
+  width: min(1320px, 100%);
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 370px);
+  gap: clamp(16px, 2.4vw, 30px);
+  padding-inline: clamp(14px, 2.5vw, 28px);
+}
+.public-catalog, .public-cart-tracking-stack, .public-checkout,
+.public-product-grid, .qc-shop-card { min-width: 0; }
+.public-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.qc-shop-image { aspect-ratio: 1 / 1; min-height: 0; }
+.qc-shop-image img { height: 100%; }
+.public-catalog-tools { min-width: 0; }
+.public-sort-control { min-width: 0; }
+.public-sort-control select { max-width: 100%; }
+.public-store-page input, .public-store-page select,
+.public-store-page textarea, .public-store-page button { max-width: 100%; }
+.public-store-page img { max-width: 100%; }
+.public-checkout { width: 100%; }
+
+@media (max-width: 1050px) {
+  .public-store-nav {
+    grid-template-columns: minmax(150px, auto) minmax(150px, 1fr) auto;
+    padding-inline: 18px;
+    gap: 12px;
+  }
+  .public-store-grid { grid-template-columns: minmax(0, 1fr) 320px; }
+  .public-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .public-store-nav {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 9px 12px;
+    padding: 11px 14px;
+  }
+  .public-brand { grid-column: 1; grid-row: 1; }
+  .public-nav-actions { grid-column: 2; grid-row: 1; }
+  .public-nav-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+    min-height: 42px;
+  }
+  .public-category-nav { top: 116px; }
+  .public-store-hero { padding: 38px 18px 28px; }
+  .public-store-grid {
+    grid-template-columns: minmax(0, 1fr);
+    padding-inline: 14px;
+    gap: 20px;
+  }
+  .public-cart-tracking-stack { width: 100%; }
+  .public-checkout { position: static; }
+  .public-catalog-head { align-items: flex-start; }
+}
+@media (max-width: 480px) {
+  .public-store-announcement { padding: 8px 10px; font-size: 10px; }
+  .public-store-nav { padding: 10px 11px; gap: 8px; }
+  .public-brand { gap: 7px; }
+  .public-brand b { max-width: 36vw; font-size: 13px; }
+  .public-brand small { max-width: 36vw; font-size: 10px; }
+  .public-brand .qc-logo { width: 32px !important; height: 32px !important; }
+  .public-nav-actions { gap: 5px; }
+  .public-nav-actions .public-nav-link { min-height: 36px; padding: 6px 7px; font-size: 11px; }
+  .public-cart-button { min-height: 36px; padding: 6px 9px; gap: 5px; }
+  .public-cart-button span { display: none; }
+  .public-nav-search { min-height: 40px; padding-inline: 10px; }
+  .public-category-nav { top: 108px; padding-block: 9px; }
+  .public-store-hero { padding: 32px 14px 24px; }
+  .public-store-hero-copy h1 { font-size: clamp(32px, 10vw, 44px); }
+  .public-hero-search-card { min-width: 0; }
+  .public-store-grid { padding-inline: 11px; }
+  .public-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .qc-shop-info { padding: 11px 10px 8px; }
+  .qc-shop-actions { padding: 0 10px 10px; }
+  .qc-shop-info h3 { font-size: 13px; }
+  .qc-shop-info p { font-size: 11px; }
+  .qc-shop-price { font-size: 15px; }
+  .qc-shop-stepper { grid-template-columns: 36px minmax(20px, 1fr) 36px; }
+  .public-catalog-tools { gap: 8px; }
+  .public-catalog-tools > * { min-width: 0; }
+  .public-sort-control select { width: 100%; }
+}
+@media (max-width: 360px) {
+  .public-nav-actions .public-nav-link { font-size: 10px; padding-inline: 5px; }
+  .public-brand b { max-width: 31vw; }
+  .public-brand small { max-width: 31vw; }
+  .public-product-grid { grid-template-columns: minmax(0, 1fr); }
+  .qc-shop-image { aspect-ratio: 1.2 / 1; }
+}
