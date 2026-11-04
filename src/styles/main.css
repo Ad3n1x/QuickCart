@@ -3429,3 +3429,22 @@ input::placeholder,textarea::placeholder{ text-transform:capitalize; }
 body #root *{text-transform:capitalize!important}
 body #root input,body #root textarea,body #root code,body #root pre,body #root kbd,body #root samp,body #root [class*="email"],body #root [class*="url"]{text-transform:none!important}
 body #root input::placeholder,body #root textarea::placeholder{ text-transform:capitalize!important }
+
+
+/* Exact data must never inherit the app's Title Case presentation. */
+body #root .exact-value,
+body #root .account-profile small,
+body #root .phone-field,
+body #root [class*="email"],
+body #root [class*="phone"],
+body #root [class*="reference"],
+body #root [class*="transaction"],
+body #root [class*="identifier"],
+body #root [class*="username"],
+body #root [class*="url"],
+body #root [class*="sku"],
+body #root input[type="email"],
+body #root input[type="tel"],
+body #root input[type="url"],
+body #root [data-preserve-case],
+body #root [data-exact-value] { text-transform:none!important; }
