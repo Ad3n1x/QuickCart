@@ -3423,3 +3423,9 @@ button{white-space:normal;line-height:1.25}
 body{ text-transform:capitalize; }
 input,textarea,code,pre,kbd,samp,.account-profile small,[class*="email"],[class*="url"],[class*="link-card"] code{ text-transform:none; }
 input::placeholder,textarea::placeholder{ text-transform:capitalize; }
+
+
+/* Enforce the requested Title Case across the app, overriding legacy uppercase component rules. */
+body #root *{text-transform:capitalize!important}
+body #root input,body #root textarea,body #root code,body #root pre,body #root kbd,body #root samp,body #root [class*="email"],body #root [class*="url"]{text-transform:none!important}
+body #root input::placeholder,body #root textarea::placeholder{ text-transform:capitalize!important }
