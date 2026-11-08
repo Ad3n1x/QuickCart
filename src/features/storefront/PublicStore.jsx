@@ -102,7 +102,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
   {msg&&<div className="form-success customer-status-message" role="status">{msg}</div>}
  </section>
 }
-function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
+function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut,demoMode=false}){
  const[q,setQ]=useState(""),[activeCategory,setActiveCategory]=useState("All"),[sortBy,setSortBy]=useState("featured"),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
@@ -201,7 +201,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
  const total=Math.max(0,subtotal+delivery-discount);
  const hasCheckoutItems=items.length>0;
  const cartCount=items.reduce((sum,item)=>sum+item.quantity,0);
- const ready=Boolean(hasCheckoutItems&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
+ const ready=Boolean(!demoMode&&hasCheckoutItems&&ful&&customerForm.name.trim()&&customerForm.phone.trim()&&(ful==="pickup"||customerForm.address.trim())&&s?.vendorPhone);
 
  useEffect(()=>{
    // Do not prune a restored cart while storefront products are still loading.
@@ -261,6 +261,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
 
  const apply=async()=>{
    setMsg("");setDisc(null);
+   if(demoMode){setMsg("Discount validation is disabled in this storefront preview.");return}
    const normalized=code.trim().toUpperCase();
    if(!normalized)return;
    if(!items.length){setMsg("Add an item before applying a discount.");return}
@@ -483,7 +484,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       {msg&&<div className={msg.startsWith("Order")?"form-success":"form-error"} role="status">{msg}</div>}
       <CustomerReceiptScanner value={receiptData} onChange={setReceiptData}/>
       <div className="checkout-total"><span>Total</span><strong>{fmt(total)}</strong></div>
-      <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
+      <button className="primary-button big full" disabled={!ready||busy} onClick={checkout}>{demoMode?"Checkout disabled in preview":busy?"Creating order…":"Continue on WhatsApp"} <MessageCircle size={18}/></button>
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
     </>
    </section>)}
