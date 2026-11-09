@@ -107,6 +107,8 @@ app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
     const updatedAt=now(),result=await orders.updateOne(eligible,{$set:{status:'cancelled',updatedAt}});
     if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh tracking and try again.'});
     for(const item of order.items||[])await database.collection('products').updateOne({id:item.id,storeId:order.storeId},{$inc:{stock:Math.max(0,Number(item.quantity)||0)}});
+    const cancelledAt=now();
+    await database.collection('deliveries').updateMany({storeId:order.storeId,orderId:order.id,status:{$nin:['delivered','failed','cancelled']}},{$set:{status:'cancelled',updatedAt:cancelledAt},$push:{timeline:{status:'cancelled',at:cancelledAt,by:'customer',note:'Order cancelled by customer'}}});
     const updated=await orders.findOne({id:order.id});
     return res.json({cancelled:true,order:{id:updated.id,storeId:updated.storeId,items:updated.items,total:updated.total,status:updated.status,fulfillment:updated.fulfillment,updatedAt:updated.updatedAt,createdAt:updated.createdAt,customerName:updated.customerName,customerEmail:updated.customerEmail,customerPhone:updated.customerPhone,address:updated.address,paymentMethod:updated.paymentMethod,receiptData:updated.receiptData}});
   }
@@ -205,6 +207,8 @@ app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
  if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh and try again.'});
  if(status==='cancelled'&&!['cancelled','delivered','picked_up'].includes(current.status)){
    for(const item of current.items||[])await database.collection('products').updateOne({id:item.id,storeId:store.id},{$inc:{stock:Math.max(0,Number(item.quantity)||0)}});
+   const cancelledAt=now();
+   await database.collection('deliveries').updateMany({storeId:store.id,orderId:current.id,status:{$nin:['delivered','failed','cancelled']}},{$set:{status:'cancelled',updatedAt:cancelledAt},$push:{timeline:{status:'cancelled',at:cancelledAt,by:req.user.sub,note:'Order cancelled by seller'}}});
  }
  res.json({status});
 }catch(error){console.error(error);res.status(500).json({error:'Unable to update order status.'});}});
