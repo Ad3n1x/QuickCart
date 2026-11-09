@@ -149,6 +149,50 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    const interval=setInterval(syncOrders,25000);
    return()=>{stopped=true;clearInterval(interval);removeEventListener("focus",onVisible);document.removeEventListener("visibilitychange",onVisible)};
  },[data?.store?.id,customer?.email,customerOrdersHydrated]);
+ 
+ // Guest orders cannot use the signed-in customer order-history endpoint.
+ // Poll each guest order through its own confirmation token so seller status
+ // changes reach the same device without requiring a manual refresh.
+ useEffect(()=>{
+   const storeId=data?.store?.id,email=emailOf(customer?.email);
+   if(!storeId||email||!customerOrdersHydrated)return;
+   let stopped=false,requesting=false;
+   const syncGuestOrders=async()=>{
+     if(stopped||requesting||document.visibilityState==="hidden")return;
+     const guestOrders=customerOrders.filter(order=>String(order?.storeId)===String(storeId)&&(order?.guestCheckout||!order?.customerEmail));
+     if(!guestOrders.length)return;
+     requesting=true;
+     try{
+       const results=await Promise.all(guestOrders.map(async order=>{
+         const token=localStorage.getItem("qc_order_token:"+order.id);
+         if(!token)return null;
+         try{
+           const result=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-status",{method:"POST",body:body({confirmationToken:token})});
+           return {id:String(order.id),status:result.status,updatedAt:result.updatedAt};
+         }catch{return null}
+       }));
+       if(stopped)return;
+       const byId=new Map(results.filter(Boolean).map(result=>[result.id,result]));
+       if(!byId.size)return;
+       setCustomerOrders(current=>{
+         let changed=false;
+         const next=current.map(order=>{
+           const update=byId.get(String(order.id));
+           if(!update||!update.status||update.status===order.status)return order;
+           changed=true;
+           return {...order,status:update.status,updatedAt:update.updatedAt||order.updatedAt};
+         });
+         return changed?dedupeCustomerOrders(next):current;
+       });
+     }finally{requesting=false}
+   };
+   const onVisible=()=>{if(document.visibilityState==="visible")syncGuestOrders()};
+   syncGuestOrders();
+   const interval=setInterval(syncGuestOrders,12000);
+   addEventListener("focus",onVisible);
+   document.addEventListener("visibilitychange",onVisible);
+   return()=>{stopped=true;clearInterval(interval);removeEventListener("focus",onVisible);document.removeEventListener("visibilitychange",onVisible)};
+ },[data?.store?.id,customer?.email,customerOrdersHydrated,customerOrders]);
 
  useEffect(()=>{
    const storeId=data?.store?.id,email=emailOf(customer?.email);
