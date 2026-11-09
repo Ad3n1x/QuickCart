@@ -1,3 +1,4 @@
 /* Stable Vite entrypoint; application styles live in src/styles/main.css. */
 @import "./styles/main.css";
 @import "./styles/premium-polish.css";
+@import "./styles/product-gallery.css";
