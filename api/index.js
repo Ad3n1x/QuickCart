@@ -14,7 +14,7 @@ import { createDatabaseConnection } from "../server/src/config/database.js";
 import { createAuthServices } from "../server/src/middleware/auth.js";
 import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity.js";
 import { PLAN_CONFIG,planFor,planStoreLimit } from "../server/src/config/plans.js";
-import { createVerificationEmailSender } from "../server/src/services/email.js";
+import { createVerificationEmailSender,createOrderUpdateEmailSender } from "../server/src/services/email.js";
 import { createPaymentServices } from "../server/src/services/payments.js";
 import { getUserStore } from "../server/src/services/stores.js";
 
@@ -47,11 +47,12 @@ if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 const db = createDatabaseConnection(mongoUri);
 const { tokenFor, auth, hashToken, customerTokenFor, customerAuth } = createAuthServices(jwtSecret);
 const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
+const sendOrderUpdateEmail = createOrderUpdateEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const { uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
 
 app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail);if(!ready)return res.status(503).json({ok:false,database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable'});res.json({ok:true,database:'connected',authentication:'configured',emailProvider:'configured'});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
 
-const routeDependencies = { db, auth, customerAuth, customerTokenFor, tokenFor, hashToken, emailPattern, createOtp, sendVerificationEmail, bcrypt, randomUUID, randomBytes, jwt, jwtSecret, now, slugify, planFor, planStoreLimit, PLAN_CONFIG, uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction, getUserStore };
+const routeDependencies = { db, auth, customerAuth, customerTokenFor, tokenFor, hashToken, emailPattern, createOtp, sendVerificationEmail, sendOrderUpdateEmail, bcrypt, randomUUID, randomBytes, jwt, jwtSecret, now, slugify, planFor, planStoreLimit, PLAN_CONFIG, uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction, getUserStore };
 registerCustomerAuthRoutes(app, routeDependencies);
 registerSellerAuthRoutes(app, routeDependencies);
 registerStoreRoutes(app, routeDependencies);
