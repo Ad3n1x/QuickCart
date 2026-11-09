@@ -5,7 +5,6 @@
 ## Live application
 
 - **Website:** https://quick-cart-three-chi.vercel.app/
-- **API service:** https://adverse-api-7yim.onrender.com/ (QuickCart uses its own configured API service; use the deployment environment's current API URL when configuring a local or hosted build.)
 - **Source code:** https://github.com/Ad3n1x/QuickCart
 - **Developer portfolio:** https://engnradeniran.com/
 
