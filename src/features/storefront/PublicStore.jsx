@@ -70,6 +70,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
  const[busy,setBusy]=useState(""),[busyAction,setBusyAction]=useState(""),[msg,setMsg]=useState(""),[refreshing,setRefreshing]=useState(false),[lastChecked,setLastChecked]=useState(null);
  useEffect(()=>{if(!msg)return;const timer=window.setTimeout(()=>setMsg(""),120000);return()=>window.clearTimeout(timer)},[msg]);
  const confirm=async order=>{setBusy(order.id);setBusyAction("confirm");setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("This device no longer has the secure order token. Please use the same browser used to place the order.");const d=await api("/api/orders/"+order.id+"/customer-confirm",{method:"POST",body:body({confirmationToken:token})});setMsg(d.status==="picked_up"?"Pickup confirmed successfully.":"Delivery confirmed successfully.");setLastChecked(new Date());onRefresh?.()}catch(e){setMsg(e.message||"Could not confirm the order.")}finally{setBusy("");setBusyAction("")}};
+  const markWhatsAppSent=async order=>{if(busy===order.id)return;setBusy(order.id);setBusyAction("sent");setMsg("");try{const token=localStorage.getItem("qc_order_token:"+order.id);if(!token)throw new Error("The secure order token is missing. Open the order on the device and browser used to place it.");const d=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-whatsapp-sent",{method:"POST",body:body({confirmationToken:token})});if(d.whatsappSent!==true)throw new Error("The server did not save the WhatsApp confirmation. Please try again.");onWhatsAppSent?.(order.id,d);setMsg("WhatsApp confirmation saved. Your order tracking is updated.");setLastChecked(new Date());}catch(e){setMsg(e.message||"Could not save the WhatsApp confirmation. Please try again.");}finally{setBusy("");setBusyAction("")}};
  const modify=async(order,change)=>{if(busy===order.id)return;setBusy(order.id);setBusyAction("update");setMsg("");try{const result=await onModifyOrder?.(order,change);if(!result?.order?.id)throw new Error("The server did not confirm this order update. Refresh tracking and try again.");setMsg(result.cancelled?"Order cancelled. Stock has been restored and tracking has been removed.":"Order updated. Product stock and tracking have been updated.");setLastChecked(new Date());}catch(e){setMsg(e.message||"Could not update this order. Please try again.");}finally{setBusy("");setBusyAction("")}};
  const refresh=async()=>{if(!onRefresh)return;setRefreshing(true);setMsg("");try{await onRefresh();setLastChecked(new Date());setMsg("Order status updated.")}catch{setMsg("Could not update the order status. Check your connection and try again.")}finally{setRefreshing(false)}};
  const activeTrackingOrders=orders.filter(o=>o.status!=="cancelled"&&!(o.fulfillment==="pickup"&&o.status==="picked_up"));
@@ -95,7 +96,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
       {isPickup&&ready&&<div className="customer-pickup-ready-note"><strong>Ready For Pickup</strong><span>Order #{String(o.id).slice(0,8)} is ready. Collect it from the store, then confirm your pickup below.</span></div>}
       {isPickup&&preparing&&!done&&<div className="customer-pickup-wait-note"><span className="customer-pickup-dot" aria-hidden="true"/><span>We’re waiting for the seller to mark this order ready. This status will update automatically.</span></div>}
       <div className="customer-order-actions">
-       {cancelled?<strong className="customer-confirmed">Cancelled</strong>:done?<strong className="customer-confirmed">Confirmed ✓</strong>:action&&actionable?<button className={"primary-button "+(ready?"pickup-confirm-button":"")} disabled={busy===o.id} onClick={()=>!sent?onWhatsAppSent?.(o.id):confirm(o)}>{busy===o.id?(busyAction==="update"?"Updating…":"Confirming…"):action}</button>:<span className="customer-order-passive-status"><i/>{isPickup?"Preparing Your Order":"Preparing Your Order"}</span>}
+       {cancelled?<strong className="customer-confirmed">Cancelled</strong>:done?<strong className="customer-confirmed">Confirmed ✓</strong>:action&&actionable?<button className={"primary-button "+(ready?"pickup-confirm-button":"")} disabled={busy===o.id} onClick={()=>!sent?markWhatsAppSent(o):confirm(o)}>{busy===o.id?(busyAction==="update"?"Updating…":busyAction==="sent"?"Saving…":"Confirming…"):action}</button>:<span className="customer-order-passive-status"><i/>{isPickup?"Preparing Your Order":"Preparing Your Order"}</span>}
        <CustomerReceiptCard order={o}/>
       </div>
     </article>
@@ -136,7 +137,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
          const currentById=new Map(current.map(order=>[String(order.id),order]));
          return dedupeCustomerOrders(result.orders
            .filter(order=>String(order.storeId)===String(storeId))
-           .map(order=>({...order,whatsappSent:currentById.get(String(order.id))?.whatsappSent===true||localStorage.getItem("qc_whatsapp_sent:"+String(order.id))==="1",storeName:data?.store?.storeName||"Store"}))
+           .map(order=>({...order,whatsappSent:order.whatsappSent===true||currentById.get(String(order.id))?.whatsappSent===true||localStorage.getItem("qc_whatsapp_sent:"+String(order.id))==="1",storeName:data?.store?.storeName||"Store"}))
          ).slice(0,10);
        });
      }catch{
@@ -168,7 +169,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
          if(!token)return null;
          try{
            const result=await api("/api/orders/"+encodeURIComponent(order.id)+"/customer-status",{method:"POST",body:body({confirmationToken:token})});
-           return {id:String(order.id),status:result.status,updatedAt:result.updatedAt};
+           return {id:String(order.id),status:result.status,whatsappSent:result.whatsappSent===true,updatedAt:result.updatedAt};
          }catch{return null}
        }));
        if(stopped)return;
@@ -180,7 +181,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
            const update=byId.get(String(order.id));
            if(!update||!update.status||update.status===order.status)return order;
            changed=true;
-           return {...order,status:update.status,updatedAt:update.updatedAt||order.updatedAt};
+           return {...order,status:update.status,whatsappSent:update.whatsappSent===true||order.whatsappSent===true,updatedAt:update.updatedAt||order.updatedAt};
          });
          return changed?dedupeCustomerOrders(next):current;
        });
@@ -216,7 +217,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
        let cached=[];
        try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");cached=Array.isArray(saved)?saved.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(storeId)):[]}catch{}
        const cachedById=new Map(cached.map(o=>[String(o.id),o]));
-       setCustomerOrders(dedupeCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true||localStorage.getItem("qc_whatsapp_sent:"+String(o.id))==="1",storeName:data?.store?.storeName||"Store"})).slice(0,10)));
+       setCustomerOrders(dedupeCustomerOrders(remote.map(o=>({...o,whatsappSent:o.whatsappSent===true||cachedById.get(String(o.id))?.whatsappSent===true||localStorage.getItem("qc_whatsapp_sent:"+String(o.id))==="1",storeName:data?.store?.storeName||"Store"})).slice(0,10)));
      }catch{
        if(cancelled)return;
        try{
@@ -536,7 +537,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
     </>
    </section>)}
-   {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>{try{localStorage.setItem("qc_whatsapp_sent:"+String(id),"1")}catch{}setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>String(o.id)===String(id)?{...o,whatsappSent:true}:o)))}} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
+   {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={(id,result)=>{try{localStorage.setItem("qc_whatsapp_sent:"+String(id),"1")}catch{}setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>String(o.id)===String(id)?{...o,whatsappSent:result?.whatsappSent===true,whatsappSentAt:result?.whatsappSentAt||o.whatsappSentAt,updatedAt:result?.updatedAt||o.updatedAt}:o)))}} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
    </div>}</div>
  </main>
  {expandedProductImage&&<div className="qc-image-lightbox" role="dialog" aria-modal="true" aria-label={"Larger product image: "+expandedProductImage.name} onClick={()=>setExpandedProductImage(null)}>
