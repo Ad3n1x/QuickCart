@@ -6,7 +6,7 @@
 
 - **Website:** https://quick-cart-three-chi.vercel.app/
 - **Source code:** https://github.com/Ad3n1x/QuickCart
-- **Developer portfolio:** https://engnradeniran.com/
+- **Developer portfolio:** https://portfolio-sandy-seven-w0bgdmliak.vercel.app/
 
 ## Product capabilities
 
@@ -81,4 +81,4 @@ QuickCart is currently being developed as an early-stage product for small busin
 Built by **AD3N1X**.
 
 - GitHub: https://github.com/Ad3n1x
-- Portfolio: https://engnradeniran.com/
+- Portfolio: https://portfolio-sandy-seven-w0bgdmliak.vercel.app/
