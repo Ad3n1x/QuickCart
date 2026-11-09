@@ -26,7 +26,7 @@ const isAllowedOrigin = origin => !origin || allowedOrigins.has(origin);
 app.use((req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');if(req.path.startsWith('/api/'))res.setHeader('Cache-Control','no-store');if(req.secure||req.headers['x-forwarded-proto']==='https')res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');next();});
 app.use((req,res,next)=>{if(req.path.startsWith('/api/') && process.env.NODE_ENV==='production' && req.headers['x-forwarded-proto']!=='https')return res.status(400).json({error:'HTTPS is required.',code:'HTTPS_REQUIRED'});next();});
 app.use(cors({ origin: (origin, callback) => { if (isAllowedOrigin(origin)) return callback(null, true); callback(new Error('Origin not allowed by CORS.')); } }));
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '8mb' }));
 
 const mongoUri = process.env.MONGODB_URI;
 const jwtSecret = process.env.JWT_SECRET;
