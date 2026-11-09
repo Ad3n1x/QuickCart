@@ -503,10 +503,10 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       </div>
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
-      const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0),images=Array.isArray(x.imageUrls)&&x.imageUrls.length?x.imageUrls:(x.imageUrl?[x.imageUrl]:[]);
+      const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0),images=Array.isArray(x.imageUrls)&&x.imageUrls.length?x.imageUrls:(x.imageUrl?[x.imageUrl]:[]),usePhotos=x.visualType?x.visualType==="photos":images.length>0;
       return <article className="qc-shop-card" key={x.id}>
        <div className="qc-shop-image">
-        {images.length?<button type="button" className="qc-shop-image-preview" onClick={()=>setExpandedProductImage({images,index:0,name:x.name})} aria-label={"View product photos of "+x.name}><img src={images[0]} alt={x.name}/><span className="qc-shop-image-zoom"><Eye size={15}/> View {images.length>1?images.length+" photos":"image"}</span></button>:<span className="qc-shop-emoji" aria-label={x.name}>{x.emoji||"🛍️"}</span>}
+        {usePhotos&&images.length?<button type="button" className="qc-shop-image-preview" onClick={()=>setExpandedProductImage({images,index:0,name:x.name})} aria-label={"View product photos of "+x.name}><img src={images[0]} alt={x.name}/><span className="qc-shop-image-zoom"><Eye size={15}/> View {images.length>1?images.length+" photos":"image"}</span></button>:<span className="qc-shop-emoji" aria-label={x.name}>{x.emoji||"🛍️"}</span>}
         <span className={"public-stock-pill"+(stock<=0?" is-sold-out":"")}>{stock<=0?"Sold out":stock===1?"1 in stock":stock+" in stock"}</span>
        </div>
        <div className="qc-shop-info">
