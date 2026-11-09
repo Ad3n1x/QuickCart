@@ -1,4 +1,11 @@
-export function registerOrderRoutes(app,{db,auth,customerAuth,customerTokenFor,now,randomUUID,randomBytes,hashToken,getUserStore,jwt,jwtSecret,emailPattern}) {
+export function registerOrderRoutes(app,{db,auth,customerAuth,customerTokenFor,now,randomUUID,randomBytes,hashToken,getUserStore,jwt,jwtSecret,emailPattern,sendOrderUpdateEmail}) {
+const notifyOrderUpdate=async(database,order,storeName)=>{
+ try{
+  if(typeof sendOrderUpdateEmail!=="function"||!order?.customerEmail)return;
+  const store=storeName?null:await database.collection("stores").findOne({id:order.storeId},{projection:{storeName:1}});
+  await sendOrderUpdateEmail(order,storeName||store?.storeName||"QuickCart Store");
+ }catch(error){console.error("Customer order email notification failed:",error?.message||error)}
+};
 app.post('/api/orders',async(req,res)=>{try{
  const database=await db();
  const customerAuthHeader=String(req.headers.authorization||'').trim();
@@ -110,6 +117,7 @@ app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
     const cancelledAt=now();
     await database.collection('deliveries').updateMany({storeId:order.storeId,orderId:order.id,status:{$nin:['delivered','failed','cancelled']}},{$set:{status:'cancelled',updatedAt:cancelledAt},$push:{timeline:{status:'cancelled',at:cancelledAt,by:'customer',note:'Order cancelled by customer'}}});
     const updated=await orders.findOne({id:order.id});
+    await notifyOrderUpdate(database,updated);
     return res.json({cancelled:true,order:{id:updated.id,storeId:updated.storeId,items:updated.items,total:updated.total,status:updated.status,fulfillment:updated.fulfillment,updatedAt:updated.updatedAt,createdAt:updated.createdAt,customerName:updated.customerName,customerEmail:updated.customerEmail,customerPhone:updated.customerPhone,address:updated.address,paymentMethod:updated.paymentMethod,receiptData:updated.receiptData}});
   }
   if(!['reduce','increase'].includes(action))return res.status(400).json({error:'Unsupported order change.'});
@@ -210,6 +218,7 @@ app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
    const cancelledAt=now();
    await database.collection('deliveries').updateMany({storeId:store.id,orderId:current.id,status:{$nin:['delivered','failed','cancelled']}},{$set:{status:'cancelled',updatedAt:cancelledAt},$push:{timeline:{status:'cancelled',at:cancelledAt,by:req.user.sub,note:'Order cancelled by seller'}}});
  }
+ await notifyOrderUpdate(database,{...current,status,updatedAt:now()},store.storeName);
  res.json({status});
 }catch(error){console.error(error);res.status(500).json({error:'Unable to update order status.'});}});
 }
