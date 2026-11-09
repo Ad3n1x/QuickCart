@@ -105,7 +105,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
  </section>
 }
 function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
- const[q,setQ]=useState(""),[activeCategory,setActiveCategory]=useState("All"),[sortBy,setSortBy]=useState("featured"),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false);
+ const[q,setQ]=useState(""),[activeCategory,setActiveCategory]=useState("All"),[sortBy,setSortBy]=useState("featured"),[cart,setCart]=useState({}),[cartOwner,setCartOwner]=useState(""),[customerForm,setCustomerForm]=useState({name:customer?.name||"",phone:"",address:""}),[ful,setFul]=useState("pickup"),[pay,setPay]=useState("pay_on_delivery"),[code,setCode]=useState(""),[disc,setDisc]=useState(null),[receiptData,setReceiptData]=useState({merchant:"",date:"",total:"",tax:"",receiptNo:""}),[msg,setMsg]=useState(""),[busy,setBusy]=useState(false),[orderEditBusy,setOrderEditBusy]=useState(""),[customerOrders,setCustomerOrders]=useState([]),[customerOrdersHydrated,setCustomerOrdersHydrated]=useState(false),[focusCartAfterAdd,setFocusCartAfterAdd]=useState(false),[trackingVisible,setTrackingVisible]=useState(false),[expandedProductImage,setExpandedProductImage]=useState(null);
  useEffect(()=>{if(!msg)return;const timer=window.setTimeout(()=>setMsg(""),120000);return()=>window.clearTimeout(timer)},[msg]);
 
  useEffect(()=>{if(customer?.name)setCustomerForm(v=>({...v,name:customer.name}));},[customer?.id,customer?.name]);
@@ -455,9 +455,8 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
       return <article className="qc-shop-card" key={x.id}>
        <div className="qc-shop-image">
-        {x.imageUrl?<img src={x.imageUrl} alt={x.name}/>:<span>{x.emoji||"🛍️"}</span>}
-        {stock<=0&&<span className="public-stock-pill">Sold out</span>}
-        {stock>0&&stock<=5&&<span className="public-stock-pill">Only {stock} left</span>}
+        {x.imageUrl?<button type="button" className="qc-shop-image-preview" onClick={()=>setExpandedProductImage({url:x.imageUrl,name:x.name})} aria-label={"View larger image of "+x.name}><img src={x.imageUrl} alt={x.name}/><span className="qc-shop-image-zoom"><Eye size={15}/> View image</span></button>:<span className="qc-shop-emoji" aria-label={x.name}>{x.emoji||"🛍️"}</span>}
+        <span className={"public-stock-pill"+(stock<=0?" is-sold-out":"")}>{stock<=0?"Sold out":stock===1?"1 in stock":stock+" in stock"}</span>
        </div>
        <div className="qc-shop-info">
         <h3>{x.name}</h3><p>{x.description||"Available from this store."}</p>
@@ -496,6 +495,13 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>o.id===id?{...o,whatsappSent:true}:o)))} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
    </div>}</div>
  </main>
+ {expandedProductImage&&<div className="qc-image-lightbox" role="dialog" aria-modal="true" aria-label={"Larger product image: "+expandedProductImage.name} onClick={()=>setExpandedProductImage(null)}>
+  <div className="qc-image-lightbox-panel" onClick={event=>event.stopPropagation()}>
+   <button type="button" className="qc-image-lightbox-close" onClick={()=>setExpandedProductImage(null)} aria-label="Close enlarged image"><X size={21}/></button>
+   <img src={expandedProductImage.url} alt={expandedProductImage.name}/>
+   <p>{expandedProductImage.name}</p>
+  </div>
+ </div>}
 }
 
 export default PublicStore;
