@@ -179,9 +179,11 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
          let changed=false;
          const next=current.map(order=>{
            const update=byId.get(String(order.id));
-           if(!update||!update.status||update.status===order.status)return order;
+           if(!update||!update.status)return order;
+           const whatsappSent=update.whatsappSent===true||order.whatsappSent===true;
+           if(update.status===order.status&&whatsappSent===(order.whatsappSent===true))return order;
            changed=true;
-           return {...order,status:update.status,whatsappSent:update.whatsappSent===true||order.whatsappSent===true,updatedAt:update.updatedAt||order.updatedAt};
+           return {...order,status:update.status,whatsappSent,updatedAt:update.updatedAt||order.updatedAt};
          });
          return changed?dedupeCustomerOrders(next):current;
        });
