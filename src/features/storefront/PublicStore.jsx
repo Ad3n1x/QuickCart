@@ -74,7 +74,7 @@ function CustomerOrderStatus({orders,onRefresh,onWhatsAppSent,onModifyOrder,onDi
  const activeTrackingOrders=orders.filter(o=>!(o.fulfillment==="pickup"&&o.status==="picked_up"));
  if(!activeTrackingOrders.length)return null;
  return <section id="customer-order-tracking" className="panel customer-order-status customer-tracking-auto">
-  <div className="panel-head customer-order-status-head"><div><div className="customer-status-title-row"><span className="eyebrow">ORDER TRACKING</span><span className="customer-live-indicator"><i/>LIVE</span></div><h2>Track Your Orders</h2><p className="muted">Order status refreshes automatically while you wait. No separate cart or manual tracking checks needed.</p></div><div className="customer-status-head-actions"><span className="customer-last-checked">{lastChecked?"Updated "+lastChecked.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):"Auto-updating"}</span><button className="ghost-button customer-status-refresh" type="button" onClick={refresh} disabled={refreshing}>{refreshing?"Checking…":"Refresh"} <span aria-hidden="true">↻</span></button></div></div>
+  <div className="panel-head customer-order-status-head"><div><div className="customer-status-title-row"><span className="eyebrow">ORDER TRACKING</span><span className="customer-live-indicator"><i/>LIVE</span></div><h2>My Orders & Updates</h2><p className="muted">Your order history, cancellation status and delivery updates stay together here. This page refreshes automatically.</p></div><div className="customer-status-head-actions"><span className="customer-last-checked">{lastChecked?"Updated "+lastChecked.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):"Auto-updating"}</span><button className="ghost-button customer-status-refresh" type="button" onClick={refresh} disabled={refreshing}>{refreshing?"Checking…":"Refresh"} <span aria-hidden="true">↻</span></button></div></div>
   <div className="customer-order-list">
    {activeTrackingOrders.map(o=>{
     const sent=o.whatsappSent===true,isPickup=o.fulfillment==="pickup",cancelled=o.status==="cancelled",ready=isPickup&&o.status==="ready",done=["picked_up","delivered"].includes(o.status),preparing=isPickup&&["new","confirmed","processing"].includes(o.status);
@@ -113,6 +113,9 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    if(!data?.store)return;
    setFul(prev=>prev||"pickup");
  },[data?.store?.id,data?.store?.deliveryEnabled]);
+
+ // Restore the customer order hub after reload/login, not only immediately after checkout.
+ useEffect(()=>{if(customerOrdersHydrated&&customerOrders.length)setTrackingVisible(true)},[customerOrdersHydrated,customerOrders.length]);
 
  useEffect(()=>{
    const storeId=data?.store?.id,email=emailOf(customer?.email);
@@ -415,7 +418,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search products…" aria-label="Search products"/>
       {q&&<button type="button" onClick={()=>setQ("")} aria-label="Clear search">×</button>}
     </div>
-    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={onSignOut}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<button className="public-cart-button" type="button" disabled={!cartCount} onClick={()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"})}><ShoppingBag size={17}/><span>Cart</span><b>{cartCount}</b></button></div>
+    <div className="public-nav-actions">{customer?<><span className="public-customer-name"><UserRound size={14}/> {customer.name}</span><button className="public-nav-link" type="button" onClick={()=>{setTrackingVisible(true);requestAnimationFrame(()=>document.getElementById("customer-order-tracking")?.scrollIntoView({behavior:"smooth",block:"start"}))}}>My Orders {customerOrders.length>0?<b className="customer-orders-count">{customerOrders.filter(o=>!["cancelled","delivered","picked_up"].includes(o.status)).length}</b>:null}</button><button className="public-nav-link" type="button" onClick={onSignOut}>Sign out</button></>:<button className="public-nav-link public-signin-link" type="button" onClick={()=>onLogin?.("login")}>Sign in</button>}<button className="public-cart-button" type="button" disabled={!cartCount} onClick={()=>document.getElementById("public-checkout")?.scrollIntoView({behavior:"smooth",block:"start"})}><ShoppingBag size={17}/><span>Cart</span><b>{cartCount}</b></button></div>
   </header>
   <section className="public-store-hero">
     <div className="public-store-hero-copy">
