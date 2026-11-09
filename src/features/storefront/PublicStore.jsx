@@ -359,7 +359,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
        window.location.assign(whatsappUrl);
      }
      localStorage.removeItem(clientOrderKey);
-      setMsg("Order created. WhatsApp checkout opened.");
+      // Successful checkout continues directly to WhatsApp; do not show a success toast.
      setCart({});
      setDisc(null);
      setCode("");
