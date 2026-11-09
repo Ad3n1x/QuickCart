@@ -115,7 +115,7 @@ app.post('/api/orders/:id/customer-update',async(req,res)=>{try{
     if(!result.modifiedCount)return res.status(409).json({error:'This order changed elsewhere. Refresh tracking and try again.'});
     for(const item of order.items||[])await database.collection('products').updateOne({id:item.id,storeId:order.storeId},{$inc:{stock:Math.max(0,Number(item.quantity)||0)}});
     const cancelledAt=now();
-    await database.collection('deliveries').updateMany({storeId:order.storeId,orderId:order.id,status:{$nin:['delivered','failed','cancelled']}},{$set:{status:'cancelled',updatedAt:cancelledAt},$push:{timeline:{status:'cancelled',at:cancelledAt,by:'customer',note:'Order cancelled by customer'}}});
+    await database.collection('deliveries').deleteMany({storeId:order.storeId,orderId:order.id});
     const updated=await orders.findOne({id:order.id});
     await notifyOrderUpdate(database,updated);
     return res.json({cancelled:true,order:{id:updated.id,storeId:updated.storeId,items:updated.items,total:updated.total,status:updated.status,fulfillment:updated.fulfillment,updatedAt:updated.updatedAt,createdAt:updated.createdAt,customerName:updated.customerName,customerEmail:updated.customerEmail,customerPhone:updated.customerPhone,address:updated.address,paymentMethod:updated.paymentMethod,receiptData:updated.receiptData}});
@@ -216,7 +216,7 @@ app.put('/api/orders/:id/status',auth,async(req,res)=>{try{
  if(status==='cancelled'&&!['cancelled','delivered','picked_up'].includes(current.status)){
    for(const item of current.items||[])await database.collection('products').updateOne({id:item.id,storeId:store.id},{$inc:{stock:Math.max(0,Number(item.quantity)||0)}});
    const cancelledAt=now();
-   await database.collection('deliveries').updateMany({storeId:store.id,orderId:current.id,status:{$nin:['delivered','failed','cancelled']}},{$set:{status:'cancelled',updatedAt:cancelledAt},$push:{timeline:{status:'cancelled',at:cancelledAt,by:req.user.sub,note:'Order cancelled by seller'}}});
+   await database.collection('deliveries').deleteMany({storeId:store.id,orderId:current.id});
  }
  await notifyOrderUpdate(database,{...current,status,updatedAt:now()},store.storeName);
  res.json({status});
