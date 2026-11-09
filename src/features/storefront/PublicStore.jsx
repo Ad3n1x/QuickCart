@@ -503,10 +503,10 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       </div>
     </div>
     {visible.length?<div className="public-product-grid">{visible.map(x=>{
-      const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0);
+      const stock=Math.max(0,Number(x.stock)||0),qty=Number(cart[x.id]||0),images=Array.isArray(x.imageUrls)&&x.imageUrls.length?x.imageUrls:(x.imageUrl?[x.imageUrl]:[]);
       return <article className="qc-shop-card" key={x.id}>
        <div className="qc-shop-image">
-        {x.imageUrl?<button type="button" className="qc-shop-image-preview" onClick={()=>setExpandedProductImage({url:x.imageUrl,name:x.name})} aria-label={"View larger image of "+x.name}><img src={x.imageUrl} alt={x.name}/><span className="qc-shop-image-zoom"><Eye size={15}/> View image</span></button>:<span className="qc-shop-emoji" aria-label={x.name}>{x.emoji||"🛍️"}</span>}
+        {images.length?<button type="button" className="qc-shop-image-preview" onClick={()=>setExpandedProductImage({images,index:0,name:x.name})} aria-label={"View product photos of "+x.name}><img src={images[0]} alt={x.name}/><span className="qc-shop-image-zoom"><Eye size={15}/> View {images.length>1?images.length+" photos":"image"}</span></button>:<span className="qc-shop-emoji" aria-label={x.name}>{x.emoji||"🛍️"}</span>}
         <span className={"public-stock-pill"+(stock<=0?" is-sold-out":"")}>{stock<=0?"Sold out":stock===1?"1 in stock":stock+" in stock"}</span>
        </div>
        <div className="qc-shop-info">
@@ -547,11 +547,12 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
    {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={(id,result)=>{try{localStorage.setItem("qc_whatsapp_sent:"+String(id),"1")}catch{}setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>String(o.id)===String(id)?{...o,whatsappSent:result?.whatsappSent===true,whatsappSentAt:result?.whatsappSentAt||o.whatsappSentAt,updatedAt:result?.updatedAt||o.updatedAt}:o)))}} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
    </div>}</div>
  </main>
- {expandedProductImage&&<div className="qc-image-lightbox" role="dialog" aria-modal="true" aria-label={"Larger product image: "+expandedProductImage.name} onClick={()=>setExpandedProductImage(null)}>
-  <div className="qc-image-lightbox-panel" onClick={event=>event.stopPropagation()}>
+ {expandedProductImage&&<div className="qc-image-lightbox" role="dialog" aria-modal="true" aria-label={"Product photos: "+expandedProductImage.name} onClick={()=>setExpandedProductImage(null)}>
+  <div className="qc-image-lightbox-panel qc-product-gallery-lightbox" onClick={event=>event.stopPropagation()}>
    <button type="button" className="qc-image-lightbox-close" onClick={()=>setExpandedProductImage(null)} aria-label="Close enlarged image"><X size={21}/></button>
-   <img src={expandedProductImage.url} alt={expandedProductImage.name}/>
-   <p>{expandedProductImage.name}</p>
+   <img src={expandedProductImage.images[expandedProductImage.index]} alt={expandedProductImage.name+" image "+(expandedProductImage.index+1)}/>
+   <div className="qc-gallery-controls"><button type="button" onClick={()=>setExpandedProductImage(v=>({...v,index:(v.index-1+v.images.length)%v.images.length}))} disabled={expandedProductImage.images.length<2} aria-label="Previous image">‹</button><p>{expandedProductImage.name} · {expandedProductImage.index+1} / {expandedProductImage.images.length}</p><button type="button" onClick={()=>setExpandedProductImage(v=>({...v,index:(v.index+1)%v.images.length}))} disabled={expandedProductImage.images.length<2} aria-label="Next image">›</button></div>
+   {expandedProductImage.images.length>1&&<div className="qc-gallery-thumbnails">{expandedProductImage.images.map((url,index)=><button type="button" key={index} className={index===expandedProductImage.index?"active":""} onClick={()=>setExpandedProductImage(v=>({...v,index}))} aria-label={"Show image "+(index+1)}><img src={url} alt=""/></button>)}</div>}
   </div>
  </div>}
 }
