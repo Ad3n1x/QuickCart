@@ -136,7 +136,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
          const currentById=new Map(current.map(order=>[String(order.id),order]));
          return dedupeCustomerOrders(result.orders
            .filter(order=>String(order.storeId)===String(storeId))
-           .map(order=>({...order,whatsappSent:currentById.get(String(order.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"}))
+           .map(order=>({...order,whatsappSent:currentById.get(String(order.id))?.whatsappSent===true||localStorage.getItem("qc_whatsapp_sent:"+String(order.id))==="1",storeName:data?.store?.storeName||"Store"}))
          ).slice(0,10);
        });
      }catch{
@@ -216,7 +216,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
        let cached=[];
        try{const saved=JSON.parse(localStorage.getItem("qc_customer_orders:"+storeId+":"+email)||"[]");cached=Array.isArray(saved)?saved.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(storeId)):[]}catch{}
        const cachedById=new Map(cached.map(o=>[String(o.id),o]));
-       setCustomerOrders(dedupeCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true,storeName:data?.store?.storeName||"Store"})).slice(0,10)));
+       setCustomerOrders(dedupeCustomerOrders(remote.map(o=>({...o,whatsappSent:cachedById.get(String(o.id))?.whatsappSent===true||localStorage.getItem("qc_whatsapp_sent:"+String(o.id))==="1",storeName:data?.store?.storeName||"Store"})).slice(0,10)));
      }catch{
        if(cancelled)return;
        try{
@@ -536,7 +536,7 @@ function PublicStore({data,customer,onLogin,onStoreRefresh,onSignOut}){
       {!s.vendorPhone&&<p className="form-error">This store has not added a WhatsApp number yet.</p>}
     </>
    </section>)}
-   {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>o.id===id?{...o,whatsappSent:true}:o)))} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
+   {trackingVisible&&customerOrdersHydrated&&customerOrders.some(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())&&<CustomerOrderStatus orders={customerOrders.filter(o=>o&&o.id!=null&&o.storeId!=null&&String(o.storeId)===String(s?.id)&&(()=>{try{return !JSON.parse(localStorage.getItem("qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email))||"[]").map(String).includes(String(o.id))}catch{return true}})())} onRefresh={refreshOrders} onModifyOrder={modifyCustomerOrder} onWhatsAppSent={id=>{try{localStorage.setItem("qc_whatsapp_sent:"+String(id),"1")}catch{}setCustomerOrders(xs=>dedupeCustomerOrders(xs.map(o=>String(o.id)===String(id)?{...o,whatsappSent:true}:o)))}} onDismissOrder={o=>{const key="qc_dismissed_tracking:"+String(s?.id)+":"+emailOf(customer?.email);try{const ids=JSON.parse(localStorage.getItem(key)||"[]");localStorage.setItem(key,JSON.stringify([...new Set([...ids.map(String),String(o.id)])]))}catch{}setCustomerOrders(xs=>xs.filter(x=>String(x.id)!==String(o.id)))}} />}
    </div>}</div>
  </main>
  {expandedProductImage&&<div className="qc-image-lightbox" role="dialog" aria-modal="true" aria-label={"Larger product image: "+expandedProductImage.name} onClick={()=>setExpandedProductImage(null)}>
