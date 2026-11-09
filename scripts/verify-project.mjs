@@ -175,7 +175,7 @@ check("Order-edit controls validate successful server responses, show action-spe
   app.includes('finally{setBusy("");setBusyAction("")}') &&
   /if\(!order\|\|busy\|\|orderEditBusy\)return/.test(app) &&
   /if\(!result\?\.order\?\.id\)throw new Error/.test(app) &&
-  /busyAction==="update"\?"Updating…":"Confirming…"/.test(app) &&
+  /busyAction==="update"\?"Updating…":busyAction==="sent"\?"Saving…":"Confirming…"/.test(app) &&
   /customer-cancel-order/.test(app));
 check("Customer and guest order tracking is collapsed by default and can be toggled open or hidden; product cards do not contain order-edit rows",
   /\[trackingVisible,setTrackingVisible\]=useState\(false\)/.test(app) &&
