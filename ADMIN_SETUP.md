@@ -47,7 +47,7 @@ After a successful reset, the new bcrypt password hash is stored in the `admin_c
 
 If Brevo is not configured, the reset email cannot be delivered. Configure the existing `BREVO_API_KEY` and `BREVO_FROM_EMAIL` variables in Render. No password-reset token or password is written to application logs.
 
-Admin sessions expire after 8 hours. Signing out removes only the admin session; seller and customer sessions remain separate. There is no public admin registration.
+Admin sessions expire after 8 hours. A successful password reset invalidates existing administrator sessions, requiring a fresh sign-in. Signing out removes only the admin session; seller and customer sessions remain separate. There is no public admin registration.
 
 ## Security boundaries
 
