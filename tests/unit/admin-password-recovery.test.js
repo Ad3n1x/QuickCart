@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { registerAdminRoutes } from "../../server/src/routes/admin.js";
 
-function harness(adminPasswordHash="old-hash"){
+function harness(adminPasswordHash="old-hash",sendEmail=async(email,url)=>sent.push({email,url})){
  const collections=new Map();
  const db=async()=>({collection(name){
   if(!collections.has(name)){
@@ -25,7 +25,7 @@ function harness(adminPasswordHash="old-hash"){
  const sent=[];
  const bcrypt={async compare(p,h){return p==="right-password"&&h==="old-hash"},async hash(p){return "bcrypt:"+p}};
  const env=process.env.ADMIN_JWT_SECRET;process.env.ADMIN_JWT_SECRET="admin-test-secret";
- registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash,bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:async(email,url)=>sent.push({email,url}),frontendUrl:"https://quick-cart.example"});
+ registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash,bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:sendEmail,frontendUrl:"https://quick-cart.example"});
  async function call(path,body={}){const req={body,ip:"127.0.0.1"};const out={status:200,data:null};const res={status(n){out.status=n;return this},json(data){out.data=data;return this},setHeader(){}};await handlers["POST "+path](req,res);return out}
  async function seedCredential(credential){const database=await db();await database.collection("admin_credentials").insertOne(credential)}
  return {collections,sent,call,seedCredential,restore(){if(env===undefined)delete process.env.ADMIN_JWT_SECRET;else process.env.ADMIN_JWT_SECRET=env}};
@@ -95,5 +95,33 @@ test("admin reset enforces the minimum password length",async()=>{
   const result=await h.call("/api/admin/auth/reset-password",{token:"a".repeat(64),password:"short"});
   assert.equal(result.status,400);
   assert.equal(result.data.code,"ADMIN_PASSWORD_POLICY");
+ }finally{h.restore()}
+});
+
+
+test("failed Brevo delivery removes the undelivered reset token and keeps the generic response",async()=>{
+ const h=harness("old-hash",async()=>{const error=new Error("sender rejected");error.statusCode=400;error.code="invalid_parameter";throw error});
+ try{
+  const result=await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+  assert.equal(result.status,200);
+  assert.equal(result.data.message,"If the administrator email is registered, a password reset link will be sent shortly.");
+  assert.equal(h.collections.get("admin_password_resets").docs.length,0);
+  assert.equal(h.collections.get("admin_password_reset_attempts").docs.length,1);
+ }finally{h.restore()}
+});
+
+
+test("admin recovery allows five requests per hour and throttles the sixth",async()=>{
+ const h=harness();
+ try{
+  for(let i=0;i<5;i++){
+   const result=await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+   assert.equal(result.status,200);
+  }
+  assert.equal(h.sent.length,5);
+  const throttled=await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+  assert.equal(throttled.status,200);
+  assert.equal(throttled.data.message,"If the administrator email is registered, a password reset link will be sent shortly.");
+  assert.equal(h.sent.length,5);
  }finally{h.restore()}
 });
