@@ -50,10 +50,20 @@ export default function Marketplace({customer,onLogin,onSignOut}){
   try{
    for(const group of targets){
     const mode=fulfillment[group.store.id]||"pickup";
-    const clientOrderId=globalThis.crypto?.randomUUID?.()||("qc-market-"+Date.now()+"-"+Math.random().toString(36).slice(2));
+    const fingerprint=JSON.stringify({storeId:group.store.id,customerEmail:customer?.email||"",customerName:buyer.name.trim(),customerPhone:buyer.phone.trim(),address:mode==="delivery"?buyer.address.trim():"Pickup from store",fulfillment:mode,items:group.items.map(x=>({id:x.id,quantity:x.quantity})).sort((a,b)=>String(a.id).localeCompare(String(b.id)))});
+    const idempotencyKey="quickcart_marketplace_checkout:"+group.store.id;
+    let saved=null;try{saved=JSON.parse(localStorage.getItem(idempotencyKey)||"null")}catch{}
+    const clientOrderId=saved&&saved.fingerprint===fingerprint?saved.id:(globalThis.crypto?.randomUUID?.()||("qc-market-"+Date.now()+"-"+Math.random().toString(36).slice(2)));
+    localStorage.setItem(idempotencyKey,JSON.stringify({id:clientOrderId,fingerprint}));
     const response=await api("/api/orders",{method:"POST",headers:{Authorization:localStorage.getItem("quickcart_customer_token")?"Bearer "+localStorage.getItem("quickcart_customer_token"):""},body:body({storeId:group.store.id,clientOrderId,customerName:buyer.name.trim(),customerPhone:buyer.phone.trim(),customerEmail:customer?.email||"",address:mode==="delivery"?buyer.address.trim():"Pickup from store",fulfillment:mode,paymentMethod:"seller_direct",items:group.items.map(x=>({id:x.id,quantity:x.quantity}))})});
+    localStorage.removeItem(idempotencyKey);
     localStorage.setItem("qc_order_token:"+response.orderId,response.confirmationToken);
     const orderResult={store:group.store,orderId:response.orderId,total:Number(response.total||total(group)),status:"created",url:""};
+    if(!customer){
+     const guestOrder={id:response.orderId,guestCheckout:true,storeName:group.store.storeName,storeId:group.store.id,fulfillment:mode,total:orderResult.total,status:"new",createdAt:new Date().toISOString(),items:group.items.map(x=>({id:x.id,name:x.name,price:x.price,quantity:x.quantity}))};
+     const guestKey="qc_guest_orders:"+group.store.id;let previous=[];try{previous=JSON.parse(localStorage.getItem(guestKey)||"[]")}catch{}
+     localStorage.setItem(guestKey,JSON.stringify([guestOrder,...(Array.isArray(previous)?previous:[])].slice(0,10)));
+    }
     const phone=phoneForWhatsApp(group.store.vendorPhone);
     if(phone){
      const lines=group.items.map(x=>x.quantity+" × "+x.name+" — "+money(x.price*x.quantity));
