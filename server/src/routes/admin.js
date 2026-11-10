@@ -77,10 +77,18 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       await database.collection("admin_password_resets").insertOne({id:"primary-admin",tokenHash,createdAt:now,expiresAt});
       const base=String(frontendUrl||"https://quick-cart-three-chi.vercel.app").replace(/\/$/,"");
       const resetUrl=base+"/admin/reset-password?token="+encodeURIComponent(rawToken);
-      await sendAdminPasswordResetEmail(email,resetUrl);
+      try {
+        const delivery=await sendAdminPasswordResetEmail(email,resetUrl);
+        console.info("Admin password reset email accepted by Brevo.",{messageId:delivery?.messageId||null});
+      } catch(deliveryError) {
+        // A rejected/failed email must not leave a token that the admin never received.
+        await database.collection("admin_password_resets").deleteMany({id:"primary-admin",tokenHash});
+        console.error("Admin password reset email delivery failed.",{statusCode:deliveryError?.statusCode||null,code:deliveryError?.code||null,message:deliveryError?.message||"Unknown Brevo delivery error"});
+        throw deliveryError;
+      }
       return generic();
     } catch(error) {
-      console.error("Admin password recovery request failed:",error?.message||error);
+      console.error("Admin password recovery request failed.",{statusCode:error?.statusCode||null,code:error?.code||null,message:error?.message||"Unknown recovery error"});
       return generic();
     }
   });
