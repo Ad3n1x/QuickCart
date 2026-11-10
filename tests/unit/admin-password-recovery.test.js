@@ -15,7 +15,7 @@ function harness(){
     async insertOne(doc){docs.push({...doc});return {insertedId:docs.length}},
     async deleteMany(query){for(let i=docs.length-1;i>=0;i--)if(Object.entries(query).every(([k,v])=>k==="expiresAt"&&v.$lte?docs[i][k]<=v.$lte:docs[i][k]===v))docs.splice(i,1);return {deletedCount:0}},
     async findOneAndDelete(query){const i=docs.findIndex(d=>Object.entries(query).every(([k,v])=>k==="expiresAt"&&v.$gt?d[k]>v.$gt:d[k]===v));return i<0?null:docs.splice(i,1)[0]},
-    async updateOne(query,update){let d=docs.find(x=>Object.entries(query).every(([k,v])=>x[k]===v));if(!d){d={...query};docs.push(d)}Object.assign(d,update.$set);return {upsertedCount:1}}
+    async updateOne(query,update){const d=docs.find(x=>Object.entries(query).every(([k,v])=>x[k]===v));if(!d)return {matchedCount:0};Object.assign(d,update.$set);return {matchedCount:1,modifiedCount:1}}
    });
   }
   return collections.get(name);
@@ -27,10 +27,11 @@ function harness(){
  const env=process.env.ADMIN_JWT_SECRET;process.env.ADMIN_JWT_SECRET="admin-test-secret";
  registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash:"old-hash",bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:async(email,url)=>sent.push({email,url}),frontendUrl:"https://quick-cart.example"});
  async function call(path,body={}){const req={body,ip:"127.0.0.1"};const out={status:200,data:null};const res={status(n){out.status=n;return this},json(data){out.data=data;return this},setHeader(){}};await handlers["POST "+path](req,res);return out}
- return {collections,sent,call,restore(){if(env===undefined)delete process.env.ADMIN_JWT_SECRET;else process.env.ADMIN_JWT_SECRET=env}};
+ async function seedCredential(credential){const database=await db();await database.collection("admin_credentials").insertOne(credential)}
+ return {collections,sent,call,seedCredential,restore(){if(env===undefined)delete process.env.ADMIN_JWT_SECRET;else process.env.ADMIN_JWT_SECRET=env}};
 }
 
-test("admin recovery hides unknown emails and only sends to configured admin",async()=>{
+test("admin recovery bootstraps and then requires the exact primary admin database record",async()=>{
  const h=harness();
  try{
   const unknown=await h.call("/api/admin/auth/forgot-password",{email:"other@example.com"});
@@ -39,11 +40,25 @@ test("admin recovery hides unknown emails and only sends to configured admin",as
   const known=await h.call("/api/admin/auth/forgot-password",{email:"OWNER@example.com"});
   assert.equal(known.status,200);
   assert.equal(h.sent.length,1);
+  const credential=h.collections.get("admin_credentials").docs[0];
+  assert.equal(credential.email,"owner@example.com");
+  assert.equal(credential.passwordHash,"old-hash");
+  assert.equal(credential.source,"render-bootstrap");
   assert.match(h.sent[0].url,/\/admin\/reset-password\?token=/);
   const rawToken=new URL(h.sent[0].url).searchParams.get("token");
   const stored=h.collections.get("admin_password_resets").docs[0];
   assert.equal(stored.tokenHash,createHash("sha256").update(rawToken).digest("hex"));
   assert.equal(stored.tokenHash.includes(rawToken),false);
+ }finally{h.restore()}
+});
+
+test("an existing database admin record with a different email never receives a reset link",async()=>{
+ const h=harness();
+ try{
+  await h.seedCredential({id:"primary-admin",email:"someone-else@example.com",passwordHash:"old-hash"});
+  await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+  assert.equal(h.sent.length,0);
+  assert.equal(h.collections.get("admin_password_resets"),undefined);
  }finally{h.restore()}
 });
 
