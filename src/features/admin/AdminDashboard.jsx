@@ -10,8 +10,8 @@ const date=value=>value?new Date(value).toLocaleDateString("en-NG",{day:"numeric
 
 export default function AdminDashboard({onSignOut}) {
  const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=async()=>{setLoading(true);setError("");try{const overview=await api("/api/admin/overview");setData(overview)}catch(e){setError(e.message||"Unable to load admin data.");if(e.status===401){localStorage.removeItem("quickcart_admin_token");go("/admin/login",true)}}finally{setLoading(false)}};
- useEffect(()=>{if(!localStorage.getItem("quickcart_admin_token")){go("/admin/login",true);return}load()},[]);
+ const load=async()=>{setLoading(true);setError("");try{const overview=await api("/api/admin/overview");setData(overview)}catch(e){setError(e.message||"Unable to load admin data.");if(e.status===401){sessionStorage.removeItem("quickcart_admin_token");go("/admin/login",true)}}finally{setLoading(false)}};
+ useEffect(()=>{if(!sessionStorage.getItem("quickcart_admin_token")){go("/admin/login",true);return}load()},[]);
  if(loading&&!data)return <Loading/>;
  if(error&&!data)return <main className="admin-gate"><div className="admin-gate-card"><Logo size={42}/><ShieldCheck size={28}/><h1>Admin access unavailable</h1><p>{error}</p><button onClick={load}>Try again</button><button className="admin-text-button" onClick={()=>go("/admin/login")}>Return to admin sign in</button></div></main>;
  const cards=[["Buyers",data.metrics.buyers,Users],["Sellers",data.metrics.sellers,Users],["Stores",data.metrics.stores,Store],["Products",data.metrics.products,Package],["Orders",data.metrics.orders,ShoppingBag]];
