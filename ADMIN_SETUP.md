@@ -27,6 +27,12 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 
 Copy the output into Render as `ADMIN_JWT_SECRET`. Do not commit either value. Save your password in a trusted password manager.
 
+## Primary administrator database record
+
+The primary admin is independent of seller registration. On the first valid primary-admin login or password-recovery request, the API creates the `admin_credentials` record from the configured `ADMIN_EMAIL` and initial `ADMIN_PASSWORD_HASH`, but only when no primary-admin record exists. The record is keyed as `primary-admin` and stores the normalized administrator email.
+
+Password recovery then requires that this MongoDB record exists, has a password hash, and contains the exact configured administrator email. If an existing primary-admin record contains a different email, recovery does not send a link and does not overwrite that record. This prevents a seller account or an arbitrary email from claiming the private admin identity.
+
 ## Private sign-in and password recovery
 
 - Private login: `/admin/login`
