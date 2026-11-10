@@ -97,7 +97,7 @@ export default function App(){
   // Public/unknown routes always stay on the landing page, even if a seller token exists.
   // This also prevents browser Back from exposing the seller dashboard to a customer session.
   if(route.type==="admin-login")return <AdminAuth/>;
-  if(route.type==="admin")return <AdminDashboard onSignOut={()=>{localStorage.removeItem("quickcart_admin_token");go("/admin/login",true)}}/>;
+  if(route.type==="admin")return <AdminDashboard onSignOut={()=>{sessionStorage.removeItem("quickcart_admin_token");go("/admin/login",true)}}/>;
   if(route.type==="landing")return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
   // Customer credentials must never render seller workspace routes, even for one render before effects run.
   if(route.type==="app"&&(customerSession||localStorage.getItem("quickcart_customer_token")))return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
