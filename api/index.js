@@ -15,7 +15,7 @@ import { createDatabaseConnection } from "../server/src/config/database.js";
 import { createAuthServices } from "../server/src/middleware/auth.js";
 import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity.js";
 import { PLAN_CONFIG,planFor,planStoreLimit } from "../server/src/config/plans.js";
-import { createVerificationEmailSender,createOrderUpdateEmailSender } from "../server/src/services/email.js";
+import { createVerificationEmailSender,createOrderUpdateEmailSender,createAdminPasswordResetEmailSender } from "../server/src/services/email.js";
 import { createPaymentServices } from "../server/src/services/payments.js";
 import { getUserStore } from "../server/src/services/stores.js";
 
@@ -52,8 +52,17 @@ if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 
 const db = createDatabaseConnection(mongoUri);
 const { tokenFor, auth, hashToken, customerTokenFor, customerAuth, adminTokenFor, adminAuth } = createAuthServices(jwtSecret, adminJwtSecret);
+const requireCurrentAdminSession = (req,res,next) => adminAuth(req,res,async()=>{
+ try {
+  const credential=await (await db()).collection("admin_credentials").findOne({id:"primary-admin"},{projection:{passwordChangedAt:1}});
+  const changedAt=credential?.passwordChangedAt?Math.floor(new Date(credential.passwordChangedAt).getTime()/1000):0;
+  if(changedAt&&Number(req.admin?.iat||0)<=changedAt)return res.status(401).json({error:"Your administrator session is no longer valid. Sign in again.",code:"ADMIN_SESSION_REVOKED"});
+  next();
+ } catch(error) { console.error("Admin session validation failed:",error?.message||error); return res.status(503).json({error:"Unable to verify administrator session."}); }
+});
 const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const sendOrderUpdateEmail = createOrderUpdateEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
+const sendAdminPasswordResetEmail = createAdminPasswordResetEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const { uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
 
 app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail);if(!ready)return res.status(503).json({ok:false,database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable'});res.json({ok:true,database:'connected',authentication:'configured',emailProvider:'configured'});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
@@ -66,6 +75,6 @@ registerPaymentRoutes(app, routeDependencies);
 registerDiscountRoutes(app, routeDependencies);
 registerOrderRoutes(app, routeDependencies);
 registerBusinessOsRoutes(app, routeDependencies);
-registerAdminRoutes(app, { db, adminAuth, adminTokenFor, adminEmail, adminPasswordHash, bcrypt });
+registerAdminRoutes(app, { db, adminAuth:requireCurrentAdminSession, adminTokenFor, adminEmail, adminPasswordHash, bcrypt, randomBytes, sendAdminPasswordResetEmail, frontendUrl });
 
 export default app;
