@@ -58,17 +58,19 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
     const generic=()=>res.status(200).json({message:genericRecoveryMessage});
     try {
       const email=normalizeEmail(req.body?.email);
-      if(!email||email!==configuredEmail||!process.env.ADMIN_JWT_SECRET||!sendAdminPasswordResetEmail)return generic();
+      if(!email||email!==configuredEmail)return generic();
+      if(!process.env.ADMIN_JWT_SECRET){console.warn("Admin password recovery skipped: dedicated admin signing secret is unavailable.");return generic();}
+      if(!sendAdminPasswordResetEmail){console.warn("Admin password recovery skipped: email sender is unavailable.");return generic();}
       const database=await db();
       const activeCredential=await getPrimaryAdminCredential(database);
-      if(!activeCredential?.passwordHash||normalizeEmail(activeCredential.email)!==email)return generic();
+      if(!activeCredential?.passwordHash||normalizeEmail(activeCredential.email)!==email){console.warn("Admin password recovery skipped: primary administrator database record is missing or does not match the configured identity.");return generic();}
       const now=new Date();
       const ipHash=hashValue(req.ip||req.headers["x-forwarded-for"]||"unknown");
       const emailHash=hashValue(email);
       const attempts=database.collection("admin_password_reset_attempts");
       await attempts.deleteMany({createdAt:{$lte:new Date(now.getTime()-24*60*60*1000)}});
       const recent=await attempts.countDocuments({createdAt:{$gt:new Date(now.getTime()-60*60*1000)},$or:[{emailHash},{ipHash}]});
-      if(recent>=3)return generic();
+      if(recent>=5){console.warn("Admin password recovery throttled.",{scope:"email-or-ip"});return generic();}
       await attempts.insertOne({emailHash,ipHash,createdAt:now});
       const rawToken=randomBytes(32).toString("hex");
       const tokenHash=hashValue(rawToken);
