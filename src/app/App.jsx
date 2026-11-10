@@ -13,6 +13,7 @@ import { DashboardShell, Account, StoreSetup, ProductModal, FeaturePromo, Overvi
 import BusinessOS from "../features/dashboard/BusinessOS.jsx";
 import Marketplace from "../features/marketplace/Marketplace.jsx";
 import AdminDashboard from "../features/admin/AdminDashboard.jsx";
+import AdminAuth from "../features/admin/AdminAuth.jsx";
 import { validateRegistration } from "../lib/registration-validation.js";
 
 import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "../components/common/SharedUI.jsx";
@@ -26,6 +27,7 @@ function safeDecode(value){try{return decodeURIComponent(value)}catch{return val
 const routeMatchers=[
  {pattern:/^\/marketplace\/auth\/(login|signup)$/,resolve:m=>({type:"marketplace-auth",mode:m[1]})},
  {pattern:/^\/marketplace$/,resolve:()=>({type:"marketplace"})},
+ {pattern:/^\/admin\/login$/,resolve:()=>({type:"admin-login"})},
  {pattern:/^\/admin$/,resolve:()=>({type:"admin"})},
  {pattern:/^\/store\/([^/]+)\/auth\/(login|signup)$/,resolve:m=>({type:"store-auth",slug:safeDecode(m[1]),mode:m[2]})},
  {pattern:/^\/store\/([^/]+)$/,resolve:m=>({type:"store",slug:safeDecode(m[1])})},
@@ -41,7 +43,7 @@ export default function App(){
  useEffect(()=>{try{localStorage.setItem("qc_order_reset_v1","done")}catch{}},[]);const[boot,setBoot]=useState(true),[user,setUser]=useState(null),[stores,setStores]=useState([]),[store,setStore]=useState(null),[products,setProducts]=useState([]),[orders,setOrders]=useState([]),[plan,setPlan]=useState({plan:"Free"}),[discounts,setDiscounts]=useState([]),[notice,setNotice]=useState(null),[busy,setBusy]=useState(false),[setup,setSetup]=useState(false),[productModal,setProductModal]=useState(null),[share,setShare]=useState(false),[otpOpen,setOtpOpen]=useState(false),[otp,setOtp]=useState(""),[otpEmail,setOtpEmail]=useState(""),[otpError,setOtpError]=useState(""),[otpMessage,setOtpMessage]=useState(""),[otpLoading,setOtpLoading]=useState(false),[otpCooldown,setOtpCooldown]=useState(0),[receiptOrder,setReceiptOrder]=useState(null),[auth,setAuth]=useState({name:"",email:"",phone:"",password:"",confirmPassword:""}),[authError,setAuthError]=useState(""),[authLoading,setAuthLoading]=useState(false),[payment,setPayment]=useState(null),[paymentError,setPaymentError]=useState(""),[paymentLoading,setPaymentLoading]=useState(false),[discountForm,setDiscountForm]=useState({code:"",type:"percent",value:10,expiresAt:""}),[install,setInstall]=useState(null),[customerSession,setCustomerSession]=useState(()=>{try{return JSON.parse(localStorage.getItem("quickcart_customer")||"null")}catch{return null}});
  const publicStore=route.type==="store"||route.type==="store-auth";const publicMarketplace=route.type==="marketplace"||route.type==="marketplace-auth";const shareUrl=store?window.location.origin+BASE+"/store/"+store.slug:"";
  const load=async(clear=true)=>{const token=localStorage.getItem("quickcart_token");if(!token)return false;try{const me=await api("/api/me");const ss=me.stores||(me.store?[me.store]:[]);setUser(me.user);setStores(ss);let id=localStorage.getItem("quickcart_store_id");if(!id&&ss[0]?.id){id=ss[0].id;localStorage.setItem("quickcart_store_id",id)}const active=ss.find(x=>x.id===id)||me.store||null;setStore(active);if(!active){setProducts([]);setOrders([]);return true}const rs=await Promise.allSettled([api("/api/products"),api("/api/orders"),api("/api/plan")]);setProducts(rs[0].status==="fulfilled"?rs[0].value.products||[]:[]);setOrders(rs[1].status==="fulfilled"?rs[1].value.orders||[]:[]);const p=rs[2].status==="fulfilled"?rs[2].value:{plan:"Free"};setPlan(p);try{setDiscounts((await api("/api/discounts")).discounts||[])}catch{setDiscounts([])};return true}catch(e){if(clear&&(e.status===401||e.status===404)){localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null)}return false}};
- useEffect(()=>{(async()=>{if(!publicStore&&!publicMarketplace)await load(false);setBoot(false)})()},[publicStore]);
+ useEffect(()=>{(async()=>{if(!publicStore&&!publicMarketplace&&route.type!=="admin"&&route.type!=="admin-login")await load(false);setBoot(false)})()},[publicStore]);
  useEffect(()=>{if(route.type==="store"||route.type==="store-auth"){api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{try{localStorage.setItem("qc_public_/api/storefront/"+encodeURIComponent(route.slug),JSON.stringify({data:d}))}catch{}}).catch(()=>{})}},[route.type,route.slug]);
  const[publicData,setPublicData]=useState(null),[publicError,setPublicError]=useState("");useEffect(()=>{if(route.type!=="store"&&route.type!=="store-auth"){setPublicData(null);setPublicError("");return}let on=true;setPublicData(null);setPublicError("");api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{if(on)setPublicData(d)}).catch(e=>{if(on)setPublicError(e.message||"This storefront could not be loaded.")});return()=>{on=false}},[route.type,route.slug]);
  useEffect(()=>{
@@ -65,7 +67,7 @@ export default function App(){
    if(!ld){ld=document.createElement("script");ld.id="quickcart-store-jsonld";ld.type="application/ld+json";document.head.appendChild(ld)}
    ld.textContent=JSON.stringify({"@context":"https://schema.org","@type":"Store","name":name,"url":window.location.href.split("?")[0],"description":desc});
  },[route.type,route.slug,publicData]);
- useEffect(()=>{if(route.type==="admin"&&!boot&&!user)go("/auth/login",true);else if(route.type==="app"&&!boot&&!user&&!customerSession)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user,customerSession]);
+ useEffect(()=>{if(route.type==="app"&&!boot&&!user&&!customerSession)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user,customerSession]);
  useEffect(()=>{if(route.type!=="app"||!(customerSession||localStorage.getItem("quickcart_customer_token")))return;localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null);setStores([]);setProducts([]);setOrders([]);go("/",true)},[route.type,customerSession]);
  useEffect(()=>{if(!store)return;const apply=()=>{const c=localStorage.getItem("quickcart_ui_color:"+store.id)||store.primaryColor||"#12392d";document.documentElement.style.setProperty("--accent",c);document.documentElement.style.setProperty("--accent-2",c);document.documentElement.dataset.theme=localStorage.getItem("quickcart_theme_mode:"+store.id)||"light"};apply();addEventListener("qc-theme",apply);return()=>removeEventListener("qc-theme",apply)},[store?.id,store?.primaryColor]);
  useEffect(()=>{const f=e=>{e.preventDefault();setInstall(e)};addEventListener("beforeinstallprompt",f);return()=>removeEventListener("beforeinstallprompt",f)},[]);
@@ -94,7 +96,8 @@ export default function App(){
  if(boot)return <Loading/>;
   // Public/unknown routes always stay on the landing page, even if a seller token exists.
   // This also prevents browser Back from exposing the seller dashboard to a customer session.
-  if(route.type==="admin"&&user)return <AdminDashboard onSignOut={signout}/>;
+  if(route.type==="admin-login")return <AdminAuth/>;
+  if(route.type==="admin")return <AdminDashboard onSignOut={()=>{localStorage.removeItem("quickcart_admin_token");go("/admin/login",true)}}/>;
   if(route.type==="landing")return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
   // Customer credentials must never render seller workspace routes, even for one render before effects run.
   if(route.type==="app"&&(customerSession||localStorage.getItem("quickcart_customer_token")))return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
