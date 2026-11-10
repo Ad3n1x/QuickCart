@@ -12,6 +12,7 @@ import OrderReceiptModal from "../features/receipts/OrderReceiptModal.jsx";
 import { DashboardShell, Account, StoreSetup, ProductModal, FeaturePromo, Overview, Products, Orders, Customers, Analytics, SettingsPage, Discounts, Premium, ShareModal } from "../features/dashboard/DashboardViews.jsx";
 import BusinessOS from "../features/dashboard/BusinessOS.jsx";
 import Marketplace from "../features/marketplace/Marketplace.jsx";
+import AdminDashboard from "../features/admin/AdminDashboard.jsx";
 import { validateRegistration } from "../lib/registration-validation.js";
 
 import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "../components/common/SharedUI.jsx";
@@ -25,6 +26,7 @@ function safeDecode(value){try{return decodeURIComponent(value)}catch{return val
 const routeMatchers=[
  {pattern:/^\/marketplace\/auth\/(login|signup)$/,resolve:m=>({type:"marketplace-auth",mode:m[1]})},
  {pattern:/^\/marketplace$/,resolve:()=>({type:"marketplace"})},
+ {pattern:/^\/admin$/,resolve:()=>({type:"admin"})},
  {pattern:/^\/store\/([^/]+)\/auth\/(login|signup)$/,resolve:m=>({type:"store-auth",slug:safeDecode(m[1]),mode:m[2]})},
  {pattern:/^\/store\/([^/]+)$/,resolve:m=>({type:"store",slug:safeDecode(m[1])})},
  {pattern:/^\/auth\/(login|signup)$/,resolve:m=>({type:"auth",mode:m[1]})},
@@ -63,7 +65,7 @@ export default function App(){
    if(!ld){ld=document.createElement("script");ld.id="quickcart-store-jsonld";ld.type="application/ld+json";document.head.appendChild(ld)}
    ld.textContent=JSON.stringify({"@context":"https://schema.org","@type":"Store","name":name,"url":window.location.href.split("?")[0],"description":desc});
  },[route.type,route.slug,publicData]);
- useEffect(()=>{if(route.type==="app"&&!boot&&!user&&!customerSession)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user,customerSession]);
+ useEffect(()=>{if((route.type==="app"||route.type==="admin")&&!boot&&!user&&!customerSession)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user,customerSession]);
  useEffect(()=>{if(route.type!=="app"||!(customerSession||localStorage.getItem("quickcart_customer_token")))return;localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null);setStores([]);setProducts([]);setOrders([]);go("/",true)},[route.type,customerSession]);
  useEffect(()=>{if(!store)return;const apply=()=>{const c=localStorage.getItem("quickcart_ui_color:"+store.id)||store.primaryColor||"#12392d";document.documentElement.style.setProperty("--accent",c);document.documentElement.style.setProperty("--accent-2",c);document.documentElement.dataset.theme=localStorage.getItem("quickcart_theme_mode:"+store.id)||"light"};apply();addEventListener("qc-theme",apply);return()=>removeEventListener("qc-theme",apply)},[store?.id,store?.primaryColor]);
  useEffect(()=>{const f=e=>{e.preventDefault();setInstall(e)};addEventListener("beforeinstallprompt",f);return()=>removeEventListener("beforeinstallprompt",f)},[]);
@@ -92,6 +94,7 @@ export default function App(){
  if(boot)return <Loading/>;
   // Public/unknown routes always stay on the landing page, even if a seller token exists.
   // This also prevents browser Back from exposing the seller dashboard to a customer session.
+  if(route.type==="admin"&&user)return <AdminDashboard onSignOut={signout}/>;
   if(route.type==="landing")return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
   // Customer credentials must never render seller workspace routes, even for one render before effects run.
   if(route.type==="app"&&(customerSession||localStorage.getItem("quickcart_customer_token")))return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
