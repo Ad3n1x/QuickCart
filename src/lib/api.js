@@ -10,7 +10,7 @@ async function api(path,options={}){
   try{
     // Public storefront requests must stay completely separate from seller-session state.
     // This prevents a customer opening a store link from inheriting seller credentials.
-    const isPublicStorefront=path.startsWith("/api/storefront/");
+    const isPublicStorefront=path.startsWith("/api/storefront/")||path==="/api/marketplace";
     const token=isPublicStorefront?null:localStorage.getItem("quickcart_token");
     const storeId=isPublicStorefront?null:localStorage.getItem("quickcart_store_id");
     const r=await fetch(API+path,{...options,signal:controller.signal,headers:{Accept:"application/json","Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...(storeId?{"X-Store-Id":storeId}:{}),...(options.headers||{})}});
