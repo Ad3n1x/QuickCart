@@ -12,14 +12,21 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
   async function getPrimaryAdminCredential(database) {
     const credentials=database.collection("admin_credentials");
     let credential=await credentials.findOne({id:"primary-admin"});
-    if(!credential&&configuredEmail&&adminPasswordHash) {
-      await credentials.insertOne({
-        id:"primary-admin",
-        email:configuredEmail,
-        passwordHash:adminPasswordHash,
-        createdAt:new Date(),
-        source:"render-bootstrap"
-      });
+    if(!credential&&configuredEmail) {
+      // If no bootstrap hash was supplied, create an inaccessible random
+      // password hash. The owner must establish their real password via email recovery.
+      const initialPasswordHash=adminPasswordHash||await bcrypt.hash(randomBytes(48).toString("hex"),12);
+      try {
+        await credentials.insertOne({
+          id:"primary-admin",
+          email:configuredEmail,
+          passwordHash:initialPasswordHash,
+          createdAt:new Date(),
+          source:adminPasswordHash?"render-bootstrap":"recovery-bootstrap"
+        });
+      } catch(error) {
+        if(error?.code!==11000)throw error;
+      }
       credential=await credentials.findOne({id:"primary-admin"});
     }
     if(!credential||normalizeEmail(credential.email)!==configuredEmail)return null;
