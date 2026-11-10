@@ -34,6 +34,8 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       const email=normalizeEmail(req.body?.email);
       if(!email||email!==configuredEmail||!process.env.ADMIN_JWT_SECRET||!sendAdminPasswordResetEmail)return generic();
       const database=await db();
+      const activeCredential=await database.collection("admin_credentials").findOne({id:"primary-admin"});
+      if(!activeCredential?.passwordHash&&!adminPasswordHash)return generic();
       const now=new Date();
       const ipHash=hashValue(req.ip||req.headers["x-forwarded-for"]||"unknown");
       const emailHash=hashValue(email);
