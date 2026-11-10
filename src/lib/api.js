@@ -9,7 +9,7 @@ async function api(path,options={}){
   const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
   try{
     const isPublicStorefront=path.startsWith("/api/storefront/")||path==="/api/marketplace";
-    const token=isAdminRequest?(isAdminLogin?null:localStorage.getItem("quickcart_admin_token")):(isPublicStorefront?null:localStorage.getItem("quickcart_token"));
+    const token=isAdminRequest?(isAdminLogin?null:sessionStorage.getItem("quickcart_admin_token")):(isPublicStorefront?null:localStorage.getItem("quickcart_token"));
     const storeId=isAdminRequest||isPublicStorefront?null:localStorage.getItem("quickcart_store_id");
     const r=await fetch(API+path,{...options,signal:controller.signal,headers:{Accept:"application/json","Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{}),...(storeId?{"X-Store-Id":storeId}:{}),...(options.headers||{})}});
     const raw=await r.text();let data={};try{data=raw?JSON.parse(raw):{}}catch{}
