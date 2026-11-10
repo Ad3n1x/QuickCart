@@ -1,0 +1,11 @@
+/* Cross-product responsive safeguards */
+html,body,#root{max-width:100%;min-height:100%;overflow-x:clip}body{min-width:320px}
+button,a,input,textarea,select{touch-action:manipulation}button,a{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid color-mix(in srgb,var(--accent,#245b3e) 48%,transparent);outline-offset:2px}
+.app-content,.content-inner,.app-sidebar,.page-head,.panel,.table-card,.public-store-page,.public-store-grid{min-width:0;max-width:100%}
+.table-wrap,.admin-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-inline:contain}
+.table-wrap table{min-width:640px}.product-card-body,.product-card-top,.mini-row,.page-actions,.toolbar,.panel-head{min-width:0}
+img,video,canvas,svg{max-width:100%}input,select,textarea{min-width:0;max-width:100%}
+@media(max-width:760px){.page-head{gap:12px}.page-actions{width:100%;flex-wrap:wrap}.page-actions>*{max-width:100%}.panel{padding:16px}.dashboard-grid-2,.settings-grid,.public-store-grid{grid-template-columns:minmax(0,1fr)}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quick-action-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid-2,.form-grid-4{grid-template-columns:minmax(0,1fr)}.product-grid,.plan-grid{grid-template-columns:minmax(0,1fr)}.public-product-card{min-width:0}.public-product-card>*{min-width:0}.qc-modal-backdrop{align-items:end}.qc-modal{width:100%;max-height:min(92dvh,900px);border-radius:18px 18px 12px 12px}}
+@media(max-width:420px){.content-inner{padding-left:11px;padding-right:11px}.stats-grid,.quick-action-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stats-grid>div{padding:13px}.stats-grid strong{font-size:22px}.quick-action-grid button{padding:12px;min-width:0}.public-store-hero h1{overflow-wrap:anywhere}.public-product-card{grid-template-columns:68px minmax(0,1fr);gap:9px}.public-product-art{width:68px;height:68px}.product-card-new{grid-template-columns:88px minmax(0,1fr)}.product-card-art{min-height:130px}.product-card-body{padding:12px}.product-card-body h3{font-size:15px}.product-actions{flex-wrap:wrap}.qc-modal-body{padding:13px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
