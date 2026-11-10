@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React,{useEffect,useState} from "react";
 import { ArrowLeft,KeyRound,Mail,ShieldCheck,CheckCircle2 } from "lucide-react";
 import { api } from "../../lib/api.js";
 import { body } from "../../lib/json.js";
@@ -8,8 +8,8 @@ import "../../styles/admin.css";
 
 export default function AdminPasswordRecovery({mode="forgot"}){
  const isReset=mode==="reset";
- const params=new URLSearchParams(window.location.search);
- const token=params.get("token")||"";
+ const [token]=useState(()=>new URLSearchParams(window.location.search).get("token")||"");
+ useEffect(()=>{if(isReset&&token)history.replaceState({},document.title,window.location.pathname)},[isReset,token]);
  const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[confirm,setConfirm]=useState("");
  const [error,setError]=useState(""),[message,setMessage]=useState(""),[loading,setLoading]=useState(false);
  const submit=async event=>{
