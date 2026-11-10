@@ -9,7 +9,7 @@ export function registerAdminRoutes(app,{db,auth}) {
     const account=await database.collection("users").findOne({id:req.user.sub,email,emailVerified:true},{projection:{id:1,email:1,name:1}});
     if(!account)return null;
     const isRoot=email===BOOTSTRAP_ADMIN_EMAIL;
-    const delegated=!isRoot?await database.collection("admin_access").findOne({userId:account.id,email:account.email}):null;
+    const delegated=!isRoot?await database.collection("admin_access").findOne({userId:account.id}):null;
     if(!isRoot&&!delegated)return null;
     return {database,account,isRoot};
   }
@@ -43,9 +43,13 @@ export function registerAdminRoutes(app,{db,auth}) {
       const context=await getAdminContext(req);
       if(!context)return denied(res);
       if(!context.isRoot)return res.status(403).json({error:"Only the primary admin can manage admin access.",code:"ADMIN_MANAGEMENT_FORBIDDEN"});
-      const delegated=await context.database.collection("admin_access").find({}).sort({grantedAt:-1}).project({userId:1,email:1,grantedAt:1,grantedBy:1}).toArray();
+      const records=await context.database.collection("admin_access").find({}).sort({grantedAt:-1}).project({userId:1,grantedAt:1,grantedBy:1}).toArray();
+      const ids=records.map(item=>item.userId).filter(Boolean);
+      const accounts=ids.length?await context.database.collection("users").find({id:{$in:ids},emailVerified:true}).project({id:1,email:1}).toArray():[];
+      const accountById=new Map(accounts.map(item=>[item.id,item]));
+      const delegated=records.flatMap(item=>{const account=accountById.get(item.userId);return account?[{userId:account.id,email:account.email,isRoot:false,grantedAt:item.grantedAt||null}]:[]});
       res.setHeader("Cache-Control","no-store");
-      res.json({admins:[{email:BOOTSTRAP_ADMIN_EMAIL,isRoot:true},...delegated.map(item=>({email:item.email,isRoot:false,grantedAt:item.grantedAt||null}))]});
+      res.json({admins:[{userId:null,email:BOOTSTRAP_ADMIN_EMAIL,isRoot:true},...delegated]});
     } catch(error) {
       console.error("Admin list failed:",error?.message||error);
       res.status(500).json({error:"Unable to load admin access list."});
@@ -68,16 +72,18 @@ export function registerAdminRoutes(app,{db,auth}) {
       res.status(500).json({error:"Unable to grant admin access."});
     }
   });
-  app.delete("/api/admin/admins/:email",auth,async(req,res)=>{
+  app.delete("/api/admin/admins/:userId",auth,async(req,res)=>{
     try {
       const context=await getAdminContext(req);
       if(!context)return denied(res);
       if(!context.isRoot)return res.status(403).json({error:"Only the primary admin can revoke admin access.",code:"ADMIN_MANAGEMENT_FORBIDDEN"});
-      const email=normalizeEmail(decodeURIComponent(req.params.email||""));
-      if(email===BOOTSTRAP_ADMIN_EMAIL)return res.status(409).json({error:"Primary admin access cannot be revoked here."});
-      const result=await context.database.collection("admin_access").deleteOne({email});
+      const userId=String(req.params.userId||"").trim();
+      if(!userId||userId.length>128)return res.status(400).json({error:"Invalid administrator account."});
+      const target=await context.database.collection("users").findOne({id:userId},{projection:{id:1,email:1}});
+      if(!target)return res.status(404).json({error:"That seller account was not found."});
+      const result=await context.database.collection("admin_access").deleteOne({userId:target.id});
       if(!result.deletedCount)return res.status(404).json({error:"That admin access record was not found."});
-      res.json({ok:true,email});
+      res.json({ok:true,email:target.email});
     } catch(error) {
       console.error("Revoke admin failed:",error?.message||error);
       res.status(500).json({error:"Unable to revoke admin access."});
