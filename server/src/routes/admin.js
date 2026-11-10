@@ -7,6 +7,25 @@ const genericRecoveryMessage="If the administrator email is registered, a passwo
 export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,adminPasswordHash,bcrypt,randomBytes,sendAdminPasswordResetEmail,frontendUrl}) {
   const configuredEmail=normalizeEmail(adminEmail);
 
+  // The Render hash is a one-time bootstrap source. Recovery is only enabled
+  // after the primary-admin record exists in MongoDB with the exact configured email.
+  async function getPrimaryAdminCredential(database) {
+    const credentials=database.collection("admin_credentials");
+    let credential=await credentials.findOne({id:"primary-admin"});
+    if(!credential&&configuredEmail&&adminPasswordHash) {
+      await credentials.insertOne({
+        id:"primary-admin",
+        email:configuredEmail,
+        passwordHash:adminPasswordHash,
+        createdAt:new Date(),
+        source:"render-bootstrap"
+      });
+      credential=await credentials.findOne({id:"primary-admin"});
+    }
+    if(!credential||normalizeEmail(credential.email)!==configuredEmail)return null;
+    return credential;
+  }
+
   app.post("/api/admin/auth/login",async(req,res)=>{
     try {
       const email=normalizeEmail(req.body?.email);
@@ -14,8 +33,8 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       if(!configuredEmail||!process.env.ADMIN_JWT_SECRET)return res.status(503).json({error:"Administrator sign-in has not been configured yet.",code:"ADMIN_AUTH_NOT_CONFIGURED"});
       if(!email||!password||password.length>128)return res.status(400).json({error:"Enter your administrator email and password."});
       const database=await db();
-      const credential=await database.collection("admin_credentials").findOne({id:"primary-admin"});
-      const activePasswordHash=credential?.passwordHash||adminPasswordHash;
+      const credential=await getPrimaryAdminCredential(database);
+      const activePasswordHash=credential?.passwordHash;
       if(!activePasswordHash)return res.status(503).json({error:"Administrator sign-in has not been configured yet.",code:"ADMIN_AUTH_NOT_CONFIGURED"});
       const passwordMatches=await bcrypt.compare(password,activePasswordHash).catch(()=>false);
       if(email!==configuredEmail||!passwordMatches)return res.status(401).json({error:"The administrator email or password is incorrect.",code:"ADMIN_CREDENTIALS_INVALID"});
@@ -34,8 +53,8 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       const email=normalizeEmail(req.body?.email);
       if(!email||email!==configuredEmail||!process.env.ADMIN_JWT_SECRET||!sendAdminPasswordResetEmail)return generic();
       const database=await db();
-      const activeCredential=await database.collection("admin_credentials").findOne({id:"primary-admin"});
-      if(!activeCredential?.passwordHash&&!adminPasswordHash)return generic();
+      const activeCredential=await getPrimaryAdminCredential(database);
+      if(!activeCredential?.passwordHash||normalizeEmail(activeCredential.email)!==email)return generic();
       const now=new Date();
       const ipHash=hashValue(req.ip||req.headers["x-forwarded-for"]||"unknown");
       const emailHash=hashValue(email);
@@ -66,17 +85,19 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       if(!/^[a-f0-9]{64}$/i.test(token))return res.status(400).json({error:"This reset link is invalid or has expired.",code:"ADMIN_RESET_INVALID"});
       if(password.length<14||password.length>128)return res.status(400).json({error:"Choose a password between 14 and 128 characters.",code:"ADMIN_PASSWORD_POLICY"});
       const database=await db();
+      const credential=await database.collection("admin_credentials").findOne({id:"primary-admin",email:configuredEmail});
+      if(!credential?.passwordHash)return res.status(400).json({error:"The administrator account is not initialized. Request a new link after setup.",code:"ADMIN_ACCOUNT_NOT_INITIALIZED"});
       const now=new Date();
       const tokenHash=hashValue(token);
       const reset=await database.collection("admin_password_resets").findOneAndDelete({id:"primary-admin",tokenHash,expiresAt:{$gt:now}});
       if(!reset)return res.status(400).json({error:"This reset link is invalid, expired, or has already been used.",code:"ADMIN_RESET_INVALID"});
       const passwordHash=await bcrypt.hash(password,12);
       const passwordChangedAt=new Date(Math.floor(now.getTime()/1000)*1000);
-      await database.collection("admin_credentials").updateOne(
-        {id:"primary-admin"},
-        {$set:{id:"primary-admin",email:configuredEmail,passwordHash,passwordChangedAt}},
-        {upsert:true}
+      const update=await database.collection("admin_credentials").updateOne(
+        {id:"primary-admin",email:configuredEmail},
+        {$set:{passwordHash,passwordChangedAt}}
       );
+      if(!update.matchedCount)return res.status(409).json({error:"The administrator account changed. Request a new reset link.",code:"ADMIN_ACCOUNT_CHANGED"});
       await database.collection("admin_password_resets").deleteMany({id:"primary-admin"});
       res.setHeader("Cache-Control","no-store");
       return res.json({message:"Your administrator password has been updated. You can now sign in with your new password."});
