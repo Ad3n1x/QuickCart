@@ -61,6 +61,6 @@ registerPaymentRoutes(app, routeDependencies);
 registerDiscountRoutes(app, routeDependencies);
 registerOrderRoutes(app, routeDependencies);
 registerBusinessOsRoutes(app, routeDependencies);
-registerAdminRoutes(app, { db, auth, adminEmails: process.env.ADMIN_EMAILS });
+registerAdminRoutes(app, { db, auth });
 
 export default app;
