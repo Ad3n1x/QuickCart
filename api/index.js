@@ -52,6 +52,14 @@ if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 
 const db = createDatabaseConnection(mongoUri);
 const { tokenFor, auth, hashToken, customerTokenFor, customerAuth, adminTokenFor, adminAuth } = createAuthServices(jwtSecret, adminJwtSecret);
+const requireCurrentAdminSession = (req,res,next) => adminAuth(req,res,async()=>{
+ try {
+  const credential=await (await db()).collection("admin_credentials").findOne({id:"primary-admin"},{projection:{passwordChangedAt:1}});
+  const changedAt=credential?.passwordChangedAt?Math.floor(new Date(credential.passwordChangedAt).getTime()/1000):0;
+  if(changedAt&&Number(req.admin?.iat||0)<changedAt)return res.status(401).json({error:"Your administrator session is no longer valid. Sign in again.",code:"ADMIN_SESSION_REVOKED"});
+  next();
+ } catch(error) { console.error("Admin session validation failed:",error?.message||error); return res.status(503).json({error:"Unable to verify administrator session."}); }
+});
 const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const sendOrderUpdateEmail = createOrderUpdateEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const sendAdminPasswordResetEmail = createAdminPasswordResetEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
@@ -67,6 +75,6 @@ registerPaymentRoutes(app, routeDependencies);
 registerDiscountRoutes(app, routeDependencies);
 registerOrderRoutes(app, routeDependencies);
 registerBusinessOsRoutes(app, routeDependencies);
-registerAdminRoutes(app, { db, adminAuth, adminTokenFor, adminEmail, adminPasswordHash, bcrypt, randomBytes, sendAdminPasswordResetEmail, frontendUrl });
+registerAdminRoutes(app, { db, adminAuth:requireCurrentAdminSession, adminTokenFor, adminEmail, adminPasswordHash, bcrypt, randomBytes, sendAdminPasswordResetEmail, frontendUrl });
 
 export default app;
