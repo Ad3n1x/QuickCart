@@ -35,7 +35,7 @@ const adminJwtSecret = process.env.ADMIN_JWT_SECRET;
 const adminEmail = process.env.ADMIN_EMAIL || 'adenix271@gmail.com';
 const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
 if (!adminJwtSecret) console.warn('ADMIN_JWT_SECRET is not configured; private admin sign-in is disabled.');
-if (!adminPasswordHash) console.warn('ADMIN_PASSWORD_HASH is not configured; private admin sign-in is disabled.');
+if (!adminPasswordHash) console.info('ADMIN_PASSWORD_HASH is not configured; the primary admin will be initialized with an inaccessible random password during recovery.');
 const brevoApiKey = process.env.BREVO_API_KEY;
 const brevoFromEmail = process.env.BREVO_FROM_EMAIL;
 const brevoFromName = process.env.BREVO_FROM_NAME || 'QuickCart';
@@ -65,7 +65,7 @@ const sendOrderUpdateEmail = createOrderUpdateEmailSender({ apiKey: brevoApiKey,
 const sendAdminPasswordResetEmail = createAdminPasswordResetEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const { uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
 
-app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail);const adminRecovery={adminJwtSecret:adminJwtSecret?'configured':'unavailable',passwordBootstrap:adminPasswordHash?'configured':'unavailable',ready:Boolean(adminJwtSecret&&adminPasswordHash)};const status={database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable',adminRecovery};if(!ready)return res.status(503).json({ok:false,...status});res.json({ok:true,...status});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
+app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail);const adminRecovery={adminJwtSecret:adminJwtSecret?'configured':'unavailable',passwordBootstrap:adminPasswordHash?'configured':'automatic',ready:Boolean(adminJwtSecret)};const status={database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable',adminRecovery};if(!ready)return res.status(503).json({ok:false,...status});res.json({ok:true,...status});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
 
 const routeDependencies = { db, auth, customerAuth, customerTokenFor, tokenFor, hashToken, emailPattern, createOtp, sendVerificationEmail, sendOrderUpdateEmail, bcrypt, randomUUID, randomBytes, jwt, jwtSecret, now, slugify, planFor, planStoreLimit, PLAN_CONFIG, uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction, getUserStore };
 registerCustomerAuthRoutes(app, routeDependencies);

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { registerAdminRoutes } from "../../server/src/routes/admin.js";
 
-function harness(){
+function harness(adminPasswordHash="old-hash"){
  const collections=new Map();
  const db=async()=>({collection(name){
   if(!collections.has(name)){
@@ -25,7 +25,7 @@ function harness(){
  const sent=[];
  const bcrypt={async compare(p,h){return p==="right-password"&&h==="old-hash"},async hash(p){return "bcrypt:"+p}};
  const env=process.env.ADMIN_JWT_SECRET;process.env.ADMIN_JWT_SECRET="admin-test-secret";
- registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash:"old-hash",bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:async(email,url)=>sent.push({email,url}),frontendUrl:"https://quick-cart.example"});
+ registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash,bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:async(email,url)=>sent.push({email,url}),frontendUrl:"https://quick-cart.example"});
  async function call(path,body={}){const req={body,ip:"127.0.0.1"};const out={status:200,data:null};const res={status(n){out.status=n;return this},json(data){out.data=data;return this},setHeader(){}};await handlers["POST "+path](req,res);return out}
  async function seedCredential(credential){const database=await db();await database.collection("admin_credentials").insertOne(credential)}
  return {collections,sent,call,seedCredential,restore(){if(env===undefined)delete process.env.ADMIN_JWT_SECRET;else process.env.ADMIN_JWT_SECRET=env}};
@@ -49,6 +49,18 @@ test("admin recovery bootstraps and then requires the exact primary admin databa
   const stored=h.collections.get("admin_password_resets").docs[0];
   assert.equal(stored.tokenHash,createHash("sha256").update(rawToken).digest("hex"));
   assert.equal(stored.tokenHash.includes(rawToken),false);
+ }finally{h.restore()}
+});
+
+test("admin recovery can initialize without a Render password hash",async()=>{
+ const h=harness(null);
+ try{
+  await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+  assert.equal(h.sent.length,1);
+  const credential=h.collections.get("admin_credentials").docs[0];
+  assert.equal(credential.email,"owner@example.com");
+  assert.equal(credential.source,"recovery-bootstrap");
+  assert.match(credential.passwordHash,/^bcrypt:/);
  }finally{h.restore()}
 });
 
