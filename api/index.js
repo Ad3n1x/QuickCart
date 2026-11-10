@@ -56,7 +56,7 @@ const requireCurrentAdminSession = (req,res,next) => adminAuth(req,res,async()=>
  try {
   const credential=await (await db()).collection("admin_credentials").findOne({id:"primary-admin"},{projection:{passwordChangedAt:1}});
   const changedAt=credential?.passwordChangedAt?Math.floor(new Date(credential.passwordChangedAt).getTime()/1000):0;
-  if(changedAt&&Number(req.admin?.iat||0)<changedAt)return res.status(401).json({error:"Your administrator session is no longer valid. Sign in again.",code:"ADMIN_SESSION_REVOKED"});
+  if(changedAt&&Number(req.admin?.iat||0)<=changedAt)return res.status(401).json({error:"Your administrator session is no longer valid. Sign in again.",code:"ADMIN_SESSION_REVOKED"});
   next();
  } catch(error) { console.error("Admin session validation failed:",error?.message||error); return res.status(503).json({error:"Unable to verify administrator session."}); }
 });
