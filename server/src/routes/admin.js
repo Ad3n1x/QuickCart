@@ -40,6 +40,7 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       const ipHash=hashValue(req.ip||req.headers["x-forwarded-for"]||"unknown");
       const emailHash=hashValue(email);
       const attempts=database.collection("admin_password_reset_attempts");
+      await attempts.deleteMany({createdAt:{$lte:new Date(now.getTime()-24*60*60*1000)}});
       const recent=await attempts.countDocuments({createdAt:{$gt:new Date(now.getTime()-60*60*1000)},$or:[{emailHash},{ipHash}]});
       if(recent>=3)return generic();
       await attempts.insertOne({emailHash,ipHash,createdAt:now});
