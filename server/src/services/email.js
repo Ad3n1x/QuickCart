@@ -33,3 +33,17 @@ export function createOrderUpdateEmailSender({apiKey,fromEmail,fromName="QuickCa
   return data;
  };
 }
+
+
+export function createAdminPasswordResetEmailSender({apiKey,fromEmail,fromName="QuickCart"}) {
+ return async function sendAdminPasswordResetEmail(email,resetUrl) {
+  if(!apiKey||!fromEmail)throw new Error("Brevo email settings are not configured.");
+  const safeUrl=escapeEmailHtml(resetUrl);
+  const textContent="A password reset was requested for your QuickCart administrator account. Use this one-time link within 15 minutes:\n\n"+resetUrl+"\n\nIf you did not request this, ignore this email.";
+  const htmlContent=`<!doctype html><html><body style="margin:0;background:#f4f7f5;padding:32px 16px;font-family:Arial,sans-serif;color:#17231d"><main style="max-width:540px;margin:auto;background:#fff;border:1px solid #e5ece7;border-radius:18px;padding:30px"><p style="color:#587064;font-size:12px;letter-spacing:1.5px;font-weight:700">QUICKCART CONTROL CENTRE</p><h1 style="font-size:24px;margin:8px 0 12px">Reset your admin password</h1><p style="color:#53645b;line-height:1.65">A password reset was requested for your QuickCart administrator account. Use the button below to choose a new password.</p><p style="margin:26px 0"><a href="${safeUrl}" style="display:inline-block;background:#245b3e;color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px">Reset administrator password</a></p><p style="color:#63736a;font-size:13px;line-height:1.6">This one-time link expires in <strong>15 minutes</strong>. If you did not request this, you can safely ignore this email.</p><p style="color:#87938c;font-size:11px;margin-top:28px">QuickCart private administration</p></main></body></html>`;
+  const response=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{accept:"application/json","api-key":apiKey,"content-type":"application/json"},body:JSON.stringify({sender:{name:fromName,email:fromEmail},to:[{email}],subject:"Reset your QuickCart administrator password",textContent,htmlContent})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.message||"Unable to send administrator password reset email.");
+  return data;
+ };
+}
