@@ -1,17 +1,26 @@
 # QuickCart admin access
 
-QuickCart's admin overview is a restricted, read-only operations page.
+QuickCart uses a server-side primary administrator and delegated administrator records.
 
-## Enable an administrator
+## Primary administrator
 
-1. In the Render dashboard, open the QuickCart API service.
-2. Add an environment variable named `ADMIN_EMAILS`.
-3. Set its value to the exact email address of an existing, verified seller account. Multiple addresses may be comma-separated.
-4. Save the environment variable and allow Render to redeploy the API.
-5. Sign in to QuickCart with that seller account, then open `/admin` on the QuickCart frontend.
+The backend bootstraps `adenix271@gmail.com` as the primary administrator. This is an email identity allowlist, not a password or login bypass. The person must sign in through the normal seller authentication flow with a verified seller account matching that exact email. The backend checks the signed-in user ID and verified email on every admin request.
 
-The backend checks the signed-in seller identity against the server-side allowlist on every admin API request. A frontend route or a self-selected profile field cannot grant admin access. Do not put the allowlist in a frontend `VITE_*` variable.
+If this email does not yet have a verified seller account, register it through the normal QuickCart seller sign-up and complete email verification first. Use the normal account password-reset flow if the password needs to be changed; no password is stored in source code or changed by this feature.
+
+## Granting or revoking admin access
+
+1. Sign in to QuickCart with the primary administrator account.
+2. Open `/admin`.
+3. Under **Administrator access**, enter the email of an existing, verified seller account and grant access.
+4. Use **Revoke** to remove delegated access later.
+
+Only the primary administrator can grant or revoke administrators. Delegated administrators can view the admin overview but cannot manage other admins. The primary admin cannot be revoked from the dashboard.
 
 ## Current scope
 
-The admin page reports platform totals for buyers, sellers, stores, products and orders, plus recent store and order activity. It does not expose customer contact details or provide destructive moderation controls. Add additional admin actions only with explicit authorization checks, audit logging and confirmation flows.
+The dashboard reports platform totals for buyers, sellers, stores, products and orders, plus recent store and order activity. It intentionally avoids customer contact details and destructive moderation actions. Admin records are stored in the MongoDB `admin_access` collection.
+
+## Account migration status
+
+Buyer and seller identities remain separate legacy account types in this release. The buyer/seller entry links do not yet merge them into one canonical account. Do not associate old records merely because email addresses match; a verified account-linking flow is still required.
