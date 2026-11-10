@@ -70,9 +70,10 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       const reset=await database.collection("admin_password_resets").findOneAndDelete({id:"primary-admin",tokenHash,expiresAt:{$gt:now}});
       if(!reset)return res.status(400).json({error:"This reset link is invalid, expired, or has already been used.",code:"ADMIN_RESET_INVALID"});
       const passwordHash=await bcrypt.hash(password,12);
+      const passwordChangedAt=new Date(Math.floor(now.getTime()/1000)*1000);
       await database.collection("admin_credentials").updateOne(
         {id:"primary-admin"},
-        {$set:{id:"primary-admin",email:configuredEmail,passwordHash,passwordChangedAt:now}},
+        {$set:{id:"primary-admin",email:configuredEmail,passwordHash,passwordChangedAt}},
         {upsert:true}
       );
       await database.collection("admin_password_resets").deleteMany({id:"primary-admin"});
