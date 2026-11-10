@@ -25,20 +25,20 @@ test("dedicated admin token is accepted by admin middleware",async()=>{
 test("admin token cannot authenticate as a seller",async()=>{
   const token=services.adminTokenFor({id:"primary-admin",email:"owner@example.com",name:"Admin"});
   const result=await invoke(services.auth,token);
-  assert.equal(result.next,undefined);
+  assert.equal(result.next,false);
   assert.equal(result.statusCode,401);
 });
 
 test("seller token cannot authenticate as an administrator",async()=>{
   const token=services.tokenFor({id:"seller-1",email:"seller@example.com",name:"Seller"});
   const result=await invoke(services.adminAuth,token);
-  assert.equal(result.next,undefined);
+  assert.equal(result.next,false);
   assert.equal(result.statusCode,401);
 });
 
 test("customer token cannot authenticate as an administrator",async()=>{
   const token=services.customerTokenFor({id:"buyer-1",email:"buyer@example.com",name:"Buyer"});
   const result=await invoke(services.adminAuth,token);
-  assert.equal(result.next,undefined);
+  assert.equal(result.next,false);
   assert.equal(result.statusCode,401);
 });
