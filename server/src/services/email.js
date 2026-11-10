@@ -41,9 +41,29 @@ export function createAdminPasswordResetEmailSender({apiKey,fromEmail,fromName="
   const safeUrl=escapeEmailHtml(resetUrl);
   const textContent="A password reset was requested for your QuickCart administrator account. Use this one-time link within 15 minutes:\n\n"+resetUrl+"\n\nIf you did not request this, ignore this email.";
   const htmlContent=`<!doctype html><html><body style="margin:0;background:#f4f7f5;padding:32px 16px;font-family:Arial,sans-serif;color:#17231d"><main style="max-width:540px;margin:auto;background:#fff;border:1px solid #e5ece7;border-radius:18px;padding:30px"><p style="color:#587064;font-size:12px;letter-spacing:1.5px;font-weight:700">QUICKCART CONTROL CENTRE</p><h1 style="font-size:24px;margin:8px 0 12px">Reset your admin password</h1><p style="color:#53645b;line-height:1.65">A password reset was requested for your QuickCart administrator account. Use the button below to choose a new password.</p><p style="margin:26px 0"><a href="${safeUrl}" style="display:inline-block;background:#245b3e;color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px">Reset administrator password</a></p><p style="color:#63736a;font-size:13px;line-height:1.6">This one-time link expires in <strong>15 minutes</strong>. If you did not request this, you can safely ignore this email.</p><p style="color:#87938c;font-size:11px;margin-top:28px">QuickCart private administration</p></main></body></html>`;
-  const response=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{accept:"application/json","api-key":apiKey,"content-type":"application/json"},body:JSON.stringify({sender:{name:fromName,email:fromEmail},to:[{email}],subject:"Reset your QuickCart administrator password",textContent,htmlContent})});
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(data.message||"Unable to send administrator password reset email.");
+  let response;
+  try {
+   response=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{accept:"application/json","api-key":apiKey,"content-type":"application/json"},body:JSON.stringify({sender:{name:fromName,email:fromEmail},to:[{email}],subject:"Reset your QuickCart administrator password",textContent,htmlContent}),signal:AbortSignal.timeout(15000)});
+  } catch(error) {
+   const deliveryError=new Error(error?.name==="TimeoutError"||error?.name==="AbortError"?"Brevo email request timed out.":"Could not reach Brevo email service.");
+   deliveryError.code=error?.name==="TimeoutError"||error?.name==="AbortError"?"BREVO_TIMEOUT":"BREVO_NETWORK_ERROR";
+   throw deliveryError;
+  }
+  const raw=await response.text();
+  let data={};
+  try{data=raw?JSON.parse(raw):{}}catch{data={message:raw.slice(0,300)}}
+  if(!response.ok){
+   const deliveryError=new Error(String(data.message||data.error||"Brevo rejected the administrator reset email.").slice(0,300));
+   deliveryError.statusCode=response.status;
+   deliveryError.code=String(data.code||data.errorCode||"BREVO_REJECTED").slice(0,80);
+   throw deliveryError;
+  }
+  if(!data.messageId){
+   const deliveryError=new Error("Brevo returned success without a message ID; delivery acceptance could not be confirmed.");
+   deliveryError.statusCode=response.status;
+   deliveryError.code="BREVO_UNCONFIRMED_ACCEPTANCE";
+   throw deliveryError;
+  }
   return data;
  };
 }
