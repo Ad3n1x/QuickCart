@@ -47,7 +47,7 @@ export function registerAdminRoutes(app,{db,adminAuth,adminTokenFor,adminEmail,a
       const rawToken=randomBytes(32).toString("hex");
       const tokenHash=hashValue(rawToken);
       const expiresAt=new Date(now.getTime()+15*60*1000);
-      await database.collection("admin_password_resets").deleteMany({expiresAt:{$lte:now}});
+      await database.collection("admin_password_resets").deleteMany({id:"primary-admin"});
       await database.collection("admin_password_resets").insertOne({id:"primary-admin",tokenHash,createdAt:now,expiresAt});
       const base=String(frontendUrl||"https://quick-cart-three-chi.vercel.app").replace(/\/$/,"");
       const resetUrl=base+"/admin/reset-password?token="+encodeURIComponent(rawToken);
