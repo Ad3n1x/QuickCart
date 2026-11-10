@@ -109,3 +109,19 @@ test("failed Brevo delivery removes the undelivered reset token and keeps the ge
   assert.equal(h.collections.get("admin_password_reset_attempts").docs.length,1);
  }finally{h.restore()}
 });
+
+
+test("admin recovery allows five requests per hour and throttles the sixth",async()=>{
+ const h=harness();
+ try{
+  for(let i=0;i<5;i++){
+   const result=await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+   assert.equal(result.status,200);
+  }
+  assert.equal(h.sent.length,5);
+  const throttled=await h.call("/api/admin/auth/forgot-password",{email:"owner@example.com"});
+  assert.equal(throttled.status,200);
+  assert.equal(throttled.data.message,"If the administrator email is registered, a password reset link will be sent shortly.");
+  assert.equal(h.sent.length,5);
+ }finally{h.restore()}
+});
