@@ -1,26 +1,43 @@
-# QuickCart admin access
+# QuickCart private administrator authentication
 
-QuickCart uses a server-side primary administrator and delegated administrator records.
+QuickCart administration uses a dedicated login and a separate JWT signing secret. It does not use seller or customer passwords, sessions, or tokens.
 
-## Primary administrator
+## Required Render environment variables
 
-The backend bootstraps `adenix271@gmail.com` as the primary administrator. This is an email identity allowlist, not a password or login bypass. The person must sign in through the normal seller authentication flow with a verified seller account matching that exact email. The backend checks the signed-in user ID and verified email on every admin request.
+Set these on the **QuickCart API service** in Render:
 
-If this email does not yet have a verified seller account, register it through the normal QuickCart seller sign-up and complete email verification first. Use the normal account password-reset flow if the password needs to be changed; no password is stored in source code or changed by this feature.
+- `ADMIN_EMAIL`: the administrator email address (defaults to `adenix271@gmail.com` if omitted).
+- `ADMIN_PASSWORD_HASH`: bcrypt hash for the private admin password. Never store the plaintext password in GitHub or send it in chat.
+- `ADMIN_JWT_SECRET`: a new, unique, high-entropy secret used only to sign admin sessions. Do not reuse `JWT_SECRET`.
 
-## Granting or revoking admin access
+Generate a password hash locally:
 
-1. Sign in to QuickCart with the primary administrator account.
-2. Open `/admin`.
-3. Under **Administrator access**, enter the email of an existing, verified seller account and grant access.
-4. Use **Revoke** to remove delegated access later.
+1. Pull the latest project and install dependencies with `npm install`.
+2. Run `npm run admin:hash` in a local interactive terminal.
+3. Enter and confirm a strong password when prompted. Input is not echoed.
+4. Copy the resulting bcrypt hash directly into Render's `ADMIN_PASSWORD_HASH` environment variable.
 
-Only the primary administrator can grant or revoke administrators. Delegated administrators can view the admin overview but cannot manage other admins. The primary admin cannot be revoked from the dashboard.
+Generate a separate admin JWT secret locally with Node:
 
-## Current scope
+```bash
+node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+```
 
-The dashboard reports platform totals for buyers, sellers, stores, products and orders, plus recent store and order activity. It intentionally avoids customer contact details and destructive moderation actions. Admin records are stored in the MongoDB `admin_access` collection.
+Copy the output into Render as `ADMIN_JWT_SECRET`. Do not commit either value. Save your password in a trusted password manager.
 
-## Account migration status
+## Sign in
 
-Buyer and seller identities remain separate legacy account types in this release. The buyer/seller entry links do not yet merge them into one canonical account. Do not associate old records merely because email addresses match; a verified account-linking flow is still required.
+- Private login: `/admin/login`
+- Control Centre: `/admin`
+
+Admin sessions expire after 8 hours. Signing out removes only the admin session; seller and customer sessions remain separate. There is no public admin registration or password-reset endpoint. To change the password, generate a new hash and replace `ADMIN_PASSWORD_HASH` in Render, then redeploy/restart the API. Rotating `ADMIN_JWT_SECRET` invalidates existing admin sessions.
+
+## Security boundaries
+
+- Admin API endpoints require a token signed with `ADMIN_JWT_SECRET` and carrying the admin role.
+- Seller middleware explicitly rejects admin-role tokens.
+- Admin requests use `quickcart_admin_token` in the browser and never fall back to seller tokens.
+- Admin credentials are not embedded in source code.
+- Delegated administrator invitations are intentionally not enabled yet. Add them only with a separate secure provisioning and revocation flow.
+
+If the environment variables are missing, private admin login stays disabled. Do not fall back to seller authentication.

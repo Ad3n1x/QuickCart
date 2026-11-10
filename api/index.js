@@ -31,6 +31,11 @@ app.use(express.json({ limit: '8mb' }));
 
 const mongoUri = process.env.MONGODB_URI;
 const jwtSecret = process.env.JWT_SECRET;
+const adminJwtSecret = process.env.ADMIN_JWT_SECRET;
+const adminEmail = process.env.ADMIN_EMAIL || 'adenix271@gmail.com';
+const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+if (!adminJwtSecret) console.warn('ADMIN_JWT_SECRET is not configured; private admin sign-in is disabled.');
+if (!adminPasswordHash) console.warn('ADMIN_PASSWORD_HASH is not configured; private admin sign-in is disabled.');
 const brevoApiKey = process.env.BREVO_API_KEY;
 const brevoFromEmail = process.env.BREVO_FROM_EMAIL;
 const brevoFromName = process.env.BREVO_FROM_NAME || 'QuickCart';
@@ -46,7 +51,7 @@ if (!alatPaySecretKey) console.warn('ALATPAY_SECRET_KEY is not configured.');
 if (!alatPayBusinessId) console.warn('ALATPAY_BUSINESS_ID is not configured.');
 
 const db = createDatabaseConnection(mongoUri);
-const { tokenFor, auth, hashToken, customerTokenFor, customerAuth } = createAuthServices(jwtSecret);
+const { tokenFor, auth, hashToken, customerTokenFor, customerAuth, adminTokenFor, adminAuth } = createAuthServices(jwtSecret, adminJwtSecret);
 const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const sendOrderUpdateEmail = createOrderUpdateEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const { uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
@@ -61,6 +66,6 @@ registerPaymentRoutes(app, routeDependencies);
 registerDiscountRoutes(app, routeDependencies);
 registerOrderRoutes(app, routeDependencies);
 registerBusinessOsRoutes(app, routeDependencies);
-registerAdminRoutes(app, { db, auth });
+registerAdminRoutes(app, { db, adminAuth, adminTokenFor, adminEmail, adminPasswordHash, bcrypt });
 
 export default app;
