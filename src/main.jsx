@@ -20,7 +20,7 @@ function InstallAppPrompt() {
   const [installPrompt, setInstallPrompt] = React.useState(null);
   const [installed, setInstalled] = React.useState(false);
   const path = window.location.pathname;
-  const isAdmin = /^\\/admin(?:\\/|$)/.test(path);
+  const isAdmin = path === "/admin" || path.startsWith("/admin/");
   const isStorefront = path === "/marketplace" || path.startsWith("/store/");
   const isStandalone = window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
