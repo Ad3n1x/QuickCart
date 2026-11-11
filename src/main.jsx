@@ -16,6 +16,51 @@ class FatalBoundary extends React.Component {
   }
 }
 
+function InstallAppPrompt() {
+  const [installPrompt, setInstallPrompt] = React.useState(null);
+  const [installed, setInstalled] = React.useState(false);
+  const path = window.location.pathname;
+  const isAdmin = path === "/admin" || path.startsWith("/admin/");
+  const isStorefront = path === "/marketplace" || path.startsWith("/store/");
+  const isStandalone = window.matchMedia?.("(display-mode: standalone)").matches || window.navigator.standalone === true;
+
+  React.useEffect(() => {
+    const onPrompt = event => {
+      event.preventDefault();
+      setInstallPrompt(event);
+    };
+    const onInstalled = () => {
+      setInstalled(true);
+      setInstallPrompt(null);
+    };
+    window.addEventListener("beforeinstallprompt", onPrompt);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onPrompt);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  if ((!isAdmin && !isStorefront) || isStandalone || installed || !installPrompt) return null;
+
+  const label = isAdmin ? "Install Admin App" : "Install Storefront App";
+  const install = async () => {
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+    setInstallPrompt(null);
+  };
+
+  return <button type="button" onClick={install} aria-label={label} style={{
+    position:"fixed",right:"16px",bottom:"max(16px, env(safe-area-inset-bottom))",zIndex:9999,
+    display:"inline-flex",alignItems:"center",gap:"9px",padding:"12px 16px",
+    border:0,borderRadius:"999px",background:"#12392d",color:"#fff",
+    boxShadow:"0 8px 28px rgba(18,57,45,.24)",fontSize:"14px",fontWeight:700,
+    cursor:"pointer"
+  }}>
+    <span aria-hidden="true">↓</span>{label}
+  </button>;
+}
+
 if ("serviceWorker" in navigator && !import.meta.env.DEV) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { scope: import.meta.env.BASE_URL })
@@ -43,6 +88,9 @@ if (!root) {
 
 createRoot(root).render(
   <React.StrictMode>
-    <FatalBoundary><App /></FatalBoundary>
+    <>
+      <InstallAppPrompt />
+      <FatalBoundary><App /></FatalBoundary>
+    </>
   </React.StrictMode>
 );
