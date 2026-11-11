@@ -1,0 +1,32 @@
+{
+  "id": "/admin-app",
+  "name": "QuickCart Admin",
+  "short_name": "QC Admin",
+  "description": "Private QuickCart administration and control centre.",
+  "start_url": "/admin/login?source=installed-app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7faf8",
+  "theme_color": "#12392d",
+  "icons": [
+    {
+      "src": "/quickcart-admin-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Admin sign in",
+      "short_name": "Sign in",
+      "url": "/admin/login"
+    },
+    {
+      "name": "Password recovery",
+      "short_name": "Recover",
+      "url": "/admin/forgot-password"
+    }
+  ]
+}
