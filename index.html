@@ -31,7 +31,7 @@
     <meta name="msapplication-TileImage" content="%BASE_URL%quickcart-logo-compact.svg?v=2" />
     <script>
       (() => {
-        const isAdminApp = /^\\/admin(?:\\/|$)/.test(window.location.pathname);
+        const isAdminApp = window.location.pathname === "/admin" || window.location.pathname.startsWith("/admin/");
         const manifest = document.createElement("link");
         manifest.rel = "manifest";
         manifest.href = isAdminApp ? "/manifest-admin.webmanifest" : "/manifest-storefront.webmanifest";
