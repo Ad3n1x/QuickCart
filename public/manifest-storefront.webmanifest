@@ -1,0 +1,27 @@
+{
+  "id": "/storefront-app",
+  "name": "QuickCart Storefront",
+  "short_name": "QuickCart Shop",
+  "description": "Browse shops and place orders with QuickCart.",
+  "start_url": "/marketplace?source=installed-app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7faf8",
+  "theme_color": "#12392d",
+  "icons": [
+    {
+      "src": "/quickcart-storefront-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse marketplace",
+      "short_name": "Marketplace",
+      "url": "/marketplace"
+    }
+  ]
+}
