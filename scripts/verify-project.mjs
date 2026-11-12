@@ -13,11 +13,11 @@ const packageJson = JSON.parse(read("package.json"));
 const html = read("index.html");
 const main = read("src/main.jsx");
 const apiClient = read("src/lib/api.js");
-const app = [read("src/App.jsx"), read("src/app/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js"), read("src/lib/navigation.js"), read("src/features/dashboard/DashboardViews.jsx"), read("src/features/storefront/PublicStore.jsx"), read("src/features/auth/AuthViews.jsx"), read("src/features/marketing/Landing.jsx"), read("src/features/receipts/ReceiptScanner.jsx"), read("src/features/receipts/OrderReceiptModal.jsx"), read("src/components/common/SharedUI.jsx"), read("src/components/forms/PhoneField.jsx")].join("\n");
+const app = [read("src/App.jsx"), read("src/app/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js"), read("src/lib/navigation.js"), read("src/features/dashboard/DashboardViews.jsx"), read("src/features/storefront/PublicStore.jsx"), read("src/features/auth/AuthViews.jsx"), read("src/features/marketing/Landing.jsx"), read("src/features/privacy/PrivacyCentre.jsx"), read("src/features/privacy/AdminPrivacyRequests.jsx"), read("src/features/receipts/ReceiptScanner.jsx"), read("src/features/receipts/OrderReceiptModal.jsx"), read("src/components/common/SharedUI.jsx"), read("src/components/forms/PhoneField.jsx")].join("\n");
 const css = read("src/styles/main.css");
 const serviceWorker = read("public/sw.js");
 const vite = read("vite.config.js");
-const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/services/stores.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js"), read("server/src/routes/customer-auth.js"), read("server/src/routes/seller-auth.js"), read("server/src/routes/store.js"), read("server/src/routes/payments.js"), read("server/src/routes/discounts.js"), read("server/src/routes/orders.js")].join("\n");
+const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/services/stores.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js"), read("server/src/routes/customer-auth.js"), read("server/src/routes/seller-auth.js"), read("server/src/routes/store.js"), read("server/src/routes/payments.js"), read("server/src/routes/discounts.js"), read("server/src/routes/orders.js"), read("server/src/routes/privacy.js")].join("\n");
 const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Product modal CSS uses real line breaks and does not contain escaped newline tokens",
@@ -45,6 +45,9 @@ check("Tailwind v4 PostCSS is configured with QuickCart semantic design tokens a
   /@import ["\']tailwindcss\/utilities["\']/.test(css) &&
   /qc-shop-card/.test(app) &&
   /customer-tracking-toggle/.test(app));
+check("Privacy centre and request-management screens are included in project verification",
+  existsSync("src/features/privacy/PrivacyCentre.jsx") && existsSync("src/features/privacy/AdminPrivacyRequests.jsx") &&
+  /registerPrivacyRoutes/.test(api) && /\/api\/privacy\/requests/.test(api) && /\/admin\/privacy/.test(app));
 check("Package exposes build, API-server, and local-development commands",
   Boolean(packageJson.scripts?.build && packageJson.scripts?.server && packageJson.scripts?.dev));
 check("Storefront carts persist for guests and customers, stay store-scoped, and merge guest items on sign-in",
