@@ -20,7 +20,7 @@ function rightsHarness() {
   const db = async () => ({ collection(name) {
     const rows = state[name] || (state[name]=[]);
     return {
-      async findOne(query) { return rows.find(row=>matches(row,query)) || null; },
+      async findOne(query, options={}) { const row=rows.find(item=>matches(item,query)); if(!row)return null; const copy=structuredClone(row); for(const [key,value] of Object.entries(options.projection||{}))if(value===0)delete copy[key]; return copy; },
       find(query={}, options={}) {
         let items=rows.filter(row=>matches(row,query)).map(row=>structuredClone(row));
         return { sort(){return this;}, limit(){return this;}, async toArray(){return items;} };
