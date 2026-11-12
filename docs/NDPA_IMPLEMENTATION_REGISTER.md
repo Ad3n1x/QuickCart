@@ -25,12 +25,12 @@
 - The admin workflow records and tracks requests; it does not yet automatically execute account export, correction, deletion, restriction, or portability across all MongoDB collections. These must be handled through a documented, verified manual process until collection-aware workflows are designed and tested.
 - A request must not be marked completed until the actual action, legal exception (if any), response, and completion evidence have been recorded.
 - Do not add a TTL index to privacy-request records until the operator approves a documented retention schedule.
-- The public notice is intentionally marked as a draft because the legal controller/operator identity, monitored privacy contact, DPO details, retention periods, and international-transfer facts have not been supplied or independently verified.
+- The public notice is intentionally marked as a draft because the public operating name (AD3N1X) and privacy mailbox (ad3n1x271@gmail.com) have been supplied. The registered legal person/business identity, monitored-mailbox operation, DPO details, retention periods, and international-transfer facts have not been independently verified.
 - No NDPC registration, audit return, DPIA, DPO appointment, or regulatory certification is claimed by this code change.
 
 ## Required operator and legal decisions before public launch
 
-1. Confirm the legal person or business operating QuickCart, registered/contact address, and a monitored privacy contact.
+1. Public operating name and monitored privacy contact supplied: AD3N1X and ad3n1x271@gmail.com. Still confirm the registered legal person/business name, registered/contact address, and that this mailbox is actively monitored.
 2. Determine and document QuickCart's controller/processor roles for each processing activity, including seller-managed customer records.
 3. Complete a data inventory and lawful-basis assessment for every field and purpose.
 4. Confirm whether a DPO is required and appoint/designate one where applicable.
