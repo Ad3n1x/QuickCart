@@ -10,7 +10,9 @@
 - Plain-language draft notice covering the main data categories visible in the current application: account/contact details, seller/store details, product and order data, delivery details, payment references/status, support requests, and technical/security logs.
 - Disclosure of the configured service-provider categories observed in the repository: MongoDB, Vercel, Render, Brevo, and ALATPay. Actual contracting entities, processing locations, onward transfers, and safeguards still require confirmation from account and contract records.
 - Public data-subject request intake at `POST /api/privacy/requests`.
-- Input validation, bounded request text, email/IP-derived rate-limit hashes, and a limit of three requests per email or IP in a rolling 24-hour window.
+- Input validation, bounded request text, keyed HMAC pseudonyms for email/IP rate limiting (using `PRIVACY_HASH_SECRET`, with server-secret fallbacks), and a limit of three requests per email or IP in a rolling 24-hour window.
+- MongoDB indexes for privacy-request date sorting and the two rate-limit lookup paths; no automatic TTL deletion is configured because the retention schedule is not yet approved.
+- Completion safeguards: an administrator cannot mark a request completed until identity is verified and completion evidence is recorded; declined requests require a documented reason.
 - Private admin request review at `/admin/privacy`, protected by the existing dedicated admin authentication middleware.
 - Admin workflow fields for request status, identity-verification status, internal notes, and an append-only action history.
 - Tests for valid intake, invalid submissions, rate limiting, and the admin review/update workflow.
@@ -20,7 +22,7 @@
 
 - A submitted request is not proof of identity. Admins must verify identity proportionately before disclosing, correcting, exporting, restricting, or deleting personal data.
 - Do not request passwords, full payment credentials, or identity-document numbers in the public form.
-- The admin workflow records and tracks requests; it does not yet automatically execute account export, correction, deletion, restriction, or portability across all MongoDB collections.
+- The admin workflow records and tracks requests; it does not yet automatically execute account export, correction, deletion, restriction, or portability across all MongoDB collections. These must be handled through a documented, verified manual process until collection-aware workflows are designed and tested.
 - A request must not be marked completed until the actual action, legal exception (if any), response, and completion evidence have been recorded.
 - Do not add a TTL index to privacy-request records until the operator approves a documented retention schedule.
 - The public notice is intentionally marked as a draft because the legal controller/operator identity, monitored privacy contact, DPO details, retention periods, and international-transfer facts have not been supplied or independently verified.
@@ -42,6 +44,12 @@
 12. Complete a security review covering browser token storage, XSS protections/CSP, access control, tenant isolation, encryption, backup access, secrets, logging, payment callback authenticity, and incident response.
 13. Prepare a breach-response playbook with decision owners, evidence preservation, affected-person communications, and regulator notification steps in accordance with applicable statutory deadlines.
 14. Obtain review by a qualified Nigerian data-protection professional before representing the platform as compliant.
+
+## Required deployment configuration
+
+- Set a high-entropy `PRIVACY_HASH_SECRET` in the production API environment. The route can fall back to `JWT_SECRET` or `ADMIN_JWT_SECRET`, but a dedicated secret is preferred. Rotating the key resets rate-limit pseudonym matching for earlier requests.
+- Keep the public privacy notice marked as a draft until the operator identity, monitored privacy contact, retention periods, lawful-basis map, processor details, and transfer facts are verified and published.
+- Confirm MongoDB can create the new `privacy_requests` indexes during startup; inspect logs for index-creation errors after deployment.
 
 ## Engineering follow-up
 
