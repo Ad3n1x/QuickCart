@@ -73,6 +73,100 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
     }
   });
 
+  // Export is generated on demand after identity verification; no public download URL is created.
+  app.get("/api/admin/privacy/requests/:id/export", adminAuth, async (req, res) => {
+    try {
+      const database = await db();
+      const request = await database.collection("privacy_requests").findOne({ id: String(req.params.id || "") });
+      if (!request) return res.status(404).json({ error: "Privacy request not found." });
+      if (!["verified", "not_required"].includes(request.verificationStatus) || (request.verificationStatus === "not_required" && String(request.internalNote || "").trim().length < 10)) {
+        return res.status(409).json({ error: "Verify the requester before preparing a personal-data export.", code: "PRIVACY_IDENTITY_GUARD" });
+      }
+      const email = String(request.email || "").trim().toLowerCase();
+      const [seller, buyer, ordersAsBuyer, crmAsBuyer] = await Promise.all([
+        database.collection("users").findOne({ email }, { projection: { passwordHash: 0, emailVerificationOtpHash: 0, emailVerificationExpiresAt: 0, emailVerificationAttempts: 0 } }),
+        database.collection("customer_users").findOne({ email }, { projection: { passwordHash: 0, emailVerificationOtpHash: 0, emailVerificationExpiresAt: 0, emailVerificationAttempts: 0 } }),
+        database.collection("orders").find({ customerEmail: email }).toArray(),
+        database.collection("customers").find({ customerEmail: email }).toArray()
+      ]);
+      const stores = seller ? await database.collection("stores").find({ userId: seller.id }).toArray() : [];
+      const storeIds = stores.map(item => item.id).filter(Boolean);
+      const [products, discounts, sellerOrders] = storeIds.length ? await Promise.all([
+        database.collection("products").find({ storeId: { $in: storeIds } }).toArray(),
+        database.collection("discounts").find({ storeId: { $in: storeIds } }).toArray(),
+        database.collection("orders").find({ storeId: { $in: storeIds } }).toArray()
+      ]) : [[], [], []];
+      const buyerOrderIds = ordersAsBuyer.map(item => item.id).filter(Boolean);
+      const sellerOrderIds = sellerOrders.map(item => item.id).filter(Boolean);
+      const deliveries = buyerOrderIds.length ? await database.collection("deliveries").find({ orderId: { $in: buyerOrderIds } }).toArray() : [];
+      const sellerSafeOrders = sellerOrders.filter(order => !ordersAsBuyer.some(buyerOrder => buyerOrder.id === order.id)).map(order => ({
+        ...order,
+        customerName: "[redacted — another data subject]",
+        customerEmail: "[redacted — another data subject]",
+        customerPhone: "[redacted — another data subject]",
+        address: "[redacted — another data subject]",
+        receiptData: undefined
+      }));
+      const exportData = {
+        generatedAt: now(),
+        requestReference: request.id,
+        subjectEmail: email,
+        accountProfiles: { seller: seller || null, buyer: buyer || null },
+        sellerWorkspace: seller ? { stores, products, discounts, orders: sellerSafeOrders } : null,
+        buyerActivity: { orders: ordersAsBuyer, customerRecords: crmAsBuyer, deliveries },
+        privacyRequests: await database.collection("privacy_requests").find({ emailHash: request.emailHash }, { projection: { emailHash: 0, ipHash: 0 } }).toArray()
+      };
+      await database.collection("privacy_requests").updateOne({ id: request.id }, {
+        $set: { exportPreparedAt: now(), exportPreparedBy: req.admin.email },
+        $push: { history: { action: "personal_data_export_prepared", at: now(), adminEmail: req.admin.email } }
+      });
+      res.setHeader("Cache-Control", "no-store, private");
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("Content-Disposition", 'attachment; filename="quickcart-personal-data-export.json"');
+      return res.status(200).send(JSON.stringify(exportData, null, 2));
+    } catch (error) {
+      console.error("Privacy export failed:", error?.message || error);
+      return res.status(500).json({ error: "Unable to prepare the personal-data export.", code: "PRIVACY_EXPORT_FAILED" });
+    }
+  });
+
+  // Buyer erasure is deliberately scoped: financial/order evidence is retained and direct buyer identifiers are anonymised.
+  // Seller account/store erasure remains a reviewed process because seller records contain other people's order data.
+  app.post("/api/admin/privacy/requests/:id/execute-erasure", adminAuth, async (req, res) => {
+    try {
+      const database = await db();
+      const requests = database.collection("privacy_requests");
+      const request = await requests.findOne({ id: String(req.params.id || "") });
+      if (!request) return res.status(404).json({ error: "Privacy request not found." });
+      if (request.type !== "erasure") return res.status(400).json({ error: "This request is not an erasure request." });
+      if (request.status !== "in_progress") return res.status(409).json({ error: "Move the request to in progress before executing erasure." });
+      if (request.verificationStatus !== "verified") return res.status(409).json({ error: "Identity must be verified before erasure.", code: "PRIVACY_IDENTITY_GUARD" });
+      if (String(req.body?.confirmation || "") !== "ERASE" || String(req.body?.confirmEmail || "").trim().toLowerCase() !== String(request.email || "").toLowerCase()) {
+        return res.status(400).json({ error: "Confirm the exact requester email and type ERASE to proceed.", code: "PRIVACY_ERASURE_CONFIRMATION_REQUIRED" });
+      }
+      const email = String(request.email || "").trim().toLowerCase();
+      const buyer = await database.collection("customer_users").findOne({ email });
+      if (!buyer) return res.status(409).json({ error: "No buyer account was found for this requester. Seller accounts and seller workspaces are not automatically erased by this workflow.", code: "PRIVACY_BUYER_ACCOUNT_NOT_FOUND" });
+      const result = await database.collection("orders").updateMany(
+        { customerEmail: email },
+        { $set: { customerId: null, customerEmail: "", customerName: "Deleted customer", customerPhone: "", address: "", customerDataErasedAt: now() } }
+      );
+      const crm = await database.collection("customers").deleteMany({ customerEmail: email });
+      const buyerDelete = await database.collection("customer_users").deleteOne({ id: buyer.id, email });
+      const executedAt = now();
+      const evidence = "Buyer account removed; " + Number(crm.deletedCount || 0) + " matching CRM record(s) removed; " + Number(result.modifiedCount || 0) + " order record(s) retained with buyer identifiers anonymised. Seller profile, seller workspace and statutory/financial order evidence were not deleted.";
+      await requests.updateOne({ id: request.id }, {
+        $set: { erasureExecutedAt: executedAt, erasureExecutedBy: req.admin.email, erasureEvidence: evidence, updatedAt: executedAt },
+        $push: { history: { action: "buyer_erasure_executed", at: executedAt, adminEmail: req.admin.email, buyerProfileDeleted: Boolean(buyerDelete.deletedCount), crmRecordsDeleted: Number(crm.deletedCount || 0), ordersAnonymised: Number(result.modifiedCount || 0) } }
+      });
+      res.setHeader("Cache-Control", "no-store");
+      return res.json({ executed: true, buyerProfileDeleted: Boolean(buyerDelete.deletedCount), crmRecordsDeleted: Number(crm.deletedCount || 0), ordersAnonymised: Number(result.modifiedCount || 0), evidence });
+    } catch (error) {
+      console.error("Privacy erasure failed:", error?.message || error);
+      return res.status(500).json({ error: "Unable to execute buyer erasure.", code: "PRIVACY_ERASURE_FAILED" });
+    }
+  });
+
   app.patch("/api/admin/privacy/requests/:id", adminAuth, async (req, res) => {
     try {
       const status = req.body?.status === undefined ? undefined : String(req.body.status);
