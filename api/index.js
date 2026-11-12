@@ -11,6 +11,7 @@ import { registerDiscountRoutes } from "../server/src/routes/discounts.js";
 import { registerOrderRoutes } from "../server/src/routes/orders.js";
 import { registerBusinessOsRoutes } from "../server/src/routes/business-os.js";
 import { registerAdminRoutes } from "../server/src/routes/admin.js";
+import { registerPrivacyRoutes } from "../server/src/routes/privacy.js";
 import { createDatabaseConnection } from "../server/src/config/database.js";
 import { createAuthServices } from "../server/src/middleware/auth.js";
 import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity.js";
@@ -77,5 +78,6 @@ registerDiscountRoutes(app, routeDependencies);
 registerOrderRoutes(app, routeDependencies);
 registerBusinessOsRoutes(app, routeDependencies);
 registerAdminRoutes(app, { db, adminAuth:requireCurrentAdminSession, adminTokenFor, adminEmail, adminPasswordHash, bcrypt, randomBytes, sendAdminPasswordResetEmail, frontendUrl });
+registerPrivacyRoutes(app, { db, adminAuth:requireCurrentAdminSession, randomUUID, now });
 
 export default app;
