@@ -17,7 +17,7 @@ function rightsHarness() {
     if (value && typeof value === "object" && "$in" in value) return value.$in.includes(row[key]);
     return row[key] === value;
   });
-  const db = async () => ({ collection(name) {
+  const db = async () => ({ withTransaction: async work => work({}), collection(name) {
     const rows = state[name] || (state[name]=[]);
     return {
       async findOne(query, options={}) { const row=rows.find(item=>matches(item,query)); if(!row)return null; const copy=structuredClone(row); for(const [key,value] of Object.entries(options.projection||{}))if(value===0)delete copy[key]; return copy; },
