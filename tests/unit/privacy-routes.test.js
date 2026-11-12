@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { registerPrivacyRoutes } from "../../server/src/routes/privacy.js";
 
 function harness() {
+  const previousJwtSecret = process.env.JWT_SECRET;
+  process.env.JWT_SECRET = "privacy-route-test-secret";
   const state = { requests: [] };
   const collection = {
     async countDocuments(query) {
@@ -40,7 +42,7 @@ function harness() {
   registerPrivacyRoutes(app, { db, adminAuth: (req, _res, next) => { req.admin={email:"admin@example.com"}; next(); }, randomUUID, now: () => new Date() });
   const server = app.listen(0);
   const url = new Promise(resolve => server.once("listening", () => resolve("http://127.0.0.1:"+server.address().port)));
-  return { state, server, url };
+  return { state, server, url, restore() { if (previousJwtSecret === undefined) delete process.env.JWT_SECRET; else process.env.JWT_SECRET = previousJwtSecret; } };
 }
 
 test("privacy request intake validates and stores a minimal request record", async () => {
@@ -55,7 +57,7 @@ test("privacy request intake validates and stores a minimal request record", asy
     assert.equal(h.state.requests[0].verificationStatus,"pending");
     assert.ok(h.state.requests[0].emailHash);
     assert.ok(h.state.requests[0].ipHash);
-  } finally { h.server.close(); }
+  } finally { h.server.close(); h.restore(); }
 });
 
 test("privacy request intake rejects invalid email, request type and empty details", async () => {
@@ -98,4 +100,25 @@ test("admin can review and update privacy requests without receiving rate-limit 
     assert.equal(result.request.verificationStatus,"verified");
     assert.equal(result.request.history.length,2);
   } finally { h.server.close(); }
+});
+
+test("admin cannot close a privacy request without verified identity and completion evidence", async () => {
+  const h = harness();
+  try {
+    const created = await fetch((await h.url)+"/api/privacy/requests", { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({name:"Ada Buyer",email:"ada@example.com",type:"access",details:"Please provide my account information."}) });
+    const { reference } = await created.json();
+    const endpoint = (await h.url)+"/api/admin/privacy/requests/"+reference;
+    const premature = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
+    assert.equal(premature.status,409);
+    assert.equal((await premature.json()).code,"PRIVACY_COMPLETION_GUARD");
+    const verified = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({verificationStatus:"verified"})});
+    assert.equal(verified.status,200);
+    const withoutEvidence = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
+    assert.equal(withoutEvidence.status,409);
+    const noted = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({internalNote:"Export completed and response sent to verified requester."})});
+    assert.equal(noted.status,200);
+    const completed = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
+    assert.equal(completed.status,200);
+    assert.equal((await completed.json()).request.status,"completed");
+  } finally { h.server.close(); h.restore(); }
 });
