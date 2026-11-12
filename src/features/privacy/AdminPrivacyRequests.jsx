@@ -40,6 +40,8 @@ export default function AdminPrivacyRequests() {
         <label>Status<select value={request.status} disabled={busyId === request.id} onChange={e => update(request, { status: e.target.value })}>{statuses.map(value => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
         <label>Identity check<select value={request.verificationStatus} disabled={busyId === request.id} onChange={e => update(request, { verificationStatus: e.target.value })}>{verificationStatuses.map(value => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
         <label className="privacy-note-field">Internal note<textarea defaultValue={request.internalNote || ""} maxLength={2000} rows={2} onBlur={e => { if (e.target.value !== (request.internalNote || "")) update(request, { internalNote: e.target.value }); }}/></label>
+        <label className="privacy-note-field">Resolution evidence<textarea defaultValue={request.resolutionEvidence || ""} maxLength={3000} rows={3} placeholder="Describe the actual export, correction, deletion, restriction or other action completed." onBlur={e => { if (e.target.value !== (request.resolutionEvidence || "")) update(request, { resolutionEvidence: e.target.value }); }}/></label>
+        <label>Requester notified<select value={request.responseSentAt ? "yes" : "no"} disabled={busyId === request.id} onChange={e => update(request, { responseSent: e.target.value === "yes" })}><option value="no">Not sent</option><option value="yes">Sent</option></select></label>
       </div>
     </article>)}</div>}
   </main>;
