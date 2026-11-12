@@ -33,7 +33,7 @@ export default function PrivacyCentre() {
   };
 
   return <main className="privacy-page">
-    <header className="privacy-header"><a href="/" className="privacy-brand"><Logo size={36}/><strong>QuickCart</strong></a><a href="/" className="privacy-back"><ArrowLeft size={16}/> Back to QuickCart</a></header>
+    <header className="privacy-header"><a href="./" className="privacy-brand"><Logo size={36}/><strong>QuickCart</strong></a><a href="./" className="privacy-back"><ArrowLeft size={16}/> Back to QuickCart</a></header>
     <section className="privacy-hero"><span className="privacy-kicker"><ShieldCheck size={15}/> PRIVACY CENTRE</span><h1>Your data deserves careful handling.</h1><p>Learn what information QuickCart uses, why it is needed, and how to exercise your privacy rights under applicable Nigerian data-protection law.</p></section>
     <section className="privacy-notice" role="note"><LockKeyhole size={19}/><div><strong>Implementation notice</strong><p>This privacy notice is an implementation draft. The legal operator name, designated privacy contact / DPO details, vendor transfer locations, retention schedule and final lawful-basis assessment must be confirmed by QuickCart's operator and a qualified Nigerian data-protection professional before this notice is treated as final.</p></div></section>
     <div className="privacy-layout">
