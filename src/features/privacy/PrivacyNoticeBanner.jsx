@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { LockKeyhole, X } from "lucide-react";
+import "../../styles/privacy.css";
 
 export default function PrivacyNoticeBanner() {
   const [visible, setVisible] = useState(() => {
