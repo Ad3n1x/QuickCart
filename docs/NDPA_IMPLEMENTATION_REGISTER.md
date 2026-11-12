@@ -48,7 +48,7 @@
 ## Required deployment configuration
 
 - Set a high-entropy `PRIVACY_HASH_SECRET` in the production API environment. The route can fall back to `JWT_SECRET` or `ADMIN_JWT_SECRET`, but a dedicated secret is preferred. Rotating the key resets rate-limit pseudonym matching for earlier requests.
-- Set the frontend build variables `VITE_LEGAL_OPERATOR_NAME` and `VITE_PRIVACY_CONTACT_EMAIL` to the verified legal controller/operator identity and monitored privacy mailbox. Do not populate these with an individual's details unless the operator has formally designated that contact.
+- Set `VITE_PRIVACY_CONTACT_EMAIL` to the monitored privacy mailbox (`ad3n1x271@gmail.com`). Do not add the operator's full legal name, age, date of birth, or residential address to public frontend build variables or public repository files. Maintain any legally required identity and age-related governance records through a private, access-controlled process reviewed with a parent/legal guardian and a qualified Nigerian data-protection professional. This public-notice choice does not waive any statutory controller-identification or contact-disclosure duties.
 - Keep the public privacy notice marked as a draft until the operator identity, monitored privacy contact, retention periods, lawful-basis map, processor details, and transfer facts are verified and published.
 - Confirm MongoDB can create the new `privacy_requests` indexes during startup; inspect logs for index-creation errors after deployment.
 
