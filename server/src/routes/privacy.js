@@ -21,7 +21,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
 
       const database = await db();
       const requests = database.collection("privacy_requests");
-      const createdAt = now();
+      const createdAt = new Date(now());
       const emailHash = hash(email);
       const ipHash = hash(req.ip || req.socket?.remoteAddress || "unknown");
       const since = new Date(createdAt.getTime() - 24 * 60 * 60 * 1000);
