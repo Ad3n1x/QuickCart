@@ -37,9 +37,11 @@ export default function AdminPrivacyRequests() {
     if (confirmEmail === null) return;
     const confirmation = window.prompt("This removes the buyer profile and matching CRM records, and anonymises buyer identifiers on orders retained for transaction evidence. Type ERASE to continue:", "");
     if (confirmation === null) return;
+    const confirmNoLegalHold = window.confirm("Confirm you checked for legal holds, payment disputes, statutory retention duties and active orders. Continue only if none prevents erasure.");
+    if (!confirmNoLegalHold) return;
     setBusyId(request.id); setError("");
     try {
-      const result = await api("/api/admin/privacy/requests/" + encodeURIComponent(request.id) + "/execute-erasure", { method: "POST", body: body({ confirmEmail, confirmation }) });
+      const result = await api("/api/admin/privacy/requests/" + encodeURIComponent(request.id) + "/execute-erasure", { method: "POST", body: body({ confirmEmail, confirmation, confirmNoLegalHold }) });
       setRequests(items => items.map(item => item.id === request.id ? { ...item, erasureExecutedAt: new Date().toISOString(), erasureEvidence: result.evidence, resolutionEvidence: result.evidence } : item));
     } catch (err) { setError(err.message || "Unable to execute erasure."); }
     finally { setBusyId(""); }
