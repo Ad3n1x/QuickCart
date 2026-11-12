@@ -128,6 +128,8 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
       if (status === "in_progress" && ["completed", "declined"].includes(existing.status)) {
         set.completedAt = null;
         set.completedBy = null;
+        set.responseSentAt = null;
+        set.resolutionEvidence = "";
       }
       await requests.updateOne({ id: existing.id }, {
         $set: set,
