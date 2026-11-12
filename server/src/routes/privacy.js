@@ -27,7 +27,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
       const type = String(req.body?.type || "").trim();
       const details = String(req.body?.details || "").trim().slice(0, 3000);
       if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !name || name.length < 2 || !allowedTypes.has(type) || details.length < 10) {
-        return res.status(400).json({ error: "Enter your name, a valid email, request type and at least 10 characters of explanation.", code: "INVALID_PRIVACY_REQUEST" });
+        return res.status(400).json({ error: "Enter your name, an email of 254 characters or fewer, a request type and at least 10 characters of explanation.", code: "INVALID_PRIVACY_REQUEST" });
       }
 
       if (!hashSecret) return res.status(503).json({ error: "Privacy request intake is temporarily unavailable. Please contact the platform operator.", code: "PRIVACY_HASH_SECRET_MISSING" });
