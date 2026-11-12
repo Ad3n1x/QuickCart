@@ -1,6 +1,6 @@
-import { createHash } from "node:crypto";
+import { createHmac } from "node:crypto";
 
-const hash = value => createHash("sha256").update(String(value || "")).digest("hex");
+const hash = (value, secret) => createHmac("sha256", secret).update(String(value || "")).digest("hex");
 const allowedTypes = new Set([
   "access", "rectification", "erasure", "restriction", "objection",
   "portability", "withdraw-consent", "automated-decision", "complaint", "other"
@@ -9,6 +9,8 @@ const statuses = new Set(["received", "identity_verification", "in_progress", "c
 const verificationStatuses = new Set(["pending", "verified", "not_required"]);
 
 export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
+  const hashSecret = process.env.PRIVACY_HASH_SECRET || process.env.JWT_SECRET || process.env.ADMIN_JWT_SECRET || "";
+
   app.post("/api/privacy/requests", async (req, res) => {
     try {
       const name = String(req.body?.name || "").trim().slice(0, 100);
@@ -19,11 +21,12 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
         return res.status(400).json({ error: "Enter your name, a valid email, request type and at least 10 characters of explanation.", code: "INVALID_PRIVACY_REQUEST" });
       }
 
+      if (!hashSecret) return res.status(503).json({ error: "Privacy request intake is temporarily unavailable. Please contact the platform operator.", code: "PRIVACY_HASH_SECRET_MISSING" });
       const database = await db();
       const requests = database.collection("privacy_requests");
       const createdAt = new Date(now());
-      const emailHash = hash(email);
-      const ipHash = hash(req.ip || req.socket?.remoteAddress || "unknown");
+      const emailHash = hash(email, hashSecret);
+      const ipHash = hash(req.ip || req.socket?.remoteAddress || "unknown", hashSecret);
       const since = new Date(createdAt.getTime() - 24 * 60 * 60 * 1000);
       const recent = await requests.countDocuments({ createdAt: { $gte: since }, $or: [{ emailHash }, { ipHash }] });
       if (recent >= 3) return res.status(429).json({ error: "Too many privacy requests have been submitted. Please try again later.", code: "PRIVACY_REQUEST_RATE_LIMIT" });
@@ -81,6 +84,15 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
       const requests = database.collection("privacy_requests");
       const existing = await requests.findOne({ id: String(req.params.id || "") });
       if (!existing) return res.status(404).json({ error: "Privacy request not found." });
+      const nextVerification = verificationStatus ?? existing.verificationStatus;
+      const nextNote = internalNote ?? existing.internalNote ?? "";
+      if (status === "completed" && (nextVerification !== "verified" || nextNote.trim().length < 10)) {
+        return res.status(409).json({ error: "Verify the requester and record at least 10 characters of completion evidence before closing this request.", code: "PRIVACY_COMPLETION_GUARD" });
+      }
+      if (status === "declined" && nextNote.trim().length < 10) {
+        return res.status(409).json({ error: "Record the reason for declining this request before closing it.", code: "PRIVACY_DECLINE_GUARD" });
+      }
+
       const updatedAt = now();
       const set = { updatedAt };
       if (status !== undefined) set.status = status;
