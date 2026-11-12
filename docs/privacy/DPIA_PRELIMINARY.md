@@ -5,7 +5,16 @@
 
 ## Processing overview
 
-QuickCart is a web marketplace/storefront service used by sellers and buyers in Nigeria. Repository-visible processing includes account registration/authentication, seller stores/catalogues, buyer checkout, orders, delivery, payment status/reference handling, transactional email, customer support, privacy requests and technical/security logs. Production volumes, regions, subprocessors and exact fields remain to be verified.
+QuickCart is a web marketplace/storefront service used by sellers and buyers in Nigeria. Repository-visible processing includes account registration/authentication, seller stores/catalogues, buyer checkout, orders, delivery, payment status/reference handling, transactional email, customer support, privacy requests and technical/security logs.
+
+### Hosting and known data locations (account metadata checked 2026-11-12)
+
+- **Frontend:** Vercel project `quick-cart` (Vite). Static assets are served through Vercel's global CDN. The production frontend API base URL points to the Render API. Project metadata inspected did not expose a configured Vercel Function region; do not assume a single-country location for all Vercel platform/CDN processing.
+- **API:** Render service `quickcart-api`, Node web service in Frankfurt, Germany.
+- **Database:** MongoDB Atlas `Cluster0`, AWS `US_WEST_2` (Oregon, United States), FREE tier, MongoDB 8.0.37.
+- **Other providers:** Brevo transactional email and ALATPay payment services are configured/identified in the application, but their processing locations, contracting entities, subprocessors and DPAs have not been verified.
+
+The known topology therefore includes Nigeria-to-Germany API traffic and Germany-to-US database traffic. Vercel's global platform may additionally process delivery, request and operational metadata across its infrastructure. This creates international-transfer and access risks that must be assessed; the location record is not a finding that transfers are lawful or adequately safeguarded. Backup, log, support-access and subprocessor locations remain unknown.
 
 ## Necessity and proportionality
 
@@ -28,6 +37,7 @@ Potential data subjects include buyers, sellers, seller employees/agents, delive
 | Rights requests incomplete | Requests unresolved across systems | Identity checks, export/correction/deletion runbooks, vendor coordination | End-to-end DSAR test |
 | Slow incident escalation | Harm and missed deadline | 72-hour playbook, incident contact and tabletop | Exercise report |
 | Automated decisions/profiling | Unfair significant effects | Inventory decision logic; human review/challenge for significant decisions | Rules/model inventory |
+| Cross-border access and transfer | Data processed or accessed outside Nigeria without adequate assessment/safeguards | Map data flows, provider entities, subprocessors, support access, backup/log locations; complete transfer assessment and implement required safeguards | Signed DPA/transfer review and DPO sign-off |
 
 ## Existing code observations
 
@@ -42,7 +52,7 @@ These are repository observations only. They do not prove production configurati
 
 ## Required before approval
 
-Verify production data flows/volumes; complete ROPA, role allocation and lawful-basis/LIA assessments; verify vendors/DPAs/transfers; approve retention/deletion; complete child-data assessment; perform security and tenant-isolation testing; evaluate residual risks; obtain DPO vetting/signature and determine NDPC filing requirements; record conditions, owners and review date.
+Verify production data flows/volumes; complete ROPA, role allocation and lawful-basis/LIA assessments; verify vendors/DPAs/transfers and backup/log/support-access locations; approve retention/deletion; complete child-data assessment; perform security and tenant-isolation testing; evaluate residual risks; obtain DPO vetting/signature and determine NDPC filing requirements; record conditions, owners and review date.
 
 ## Approval record
 
