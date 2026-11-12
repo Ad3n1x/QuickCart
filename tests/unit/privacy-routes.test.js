@@ -69,6 +69,19 @@ test("privacy request intake rejects invalid email, request type and empty detai
   } finally { h.server.close(); }
 });
 
+test("privacy request intake rejects oversized email addresses", async () => {
+  const h = harness();
+  try {
+    const response = await fetch((await h.url)+"/api/privacy/requests", {
+      method:"POST",
+      headers:{"content-type":"application/json"},
+      body:JSON.stringify({name:"Ada Buyer",email:"a".repeat(250)+"@example.com",type:"access",details:"Please provide my account information."})
+    });
+    assert.equal(response.status,400);
+    assert.equal(h.state.requests.length,0);
+  } finally { h.server.close(); h.restore(); }
+});
+
 test("privacy request intake rate-limits repeated requests from one email or IP", async () => {
   const h = harness();
   try {
