@@ -25,19 +25,19 @@
 - The admin workflow records and tracks requests; it does not yet automatically execute account export, correction, deletion, restriction, or portability across all MongoDB collections. These must be handled through a documented, verified manual process until collection-aware workflows are designed and tested.
 - A request must not be marked completed until the actual action, legal exception (if any), response, and completion evidence have been recorded.
 - Do not add a TTL index to privacy-request records until the operator approves a documented retention schedule.
-- The public notice is intentionally marked as a draft because the public operating name (AD3N1X) and privacy mailbox (ad3n1x271@gmail.com) have been supplied. The registered legal person/business identity, monitored-mailbox operation, DPO details, retention periods, and international-transfer facts have not been independently verified.
+- The public notice is intentionally marked as a draft. The operator confirmed that AD3N1X is only the public brand, the platform is currently operated by an unregistered individual, there is no business address, the privacy mailbox ad3n1x271@gmail.com can receive requests, and no DPO has been appointed. The individual's legal name and an appropriate service/contact address have not been supplied. The operator's initial preference is to retain account data while the account remains active and accept deletion requests; this is not yet a complete or approved retention schedule because post-deletion legal, accounting, security, backup, and dispute-retention periods still need to be mapped. Vendor processing locations and international-transfer facts remain unconfirmed.
 - No NDPC registration, audit return, DPIA, DPO appointment, or regulatory certification is claimed by this code change.
 
 ## Required operator and legal decisions before public launch
 
-1. Public operating name and monitored privacy contact supplied: AD3N1X and ad3n1x271@gmail.com. Still confirm the registered legal person/business name, registered/contact address, and that this mailbox is actively monitored.
+1. Operator confirmed AD3N1X is a public brand, not a registered business; the platform is currently operated by an unregistered individual. The privacy mailbox ad3n1x271@gmail.com is confirmed as usable. Before final publication, establish the individual's legal controller identity and an appropriate service/contact address; do not publish a private home address without considering safer lawful contact arrangements.
 2. Determine and document QuickCart's controller/processor roles for each processing activity, including seller-managed customer records.
 3. Complete a data inventory and lawful-basis assessment for every field and purpose.
 4. Confirm whether a DPO is required and appoint/designate one where applicable.
 5. Assess NDPC registration and Compliance Audit Return obligations, including whether any major-importance criteria apply.
 6. Complete a DPIA where the processing is likely to result in high risk.
 7. Review and execute appropriate processor agreements with hosting, database, email, payment, analytics, support, and other vendors; confirm transfer locations and safeguards.
-8. Approve a retention/deletion schedule for account data, orders, payment records, support records, logs, backups, and privacy requests.
+8. Operator's initial preference is to retain account data while an account is active and allow deletion requests. Convert this into an approved record-by-record retention/deletion schedule covering post-deletion account data, orders, payment records, support records, logs, backups, and privacy requests, including justified legal/accounting/security exceptions.
 9. Inventory all cookies, local/session storage, SDKs, analytics and marketing tags. Keep optional tracking disabled until valid consent is collected where required.
 10. Approve an identity-verification and response procedure for rights requests, including exceptions and response tracking.
 11. Implement and test actual data export, correction, erasure, restriction, objection and consent-withdrawal workflows, with legal holds and accounting obligations handled explicitly.
