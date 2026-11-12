@@ -147,6 +147,10 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
       const email = String(request.email || "").trim().toLowerCase();
       const buyer = await database.collection("customer_users").findOne({ email });
       if (!buyer) return res.status(409).json({ error: "No buyer account was found for this requester. Seller accounts and seller workspaces are not automatically erased by this workflow.", code: "PRIVACY_BUYER_ACCOUNT_NOT_FOUND" });
+      if (req.body?.confirmNoLegalHold !== true) return res.status(400).json({ error: "Confirm that no legal hold, payment dispute, or statutory preservation requirement prevents this erasure.", code: "PRIVACY_LEGAL_HOLD_CHECK_REQUIRED" });
+      const relatedOrders = await database.collection("orders").find({ customerEmail: email }).toArray();
+      const activeOrders = relatedOrders.filter(order => !["cancelled", "picked_up", "delivered"].includes(String(order.status || "").toLowerCase()) || ["pending", "processing"].includes(String(order.paymentStatus || "").toLowerCase()));
+      if (activeOrders.length) return res.status(409).json({ error: "This buyer has active or unresolved orders. Complete or resolve them before erasure.", code: "PRIVACY_ACTIVE_ORDERS" });
       const result = await database.collection("orders").updateMany(
         { customerEmail: email },
         { $set: { customerId: null, customerEmail: "", customerName: "Deleted customer", customerPhone: "", address: "", customerDataErasedAt: now() }, $unset: { customerConfirmationTokenHash: "" } }
