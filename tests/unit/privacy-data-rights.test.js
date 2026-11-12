@@ -80,6 +80,18 @@ test("verified data export includes buyer records but excludes password hashes",
 });
 
 
+test("personal-data export does not include unrelated legacy requests without email hashes",async()=>{
+  const h=rightsHarness();
+  h.state.privacy_requests.push({id:"legacy-other",email:"other@example.com",name:"Other person",type:"access",details:"Different person's request",status:"received"});
+  try{
+    const endpoint=(await h.url)+"/api/admin/privacy/requests/request-1/export";
+    const response=await fetch(endpoint);
+    assert.equal(response.status,200);
+    const data=await response.json();
+    assert.deepEqual(data.privacyRequests.map(item=>item.id),["request-1"]);
+  }finally{h.server.close();}
+});
+
 test("buyer erasure refuses active orders without changing any records",async()=>{
   const h=rightsHarness();
   h.state.orders[0].status="processing";
