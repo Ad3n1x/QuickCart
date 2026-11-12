@@ -8,7 +8,7 @@ function rightsHarness() {
     privacy_requests: [{ id:"request-1", email:"buyer@example.com", emailHash:"hash-buyer", type:"erasure", status:"in_progress", verificationStatus:"verified", internalNote:"Identity checked using account verification.", history:[] }],
     users: [],
     customer_users: [{ id:"buyer-1", email:"buyer@example.com", name:"Buyer", passwordHash:"must-not-export" }],
-    orders: [{ id:"order-1", customerEmail:"buyer@example.com", customerId:"buyer-1", customerName:"Buyer", customerPhone:"08000000000", address:"Private address", total:1200 }],
+    orders: [{ id:"order-1", customerEmail:"buyer@example.com", customerId:"buyer-1", customerName:"Buyer", customerPhone:"08000000000", address:"Private address", total:1200, status:"delivered", paymentStatus:"paid" }],
     customers: [{ id:"crm-1", customerEmail:"buyer@example.com", name:"Buyer" }],
     stores: [], products: [], discounts: [], deliveries: []
   };
@@ -74,7 +74,7 @@ test("buyer erasure requires explicit confirmation and preserves anonymised orde
   const h=rightsHarness();
   try{
     const endpoint=(await h.url)+"/api/admin/privacy/requests/request-1/execute-erasure";
-    const response=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({confirmEmail:"buyer@example.com",confirmation:"ERASE"})});
+    const response=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({confirmEmail:"buyer@example.com",confirmation:"ERASE",confirmNoLegalHold:true})});
     assert.equal(response.status,200);
     const data=await response.json();
     assert.equal(data.buyerProfileDeleted,true);
