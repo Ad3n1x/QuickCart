@@ -9,7 +9,7 @@ function rightsHarness({ transactional = true } = {}) {
     users: [{ id:"seller-1", email:"buyer@example.com", name:"Seller", passwordHash:"seller-password-hash" }],
     customer_users: [{ id:"buyer-1", email:"buyer@example.com", name:"Buyer", passwordHash:"must-not-export" }],
     orders: [
-      { id:"order-1", storeId:"store-1", customerEmail:"buyer@example.com", customerId:"buyer-1", customerName:"Buyer", customerPhone:"08000000000", address:"Private address", total:1200, status:"delivered", paymentStatus:"paid", customerConfirmationTokenHash:"must-not-export", paymentApiKey:"must-not-export" },
+      { id:"order-1", storeId:"store-1", customerEmail:"buyer@example.com", customerId:"buyer-1", customerName:"Buyer", customerPhone:"08000000000", address:"Private address", total:1200, status:"delivered", paymentStatus:"paid", customerConfirmationTokenHash:"must-not-export", paymentApiKey:"must-not-export", cardNumber:"4111111111111111", cvv:"123", pin:"1234" },
       { id:"order-2", storeId:"store-1", customerEmail:"another-buyer@example.com", customerId:"another-buyer-id", customerName:"Another Buyer", customerPhone:"08011111111", address:"Another private address", total:900, status:"delivered", paymentStatus:"paid" }
     ],
     customers: [{ id:"crm-1", customerEmail:"buyer@example.com", name:"Buyer" }],
@@ -71,6 +71,9 @@ test("verified data export includes buyer records but excludes password hashes",
     assert.equal(data.buyerActivity.orders.length,1);
     assert.equal("customerConfirmationTokenHash" in data.buyerActivity.orders[0],false);
     assert.equal("paymentApiKey" in data.buyerActivity.orders[0],false);
+    assert.equal("cardNumber" in data.buyerActivity.orders[0],false);
+    assert.equal("cvv" in data.buyerActivity.orders[0],false);
+    assert.equal("pin" in data.buyerActivity.orders[0],false);
     assert.equal(data.buyerActivity.customerRecords.length,1);
     assert.equal(data.sellerWorkspace.orders.length,1);
     assert.equal(data.sellerWorkspace.orders[0].customerEmail,"[redacted — another data subject]");
