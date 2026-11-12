@@ -10,3 +10,9 @@
 .privacy-storage-actions a{color:#23664b;font-size:13px;font-weight:700}
 .privacy-storage-actions button{border:0;border-radius:10px;background:#174b37;color:#fff;padding:12px 16px;font-weight:700;cursor:pointer}
 @media(max-width:520px){.privacy-storage-overlay{padding:14px}.privacy-storage-dialog{padding:20px}.privacy-storage-actions{align-items:stretch;flex-direction:column}.privacy-storage-actions button{width:100%}}
+
+.privacy-admin-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.privacy-admin-actions button{border:1px solid #cbd9cf;background:#f6faf7;color:#214d38;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
+.privacy-admin-actions button:disabled{opacity:.5;cursor:not-allowed}
+.privacy-admin-actions .privacy-danger-action{border-color:#e4b8b8;background:#fff5f5;color:#9b2c2c}
+.privacy-success{padding:10px 12px;border-radius:9px;background:#eef8f0;color:#245b37;font-size:13px}
