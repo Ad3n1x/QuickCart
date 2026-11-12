@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import express from "express";
 import { registerPrivacyRoutes } from "../../server/src/routes/privacy.js";
 
-function rightsHarness() {
+function rightsHarness({ transactional = true } = {}) {
   const state = {
     privacy_requests: [{ id:"request-1", email:"buyer@example.com", emailHash:"hash-buyer", type:"erasure", status:"in_progress", verificationStatus:"verified", internalNote:"Identity checked using account verification.", history:[] }],
     users: [],
@@ -17,7 +17,7 @@ function rightsHarness() {
     if (value && typeof value === "object" && "$in" in value) return value.$in.includes(row[key]);
     return row[key] === value;
   });
-  const db = async () => ({ withTransaction: async work => work({}), collection(name) {
+  const db = async () => ({ ...(transactional ? { withTransaction: async work => work({}) } : {}), collection(name) {
     const rows = state[name] || (state[name]=[]);
     return {
       async findOne(query, options={}) { const row=rows.find(item=>matches(item,query)); if(!row)return null; const copy=structuredClone(row); for(const [key,value] of Object.entries(options.projection||{}))if(value===0)delete copy[key]; return copy; },
@@ -69,6 +69,34 @@ test("verified data export includes buyer records but excludes password hashes",
     assert.equal("customerConfirmationTokenHash" in data.buyerActivity.orders[0],false);
     assert.equal("paymentApiKey" in data.buyerActivity.orders[0],false);
     assert.equal(data.buyerActivity.customerRecords.length,1);
+  }finally{h.server.close();}
+});
+
+
+test("buyer erasure refuses active orders without changing any records",async()=>{
+  const h=rightsHarness();
+  h.state.orders[0].status="processing";
+  try{
+    const endpoint=(await h.url)+"/api/admin/privacy/requests/request-1/execute-erasure";
+    const response=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({confirmEmail:"buyer@example.com",confirmation:"ERASE",confirmNoLegalHold:true})});
+    assert.equal(response.status,409);
+    assert.equal((await response.json()).code,"PRIVACY_ACTIVE_ORDERS");
+    assert.equal(h.state.customer_users.length,1);
+    assert.equal(h.state.customers.length,1);
+    assert.equal(h.state.orders[0].customerEmail,"buyer@example.com");
+  }finally{h.server.close();}
+});
+
+test("buyer erasure fails closed when transaction support is unavailable",async()=>{
+  const h=rightsHarness({transactional:false});
+  try{
+    const endpoint=(await h.url)+"/api/admin/privacy/requests/request-1/execute-erasure";
+    const response=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({confirmEmail:"buyer@example.com",confirmation:"ERASE",confirmNoLegalHold:true})});
+    assert.equal(response.status,503);
+    assert.equal((await response.json()).code,"PRIVACY_ERASURE_TRANSACTION_REQUIRED");
+    assert.equal(h.state.customer_users.length,1);
+    assert.equal(h.state.customers.length,1);
+    assert.equal(h.state.orders[0].customerEmail,"buyer@example.com");
   }finally{h.server.close();}
 });
 
