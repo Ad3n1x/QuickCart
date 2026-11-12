@@ -8,6 +8,15 @@ const allowedTypes = new Set([
 const statuses = new Set(["received", "identity_verification", "in_progress", "completed", "declined"]);
 const verificationStatuses = new Set(["pending", "verified", "not_required"]);
 
+const sensitiveExportKey = /(password|secret|token|hash|otp|credential|session|authorization|api.?key|private.?key)/i;
+function sanitiseExport(value) {
+  if (Array.isArray(value)) return value.map(sanitiseExport);
+  if (!value || typeof value !== "object" || value instanceof Date) return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => !sensitiveExportKey.test(key))
+    .map(([key, item]) => [key, sanitiseExport(item)]));
+}
+
 export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
   const hashSecret = process.env.PRIVACY_HASH_SECRET || process.env.JWT_SECRET || process.env.ADMIN_JWT_SECRET || "";
 
@@ -107,7 +116,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
         address: "[redacted — another data subject]",
         receiptData: undefined
       }));
-      const exportData = {
+      const exportData = sanitiseExport({
         generatedAt: now(),
         requestReference: request.id,
         subjectEmail: email,
@@ -115,7 +124,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
         sellerWorkspace: seller ? { stores, products, discounts, orders: sellerSafeOrders } : null,
         buyerActivity: { orders: ordersAsBuyer, customerRecords: crmAsBuyer, deliveries },
         privacyRequests: await database.collection("privacy_requests").find({ emailHash: request.emailHash }, { projection: { emailHash: 0, ipHash: 0 } }).toArray()
-      };
+      });
       await database.collection("privacy_requests").updateOne({ id: request.id }, {
         $set: { exportPreparedAt: now(), exportPreparedBy: req.admin.email },
         $push: { history: { action: "personal_data_export_prepared", at: now(), adminEmail: req.admin.email } }
@@ -135,39 +144,95 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
   app.post("/api/admin/privacy/requests/:id/execute-erasure", adminAuth, async (req, res) => {
     try {
       const database = await db();
-      const requests = database.collection("privacy_requests");
-      const request = await requests.findOne({ id: String(req.params.id || "") });
-      if (!request) return res.status(404).json({ error: "Privacy request not found." });
-      if (request.type !== "erasure") return res.status(400).json({ error: "This request is not an erasure request." });
-      if (request.status !== "in_progress") return res.status(409).json({ error: "Move the request to in progress before executing erasure." });
-      if (request.verificationStatus !== "verified") return res.status(409).json({ error: "Identity must be verified before erasure.", code: "PRIVACY_IDENTITY_GUARD" });
-      if (String(req.body?.confirmation || "") !== "ERASE" || String(req.body?.confirmEmail || "").trim().toLowerCase() !== String(request.email || "").toLowerCase()) {
-        return res.status(400).json({ error: "Confirm the exact requester email and type ERASE to proceed.", code: "PRIVACY_ERASURE_CONFIRMATION_REQUIRED" });
+      if (typeof database.withTransaction !== "function") {
+        return res.status(503).json({ error: "Safe erasure is unavailable because transactional database support is not configured.", code: "PRIVACY_ERASURE_TRANSACTION_REQUIRED" });
       }
-      const email = String(request.email || "").trim().toLowerCase();
-      const buyer = await database.collection("customer_users").findOne({ email });
-      if (!buyer) return res.status(409).json({ error: "No buyer account was found for this requester. Seller accounts and seller workspaces are not automatically erased by this workflow.", code: "PRIVACY_BUYER_ACCOUNT_NOT_FOUND" });
-      if (req.body?.confirmNoLegalHold !== true) return res.status(400).json({ error: "Confirm that no legal hold, payment dispute, or statutory preservation requirement prevents this erasure.", code: "PRIVACY_LEGAL_HOLD_CHECK_REQUIRED" });
-      const relatedOrders = await database.collection("orders").find({ customerEmail: email }).toArray();
-      const activeOrders = relatedOrders.filter(order => !["cancelled", "picked_up", "delivered"].includes(String(order.status || "").toLowerCase()) || ["pending", "processing"].includes(String(order.paymentStatus || "").toLowerCase()));
-      if (activeOrders.length) return res.status(409).json({ error: "This buyer has active or unresolved orders. Complete or resolve them before erasure.", code: "PRIVACY_ACTIVE_ORDERS" });
-      const result = await database.collection("orders").updateMany(
-        { customerEmail: email },
-        { $set: { customerId: null, customerEmail: "", customerName: "Deleted customer", customerPhone: "", address: "", customerDataErasedAt: now() }, $unset: { customerConfirmationTokenHash: "" } }
-      );
-      const crm = await database.collection("customers").deleteMany({ customerEmail: email });
-      const buyerDelete = await database.collection("customer_users").deleteOne({ id: buyer.id, email });
-      const executedAt = now();
-      const evidence = "Buyer account removed; " + Number(crm.deletedCount || 0) + " matching CRM record(s) removed; " + Number(result.modifiedCount || 0) + " order record(s) retained with buyer identifiers anonymised. Seller profile, seller workspace and statutory/financial order evidence were not deleted.";
-      await requests.updateOne({ id: request.id }, {
-        $set: { erasureExecutedAt: executedAt, erasureExecutedBy: req.admin.email, erasureEvidence: evidence, updatedAt: executedAt },
-        $push: { history: { action: "buyer_erasure_executed", at: executedAt, adminEmail: req.admin.email, buyerProfileDeleted: Boolean(buyerDelete.deletedCount), crmRecordsDeleted: Number(crm.deletedCount || 0), ordersAnonymised: Number(result.modifiedCount || 0) } }
+
+      const requestId = String(req.params.id || "");
+      const confirmation = String(req.body?.confirmation || "");
+      const confirmEmail = String(req.body?.confirmEmail || "").trim().toLowerCase();
+      if (confirmation !== "ERASE" || !confirmEmail || req.body?.confirmNoLegalHold !== true) {
+        return res.status(400).json({ error: "Confirm the exact requester email, type ERASE, and complete the legal-hold review before proceeding.", code: "PRIVACY_ERASURE_CONFIRMATION_REQUIRED" });
+      }
+
+      const result = await database.withTransaction(async session => {
+        const requests = database.collection("privacy_requests");
+        const customerUsers = database.collection("customer_users");
+        const orders = database.collection("orders");
+        const customers = database.collection("customers");
+        const options = { session };
+        const request = await requests.findOne({ id: requestId }, options);
+        if (!request) return { error: "Privacy request not found.", status: 404 };
+        if (request.type !== "erasure") return { error: "This request is not an erasure request.", status: 400 };
+        if (request.status !== "in_progress") return { error: "Move the request to in progress before executing erasure.", status: 409 };
+        if (request.verificationStatus !== "verified") return { error: "Identity must be verified before erasure.", status: 409, code: "PRIVACY_IDENTITY_GUARD" };
+        if (confirmEmail !== String(request.email || "").trim().toLowerCase()) {
+          return { error: "The confirmation email must exactly match the verified requester.", status: 400, code: "PRIVACY_ERASURE_CONFIRMATION_REQUIRED" };
+        }
+
+        const email = String(request.email || "").trim().toLowerCase();
+        const buyer = await customerUsers.findOne({ email }, options);
+        if (!buyer) return { error: "No buyer account was found for this requester. Seller accounts and seller workspaces are not automatically erased by this workflow.", status: 409, code: "PRIVACY_BUYER_ACCOUNT_NOT_FOUND" };
+
+        const orderFilter = { $or: [{ customerEmail: email }, { customerId: buyer.id }] };
+        const relatedOrders = await orders.find(orderFilter, options).toArray();
+        const activeOrders = relatedOrders.filter(order =>
+          !["cancelled", "picked_up", "delivered"].includes(String(order.status || "").toLowerCase()) ||
+          ["pending", "processing"].includes(String(order.paymentStatus || "").toLowerCase())
+        );
+        if (activeOrders.length) return { error: "This buyer has active or unresolved orders. Complete or resolve them before erasure.", status: 409, code: "PRIVACY_ACTIVE_ORDERS" };
+
+        const executedAt = now();
+        const orderResult = await orders.updateMany(orderFilter, {
+          $set: {
+            customerId: null,
+            customerEmail: "",
+            customerName: "Deleted customer",
+            customerPhone: "",
+            address: "",
+            customerDataErasedAt: executedAt
+          },
+          $unset: { customerConfirmationTokenHash: "" }
+        }, options);
+        const crmResult = await customers.deleteMany({ customerEmail: email }, options);
+        const buyerResult = await customerUsers.deleteOne({ id: buyer.id, email }, options);
+        if (!buyerResult.deletedCount) throw new Error("Buyer account changed during erasure; transaction aborted.");
+
+        const evidence = "Buyer account removed; " + Number(crmResult.deletedCount || 0) + " matching CRM record(s) removed; " + Number(orderResult.modifiedCount || 0) + " order record(s) retained with buyer identifiers anonymised. Seller profile, seller workspace and statutory/financial order evidence were not deleted.";
+        await requests.updateOne({ id: request.id }, {
+          $set: {
+            erasureExecutedAt: executedAt,
+            erasureExecutedBy: req.admin.email,
+            erasureEvidence: evidence,
+            updatedAt: executedAt
+          },
+          $push: {
+            history: {
+              action: "buyer_erasure_executed",
+              at: executedAt,
+              adminEmail: req.admin.email,
+              buyerProfileDeleted: true,
+              crmRecordsDeleted: Number(crmResult.deletedCount || 0),
+              ordersAnonymised: Number(orderResult.modifiedCount || 0)
+            }
+          }
+        }, options);
+
+        return {
+          executed: true,
+          buyerProfileDeleted: true,
+          crmRecordsDeleted: Number(crmResult.deletedCount || 0),
+          ordersAnonymised: Number(orderResult.modifiedCount || 0),
+          evidence
+        };
       });
+
+      if (result?.error) return res.status(result.status || 409).json({ error: result.error, ...(result.code ? { code: result.code } : {}) });
       res.setHeader("Cache-Control", "no-store");
-      return res.json({ executed: true, buyerProfileDeleted: Boolean(buyerDelete.deletedCount), crmRecordsDeleted: Number(crm.deletedCount || 0), ordersAnonymised: Number(result.modifiedCount || 0), evidence });
+      return res.json(result);
     } catch (error) {
       console.error("Privacy erasure failed:", error?.message || error);
-      return res.status(500).json({ error: "Unable to execute buyer erasure.", code: "PRIVACY_ERASURE_FAILED" });
+      return res.status(500).json({ error: "Unable to execute buyer erasure. No partial deletion was committed.", code: "PRIVACY_ERASURE_FAILED" });
     }
   });
 
