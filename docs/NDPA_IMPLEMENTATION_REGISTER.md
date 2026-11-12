@@ -1,0 +1,67 @@
+# QuickCart NDPA implementation register
+
+**Working branch:** `compliance/ndpa-privacy-foundation`  
+**Reference framework:** Nigeria Data Protection Act 2023 and the NDPC's current implementation guidance, including GAID 2025 where applicable.  
+**Status:** Engineering foundation in progress. This document is not a legal opinion, audit certificate, or claim of regulatory compliance.
+
+## Implemented in this branch
+
+- Public Privacy Centre at `/privacy`, linked from the landing-page footer.
+- Prominent first-visit homepage privacy/storage notice explaining essential browser storage and stating that optional analytics/advertising tracking must remain off until separately disclosed and affirmatively chosen.
+- Plain-language draft notice covering the main data categories visible in the current application: account/contact details, seller/store details, product and order data, delivery details, payment references/status, support requests, and technical/security logs.
+- Disclosure of the configured service-provider categories observed in the repository: MongoDB, Vercel, Render, Brevo, and ALATPay. Account-level hosting regions for Vercel, Render and MongoDB Atlas were checked on 2026-11-12 and recorded in `docs/privacy/VENDOR_AND_TRANSFER_REGISTER.md` and `docs/privacy/PROCESSING_REGISTER.md`. Provider legal entities, DPAs, subprocessors, backup/log/support-access locations and transfer safeguards still require contract and legal review.
+- Public data-subject request intake at `POST /api/privacy/requests`.
+- Input validation, bounded request text, keyed HMAC pseudonyms for email/IP rate limiting (using `PRIVACY_HASH_SECRET`, with server-secret fallbacks), and a limit of three requests per email or IP in a rolling 24-hour window.
+- MongoDB indexes for unique privacy-request IDs, date sorting and the two rate-limit lookup paths; no automatic TTL deletion is configured because the retention schedule is not yet approved.
+- Completion safeguards: an administrator cannot mark a request completed until identity is verified and completion evidence is recorded; declined requests require a documented reason.
+- Private admin request review at `/admin/privacy`, protected by the existing dedicated admin authentication middleware.
+- Admin workflow fields for request status, identity-verification status, internal notes, and an append-only action history.
+- Tests for valid intake, invalid and oversized email submissions, rate limiting, admin review/update, and the erasure safety guards.
+- Request closure now requires documented resolution evidence and confirmation that the requester was notified; identity verification or a documented not-required decision is required. Closed requests must be explicitly reopened with a reason before further changes.
+- Added working registers and operational drafts under docs/privacy/: processing activities, retention/deletion, vendor and transfer due diligence, incident response, preliminary DPIA, DPO/registration/audit assessment, and security maintenance.
+- Project syntax and invariant checks include the new privacy route and UI.
+
+## Important safeguards and limits
+
+- A submitted request is not proof of identity. Admins must verify identity proportionately before disclosing, correcting, exporting, restricting, or deleting personal data.
+- Do not request passwords, full payment credentials, or identity-document numbers in the public form.
+- A verified admin can prepare a JSON export covering matching buyer account/order/CRM data and seller profile/store/catalogue data; seller-side order exports redact other buyers' personal details and omit their customer IDs. Export recursively removes credential, token, hash, OTP, session, authorization and API-key fields. It is generated on demand, is not placed at a public URL, and requires identity verification (or a documented not-required decision).
+- A guarded buyer erasure action runs in a MongoDB transaction and removes the buyer account and matching CRM records, anonymises buyer identifiers on completed orders while preserving transaction evidence, and revokes guest order-confirmation tokens. It rechecks request status, identity and order status inside the transaction; it fails closed if transaction support is unavailable. It requires verified identity, exact-email and typed confirmation, a legal-hold/dispute review, and no active or unresolved orders. Seller-account/workspace erasure is deliberately not automated because seller workspaces contain other people's order data and require a separate reviewed process.
+- Correction, restriction, objection and consent withdrawal still require case-by-case action and evidence; they are not falsely represented as fully automated. Completion evidence is stored separately from internal notes and the requester-notified state is recorded.
+- A request must not be marked completed until the actual action, legal exception (if any), response, and completion evidence have been recorded.
+- Do not add a TTL index to privacy-request records until the operator approves a documented retention schedule.
+- The public notice is intentionally marked as an interim draft. The operator confirmed that AD3N1X is only the public brand and the platform is operated by an individual. The public notice does not display the individual's full legal name or residential address for personal-safety reasons. It expressly states that this does not waive section 27 identification/contact disclosure duties and that a compliant final disclosure process and appropriate service/contact arrangement must be established before collecting personal data under a final notice. The privacy mailbox ad3n1x271@gmail.com can receive requests, and no DPO has been appointed. This interim wording is a transparency safeguard, not proof that section 27 is already satisfied. The operator's initial preference is to retain account data while the account remains active and accept deletion requests; this is not yet a complete or approved retention schedule because post-deletion legal, accounting, security, backup, and dispute-retention periods still need to be mapped.
+- Known hosting topology is now partially evidenced: Vercel frontend/global CDN; Render API in Frankfurt, Germany; MongoDB Atlas on AWS US West/Oregon. This means personal data may be processed/stored outside Nigeria. The transfer assessment, DPAs, provider legal entities, subprocessors, backups, logs and support-access locations remain outstanding.
+- No NDPC registration, audit return, DPIA, DPO appointment, or regulatory certification is claimed by this code change.
+
+## Required operator and legal decisions before public launch
+
+1. Operator confirmed AD3N1X is a public brand, not a registered business; the platform is currently operated by an unregistered individual. The privacy mailbox ad3n1x271@gmail.com is confirmed as usable. Before final publication, establish the individual's legal controller identity and an appropriate service/contact address; do not publish a private home address without considering safer lawful contact arrangements.
+2. Determine and document QuickCart's controller/processor roles for each processing activity, including seller-managed customer records.
+3. Complete a data inventory and lawful-basis assessment for every field and purpose.
+4. Confirm whether a DPO is required and appoint/designate one where applicable.
+5. Assess NDPC registration and Compliance Audit Return obligations, including whether any major-importance criteria apply.
+6. Complete a DPIA where the processing is likely to result in high risk.
+7. Obtain and review provider DPAs, legal entities, subprocessors, backup/log/support-access locations, and document the international-transfer assessment and safeguards for Vercel, Render and MongoDB Atlas; complete the same checks for Brevo and ALATPay.
+8. Operator's initial preference is to retain account data while an account is active and allow deletion requests. Convert this into an approved record-by-record retention/deletion schedule covering post-deletion account data, orders, payment records, support records, logs, backups, and privacy requests, including justified legal/accounting/security exceptions.
+9. Inventory all cookies, local/session storage, SDKs, analytics and marketing tags. Keep optional tracking disabled until valid consent is collected where required.
+10. Approve an identity-verification and response procedure for rights requests, including exceptions and response tracking.
+11. Implement and test actual data export, correction, erasure, restriction, objection and consent-withdrawal workflows, with legal holds and accounting obligations handled explicitly.
+12. Complete a security review covering browser token storage, XSS protections/CSP, access control, tenant isolation, encryption, backup access, secrets, logging, payment callback authenticity, and incident response.
+13. Prepare a breach-response playbook with decision owners, evidence preservation, affected-person communications, and regulator notification steps in accordance with applicable statutory deadlines.
+14. Obtain review by a qualified Nigerian data-protection professional before representing the platform as compliant.
+
+## Required deployment configuration
+
+- Set a high-entropy `PRIVACY_HASH_SECRET` in the production API environment. The route can fall back to `JWT_SECRET` or `ADMIN_JWT_SECRET`, but a dedicated secret is preferred. Rotating the key resets rate-limit pseudonym matching for earlier requests.
+- Set `VITE_PRIVACY_CONTACT_EMAIL` to the monitored privacy mailbox (`ad3n1x271@gmail.com`). Do not add the operator's full legal name, age, date of birth, or residential address to public frontend build variables or public repository files. Maintain any legally required identity and age-related governance records through a private, access-controlled process reviewed with a parent/legal guardian and a qualified Nigerian data-protection professional. This public-notice choice does not waive any statutory controller-identification or contact-disclosure duties.
+- Keep the public privacy notice marked as a draft until the operator identity, monitored privacy contact, retention periods, lawful-basis map, processor details, and transfer facts are verified and published.
+- Confirm MongoDB can create the new `privacy_requests` indexes during startup; inspect logs for index-creation errors after deployment.
+
+## Engineering follow-up
+
+- Build a field-level data map and retention job only after the operator approves retention periods.
+- Add authenticated export and account-correction flows, then controlled deletion/anonymisation with legal-hold checks.
+- Add privacy-request email acknowledgement and response notifications after the official privacy mailbox and sender identity are configured.
+- Add consent records and a preference manager only after the cookie/SDK inventory establishes which optional technologies actually run.
+- Run unit, build, browser, security, tenant-isolation, backup-restore, and production smoke tests before merging to `main`.
