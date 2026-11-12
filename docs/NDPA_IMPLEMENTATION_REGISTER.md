@@ -7,6 +7,7 @@
 ## Implemented in this branch
 
 - Public Privacy Centre at `/privacy`, linked from the landing-page footer.
+- Prominent first-visit homepage privacy/storage notice explaining essential browser storage and stating that optional analytics/advertising tracking must remain off until separately disclosed and affirmatively chosen.
 - Plain-language draft notice covering the main data categories visible in the current application: account/contact details, seller/store details, product and order data, delivery details, payment references/status, support requests, and technical/security logs.
 - Disclosure of the configured service-provider categories observed in the repository: MongoDB, Vercel, Render, Brevo, and ALATPay. Actual contracting entities, processing locations, onward transfers, and safeguards still require confirmation from account and contract records.
 - Public data-subject request intake at `POST /api/privacy/requests`.
