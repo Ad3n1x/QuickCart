@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { registerAdminRoutes } from "../../server/src/routes/admin.js";
 
-function harness(adminPasswordHash="old-hash",sendEmail=async(email,url)=>sent.push({email,url})){
+function harness(adminPasswordHash="old-hash",sendEmail=null){
  const collections=new Map();
+ const sent=[];
+ const emailSender=sendEmail|| (async(email,url)=>sent.push({email,url}));
  const db=async()=>({collection(name){
   if(!collections.has(name)){
    const docs=[];
@@ -22,10 +24,9 @@ function harness(adminPasswordHash="old-hash",sendEmail=async(email,url)=>sent.p
  }});
  const handlers={};
  const app={post(path,...fns){handlers["POST "+path]=fns[fns.length-1]},get(path,...fns){handlers["GET "+path]=fns[fns.length-1]}};
- const sent=[];
  const bcrypt={async compare(p,h){return p==="right-password"&&h==="old-hash"},async hash(p){return "bcrypt:"+p}};
  const env=process.env.ADMIN_JWT_SECRET;process.env.ADMIN_JWT_SECRET="admin-test-secret";
- registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash,bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:sendEmail,frontendUrl:"https://quick-cart.example"});
+ registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash,bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:emailSender,frontendUrl:"https://quick-cart.example"});
  async function call(path,body={}){const req={body,ip:"127.0.0.1"};const out={status:200,data:null};const res={status(n){out.status=n;return this},json(data){out.data=data;return this},setHeader(){}};await handlers["POST "+path](req,res);return out}
  async function seedCredential(credential){const database=await db();await database.collection("admin_credentials").insertOne(credential)}
  return {collections,sent,call,seedCredential,restore(){if(env===undefined)delete process.env.ADMIN_JWT_SECRET;else process.env.ADMIN_JWT_SECRET=env}};
