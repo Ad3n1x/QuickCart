@@ -110,7 +110,7 @@ test("admin cannot close a privacy request without verified identity and complet
     const endpoint = (await h.url)+"/api/admin/privacy/requests/"+reference;
     const premature = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
     assert.equal(premature.status,409);
-    assert.equal((await premature.json()).code,"PRIVACY_COMPLETION_GUARD");
+    assert.equal((await premature.json()).code,"PRIVACY_IDENTITY_GUARD");
     const verified = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({verificationStatus:"verified"})});
     assert.equal(verified.status,200);
     const withoutEvidence = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
