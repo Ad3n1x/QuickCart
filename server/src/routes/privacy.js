@@ -8,7 +8,7 @@ const allowedTypes = new Set([
 const statuses = new Set(["received", "identity_verification", "in_progress", "completed", "declined"]);
 const verificationStatuses = new Set(["pending", "verified", "not_required"]);
 
-const sensitiveExportKey = /(password|secret|token|hash|otp|credential|session|authorization|api.?key|private.?key)/i;
+const sensitiveExportKey = /(password|secret|token|hash|otp|credential|session|authorization|api.?key|private.?key|cvv|cvc|pin(?:block)?|track.?data|full.?pan|card.?number|security.?code)/i;
 function sanitiseExport(value) {
   if (Array.isArray(value)) return value.map(sanitiseExport);
   if (!value || typeof value !== "object" || value instanceof Date) return value;
@@ -124,7 +124,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
         accountProfiles: { seller: seller || null, buyer: buyer || null },
         sellerWorkspace: seller ? { stores, products, discounts, orders: sellerSafeOrders } : null,
         buyerActivity: { orders: ordersAsBuyer, customerRecords: crmAsBuyer, deliveries },
-        privacyRequests: await database.collection("privacy_requests").find({ emailHash: request.emailHash }, { projection: { emailHash: 0, ipHash: 0 } }).toArray()
+        privacyRequests: request.emailHash ? await database.collection("privacy_requests").find({ emailHash: request.emailHash }, { projection: { emailHash: 0, ipHash: 0 } }).toArray() : [{ id: request.id, name: request.name, email: request.email, type: request.type, details: request.details, status: request.status, createdAt: request.createdAt, updatedAt: request.updatedAt }]
       });
       await database.collection("privacy_requests").updateOne({ id: request.id }, {
         $set: { exportPreparedAt: now(), exportPreparedBy: req.admin.email },
