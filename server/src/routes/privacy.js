@@ -114,6 +114,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
         customerEmail: "[redacted — another data subject]",
         customerPhone: "[redacted — another data subject]",
         address: "[redacted — another data subject]",
+        customerId: undefined,
         receiptData: undefined
       }));
       const exportData = sanitiseExport({
