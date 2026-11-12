@@ -115,8 +115,10 @@ test("admin cannot close a privacy request without verified identity and complet
     assert.equal(verified.status,200);
     const withoutEvidence = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
     assert.equal(withoutEvidence.status,409);
-    const noted = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({internalNote:"Export completed and response sent to verified requester."})});
-    assert.equal(noted.status,200);
+    const evidence = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({resolutionEvidence:"Export generated, reviewed for third-party data, and delivered securely to the verified requester."})});
+    assert.equal(evidence.status,200);
+    const notified = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({responseSent:true})});
+    assert.equal(notified.status,200);
     const completed = await fetch(endpoint,{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({status:"completed"})});
     assert.equal(completed.status,200);
     assert.equal((await completed.json()).request.status,"completed");
