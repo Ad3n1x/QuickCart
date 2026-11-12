@@ -17,7 +17,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
       const email = String(req.body?.email || "").trim().toLowerCase();
       const type = String(req.body?.type || "").trim();
       const details = String(req.body?.details || "").trim().slice(0, 3000);
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/.test(email) || !name || name.length < 2 || !allowedTypes.has(type) || details.length < 10) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !name || name.length < 2 || !allowedTypes.has(type) || details.length < 10) {
         return res.status(400).json({ error: "Enter your name, a valid email, request type and at least 10 characters of explanation.", code: "INVALID_PRIVACY_REQUEST" });
       }
 
