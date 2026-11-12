@@ -149,7 +149,7 @@ export function registerPrivacyRoutes(app, { db, adminAuth, randomUUID, now }) {
       if (!buyer) return res.status(409).json({ error: "No buyer account was found for this requester. Seller accounts and seller workspaces are not automatically erased by this workflow.", code: "PRIVACY_BUYER_ACCOUNT_NOT_FOUND" });
       const result = await database.collection("orders").updateMany(
         { customerEmail: email },
-        { $set: { customerId: null, customerEmail: "", customerName: "Deleted customer", customerPhone: "", address: "", customerDataErasedAt: now() } }
+        { $set: { customerId: null, customerEmail: "", customerName: "Deleted customer", customerPhone: "", address: "", customerDataErasedAt: now() }, $unset: { customerConfirmationTokenHash: "" } }
       );
       const crm = await database.collection("customers").deleteMany({ customerEmail: email });
       const buyerDelete = await database.collection("customer_users").deleteOne({ id: buyer.id, email });
