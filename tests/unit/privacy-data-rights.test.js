@@ -33,7 +33,7 @@ function rightsHarness() {
       },
       async updateMany(query,update) {
         const found=rows.filter(item=>matches(item,query));
-        for(const row of found)Object.assign(row,update.$set||{});
+        for(const row of found){Object.assign(row,update.$set||{});for(const key of Object.keys(update.$unset||{}))delete row[key];}
         return {matchedCount:found.length,modifiedCount:found.length};
       },
       async deleteOne(query) {
@@ -84,5 +84,6 @@ test("buyer erasure requires explicit confirmation and preserves anonymised orde
     assert.equal(h.state.customers.length,0);
     assert.equal(h.state.orders[0].customerEmail,"");
     assert.equal(h.state.orders[0].total,1200);
+    assert.equal("customerConfirmationTokenHash" in h.state.orders[0],false);
   }finally{h.server.close();}
 });
