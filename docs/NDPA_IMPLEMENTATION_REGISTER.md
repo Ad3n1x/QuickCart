@@ -16,13 +16,15 @@
 - Private admin request review at `/admin/privacy`, protected by the existing dedicated admin authentication middleware.
 - Admin workflow fields for request status, identity-verification status, internal notes, and an append-only action history.
 - Tests for valid intake, invalid submissions, rate limiting, and the admin review/update workflow.
+- Request closure now requires documented resolution evidence and confirmation that the requester was notified; identity verification or a documented not-required decision is required. Closed requests must be explicitly reopened with a reason before further changes.
+- Added working registers and operational drafts under docs/privacy/: processing activities, retention/deletion, vendor and transfer due diligence, incident response, preliminary DPIA, DPO/registration/audit assessment, and security maintenance.
 - Project syntax and invariant checks include the new privacy route and UI.
 
 ## Important safeguards and limits
 
 - A submitted request is not proof of identity. Admins must verify identity proportionately before disclosing, correcting, exporting, restricting, or deleting personal data.
 - Do not request passwords, full payment credentials, or identity-document numbers in the public form.
-- The admin workflow records and tracks requests; it does not yet automatically execute account export, correction, deletion, restriction, or portability across all MongoDB collections. These must be handled through a documented, verified manual process until collection-aware workflows are designed and tested.
+- The admin workflow records and tracks requests; it does not yet automatically execute account export, correction, deletion, restriction, or portability across all MongoDB collections. These must be handled through a documented, verified manual process until collection-aware workflows are designed and tested. Completion evidence is now a separate field from internal notes and the requester-notified state is recorded.
 - A request must not be marked completed until the actual action, legal exception (if any), response, and completion evidence have been recorded.
 - Do not add a TTL index to privacy-request records until the operator approves a documented retention schedule.
 - The public notice is intentionally marked as an interim draft. The operator confirmed that AD3N1X is only the public brand and the platform is operated by an individual. The public notice does not display the individual's full legal name or residential address for personal-safety reasons. It expressly states that this does not waive section 27 identification/contact disclosure duties and that a compliant final disclosure process and appropriate service/contact arrangement must be established before collecting personal data under a final notice. The privacy mailbox ad3n1x271@gmail.com can receive requests, and no DPO has been appointed. This interim wording is a transparency safeguard, not proof that section 27 is already satisfied. The operator's initial preference is to retain account data while the account remains active and accept deletion requests; this is not yet a complete or approved retention schedule because post-deletion legal, accounting, security, backup, and dispute-retention periods still need to be mapped. Vendor processing locations and international-transfer facts remain unconfirmed.
