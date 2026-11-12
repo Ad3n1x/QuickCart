@@ -8,7 +8,7 @@ function rightsHarness() {
     privacy_requests: [{ id:"request-1", email:"buyer@example.com", emailHash:"hash-buyer", type:"erasure", status:"in_progress", verificationStatus:"verified", internalNote:"Identity checked using account verification.", history:[] }],
     users: [],
     customer_users: [{ id:"buyer-1", email:"buyer@example.com", name:"Buyer", passwordHash:"must-not-export" }],
-    orders: [{ id:"order-1", customerEmail:"buyer@example.com", customerId:"buyer-1", customerName:"Buyer", customerPhone:"08000000000", address:"Private address", total:1200, status:"delivered", paymentStatus:"paid" }],
+    orders: [{ id:"order-1", customerEmail:"buyer@example.com", customerId:"buyer-1", customerName:"Buyer", customerPhone:"08000000000", address:"Private address", total:1200, status:"delivered", paymentStatus:"paid", customerConfirmationTokenHash:"must-not-export", paymentApiKey:"must-not-export" }],
     customers: [{ id:"crm-1", customerEmail:"buyer@example.com", name:"Buyer" }],
     stores: [], products: [], discounts: [], deliveries: []
   };
@@ -66,6 +66,8 @@ test("verified data export includes buyer records but excludes password hashes",
     assert.equal(data.accountProfiles.buyer.email,"buyer@example.com");
     assert.equal("passwordHash" in data.accountProfiles.buyer,false);
     assert.equal(data.buyerActivity.orders.length,1);
+    assert.equal("customerConfirmationTokenHash" in data.buyerActivity.orders[0],false);
+    assert.equal("paymentApiKey" in data.buyerActivity.orders[0],false);
     assert.equal(data.buyerActivity.customerRecords.length,1);
   }finally{h.server.close();}
 });
