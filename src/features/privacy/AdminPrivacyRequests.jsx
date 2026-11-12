@@ -21,6 +21,29 @@ export default function AdminPrivacyRequests() {
     finally { setLoading(false); }
   };
   useEffect(() => { if (!sessionStorage.getItem("quickcart_admin_token")) { go("/admin/login", true); return; } load(); }, []);
+  const exportPersonalData = async request => {
+    setBusyId(request.id); setError("");
+    try {
+      const data = await api("/api/admin/privacy/requests/" + encodeURIComponent(request.id) + "/export");
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob), link = document.createElement("a");
+      link.href = url; link.download = "quickcart-personal-data-export-" + request.id + ".json";
+      document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    } catch (err) { setError(err.message || "Unable to prepare the export."); }
+    finally { setBusyId(""); }
+  };
+  const executeBuyerErasure = async request => {
+    const confirmEmail = window.prompt("Enter the exact requester email to confirm buyer-account erasure:", "");
+    if (confirmEmail === null) return;
+    const confirmation = window.prompt("This removes the buyer profile and matching CRM records, and anonymises buyer identifiers on orders retained for transaction evidence. Type ERASE to continue:", "");
+    if (confirmation === null) return;
+    setBusyId(request.id); setError("");
+    try {
+      const result = await api("/api/admin/privacy/requests/" + encodeURIComponent(request.id) + "/execute-erasure", { method: "POST", body: body({ confirmEmail, confirmation }) });
+      setRequests(items => items.map(item => item.id === request.id ? { ...item, erasureExecutedAt: new Date().toISOString(), erasureEvidence: result.evidence, resolutionEvidence: result.evidence } : item));
+    } catch (err) { setError(err.message || "Unable to execute erasure."); }
+    finally { setBusyId(""); }
+  };
   const update = async (request, patch) => {
     setBusyId(request.id); setError("");
     try { const data = await api("/api/admin/privacy/requests/" + encodeURIComponent(request.id), { method: "PATCH", body: body(patch) }); setRequests(items => items.map(item => item.id === request.id ? data.request : item)); }
@@ -36,6 +59,11 @@ export default function AdminPrivacyRequests() {
       <div className="privacy-request-top"><div><strong>{request.name}</strong><a href={"mailto:" + request.email}>{request.email}</a></div><code>{request.id}</code></div>
       <p className="privacy-request-type">{String(request.type).replaceAll("-", " ")}</p><p>{request.details}</p>
       <small>Received {request.createdAt ? new Date(request.createdAt).toLocaleString() : "—"}</small>
+      <div className="privacy-admin-actions">
+        <button type="button" disabled={busyId === request.id || !["verified", "not_required"].includes(request.verificationStatus)} onClick={() => exportPersonalData(request)}>Download verified data export</button>
+        {request.type === "erasure" && <button type="button" className="privacy-danger-action" disabled={busyId === request.id || request.verificationStatus !== "verified" || request.status !== "in_progress" || Boolean(request.erasureExecutedAt)} onClick={() => executeBuyerErasure(request)}>Execute verified buyer erasure</button>}
+      </div>
+      {request.erasureExecutedAt && <p className="privacy-success" role="status">Buyer erasure executed. Notify the requester and record final completion evidence before closing the request.</p>}
       <div className="privacy-admin-controls">
         <label>Status<select value={request.status} disabled={busyId === request.id} onChange={e => update(request, { status: e.target.value })}>{statuses.map(value => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
         <label>Identity check<select value={request.verificationStatus} disabled={busyId === request.id} onChange={e => update(request, { verificationStatus: e.target.value })}>{verificationStatuses.map(value => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
