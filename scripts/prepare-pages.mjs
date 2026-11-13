@@ -173,7 +173,7 @@ for (const summary of marketStores) {
   generated++;
 }
 
-await fs.writeFile(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\n\n# Private app, admin and authentication routes emit route-level noindex directives.\n# Keep crawling enabled so search engines can read those directives.\n\nSitemap: " + SITE + "/sitemap.xml\n");
+await fs.writeFile(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\n\n# Explicitly allow OpenAI search discovery for public pages.\nUser-agent: OAI-SearchBot\nAllow: /\n\n# Private app, admin and authentication routes emit route-level noindex directives.\n# Keep crawling enabled so search engines can read those directives.\n\nSitemap: " + SITE + "/sitemap.xml\n");
 const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + sitemap.map(u => "  <url><loc>" + esc(u) + "</loc></url>").join("\n") + "\n</urlset>\n";
 await fs.writeFile(path.join(DIST, "sitemap.xml"), xml);
 const notFound = render(template, { title:"Page not found | QuickCart", description:"This QuickCart page could not be found.", url:SITE+"/", content:'<main><h1>Page not found</h1><p>The page may have moved or no longer exists.</p><p><a href="' + SITE + '/">Return to QuickCart</a></p></main>', schema:{ "@context":"https://schema.org", "@type":"WebPage", name:"Page not found" }, indexable:false }).replace(/<link rel="canonical" href="[^"]*" \/>/i, "");
