@@ -50,25 +50,67 @@ export default function App(){
  useEffect(()=>{if(route.type==="store"||route.type==="store-auth"){api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{try{localStorage.setItem("qc_public_/api/storefront/"+encodeURIComponent(route.slug),JSON.stringify({data:d}))}catch{}}).catch(()=>{})}},[route.type,route.slug]);
  const[publicData,setPublicData]=useState(null),[publicError,setPublicError]=useState("");useEffect(()=>{if(route.type!=="store"&&route.type!=="store-auth"){setPublicData(null);setPublicError("");return}let on=true;setPublicData(null);setPublicError("");api("/api/storefront/"+encodeURIComponent(route.slug)).then(d=>{if(on)setPublicData(d)}).catch(e=>{if(on)setPublicError(e.message||"This storefront could not be loaded.")});return()=>{on=false}},[route.type,route.slug]);
  useEffect(()=>{
-   if(route.type!=="store"&&route.type!=="store-auth"){
-     document.title="QuickCart — Social commerce made simple";
-     const desc="QuickCart helps small businesses create an online store, share one link, and take customer orders.";
-     let m=document.querySelector('meta[name="description"]');if(m)m.setAttribute("content",desc);
-     return;
+   const origin="https://ad3n1x.github.io/QuickCart";
+   const path=cleanPath();
+   const isHome=route.type==="landing"&&path==="/";
+   const isMarketplace=route.type==="marketplace";
+   const isStore=route.type==="store";
+   const isPublic=isHome||isMarketplace||isStore;
+   const storeData=publicData?.store||publicData?.storefront||{};
+   const storeName=String(storeData.storeName||storeData.name||route.slug?.replace(/-/g," ")||"").trim();
+   const storeDescription=String(storeData.description||storeData.tagline||("Browse products and contact "+storeName+" through its QuickCart online storefront.")).trim().slice(0,160);
+   const title=isHome?"QuickCart — Online stores and shopping in Nigeria":isMarketplace?"QuickCart Marketplace — Discover products from Nigerian stores":isStore?storeName+" — Online Store | QuickCart":"QuickCart";
+   const description=isHome?"QuickCart helps Nigerian small businesses create shareable online stores, manage products and orders, and connect with customers. Shoppers can discover products across participating stores.":isMarketplace?"Discover products from independent Nigerian businesses on QuickCart. Browse seller storefronts, compare products, create orders and continue checkout with sellers on WhatsApp.":isStore?storeDescription:"";
+   const canonical=isHome?origin+"/":isMarketplace?origin+"/marketplace/":isStore?origin+"/store/"+encodeURIComponent(route.slug)+"/":"";
+   document.title=title;
+   const setMeta=(selector,attribute,value)=>{
+     let node=document.head.querySelector(selector);
+     if(!node){node=document.createElement("meta");const match=selector.match(/\[(name|property)="([^"]+)"\]/);if(match)node.setAttribute(match[1],match[2]);document.head.appendChild(node)}
+     node.setAttribute(attribute,value);
+   };
+   setMeta('meta[name="description"]',"content",description||"QuickCart account area.");
+   setMeta('meta[name="robots"]',"content",isPublic?"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1":"noindex,nofollow");
+   setMeta('meta[name="googlebot"]',"content",isPublic?"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1":"noindex,nofollow");
+   setMeta('meta[property="og:type"]',"content","website");
+   setMeta('meta[property="og:site_name"]',"content","QuickCart");
+   setMeta('meta[property="og:title"]',"content",title);
+   setMeta('meta[property="og:description"]',"content",description||"QuickCart account area.");
+   setMeta('meta[property="og:locale"]',"content","en_NG");
+   setMeta('meta[name="twitter:card"]',"content","summary");
+   setMeta('meta[name="twitter:title"]',"content",title);
+   setMeta('meta[name="twitter:description"]',"content",description||"QuickCart account area.");
+   let canonicalNode=document.head.querySelector('link[rel="canonical"]');
+   if(isPublic){
+     if(!canonicalNode){canonicalNode=document.createElement("link");canonicalNode.rel="canonical";document.head.appendChild(canonicalNode)}
+     canonicalNode.href=canonical;
+     setMeta('meta[property="og:url"]',"content",canonical);
+   }else{
+     canonicalNode?.remove();
+     document.head.querySelector('meta[property="og:url"]')?.remove();
    }
-   const s=publicData?.store||publicData?.storefront||{};
-   const name=String(s.name||s.storeName||route.slug.replace(/-/g," ")).trim();
-   const desc=String(s.tagline||("Shop "+name+" online with QuickCart.")).trim().slice(0,160);
-   document.title=name+" — Online Store | QuickCart";
-   let m=document.querySelector('meta[name="description"]');
-   if(!m){m=document.createElement("meta");m.name="description";document.head.appendChild(m)}
-   m.setAttribute("content",desc);
-   let canonical=document.querySelector('link[rel="canonical"]');
-   if(!canonical){canonical=document.createElement("link");canonical.rel="canonical";document.head.appendChild(canonical)}
-   canonical.href=window.location.href.split("?")[0];
-   let ld=document.getElementById("quickcart-store-jsonld");
-   if(!ld){ld=document.createElement("script");ld.id="quickcart-store-jsonld";ld.type="application/ld+json";document.head.appendChild(ld)}
-   ld.textContent=JSON.stringify({"@context":"https://schema.org","@type":"Store","name":name,"url":window.location.href.split("?")[0],"description":desc});
+   document.getElementById("quickcart-route-jsonld")?.remove();
+   if(isPublic){
+     let graph;
+     if(isHome){
+       const faqs=[
+         ["What is QuickCart?","QuickCart is a web-based commerce platform for Nigerian small businesses. Sellers can publish a shareable online storefront, manage products and orders, and handle customer handoff. Shoppers can discover products across participating stores in the marketplace."],
+         ["Can I create an online store without building a website?","Yes. A seller can create a QuickCart account, set up a storefront, add products and share the store link with customers. QuickCart provides the storefront experience; you do not need to build a separate website first."],
+         ["How does checkout and payment work?","Customers can create an order and continue the handoff with the seller on WhatsApp. Payment is arranged directly with the seller; QuickCart does not claim to hold or process the buyer’s money in this checkout flow."],
+         ["Can shoppers buy from more than one seller?","Yes. The marketplace lets shoppers browse products from different participating stores. A checkout involving multiple sellers creates a separate order for each seller."],
+         ["Does QuickCart support mobile phones?","Yes. QuickCart’s storefront and seller workspace are designed to work on mobile screens as well as desktop browsers."],
+         ["Does QuickCart arrange delivery?","Delivery and pickup options are configured by each seller. Buyers should confirm delivery availability, fees and timing with the seller before completing an order."],
+         ["Can I start using QuickCart for free?","QuickCart currently presents a free-to-start experience. Available features and any future plan terms should be checked in the product before making a purchasing decision."]
+       ];
+       graph=[{"@type":"WebPage","@id":canonical+"#webpage","url":canonical,"name":title,"description":description,"inLanguage":"en-NG","isPartOf":{"@id":origin+"/#website"}},{"@type":"FAQPage","@id":canonical+"#faq","url":canonical,"mainEntity":faqs.map(([q,a])=>({"@type":"Question","name":q,"acceptedAnswer":{"@type":"Answer","text":a}}))}];
+     }else if(isMarketplace){
+       graph=[{"@type":"CollectionPage","@id":canonical+"#webpage","url":canonical,"name":title,"description":description,"inLanguage":"en-NG","isPartOf":{"@id":origin+"/#website"},"about":{"@type":"Thing","name":"Online shopping from independent Nigerian businesses"}}];
+     }else{
+       const products=Array.isArray(publicData?.products)?publicData.products:[];
+       const offers=products.filter(p=>p&&p.name).map(p=>({"@type":"Product","name":String(p.name),"description":String(p.description||"").slice(0,500),"offers":{"@type":"Offer","priceCurrency":"NGN","price":Number(p.price)||0,"availability":Number(p.stock)>0?"https://schema.org/InStock":"https://schema.org/OutOfStock","url":canonical}}));
+       graph=[{"@type":"OnlineStore","@id":canonical+"#store","url":canonical,"name":storeName,"description":storeDescription,"inLanguage":"en-NG","currenciesAccepted":"NGN","parentOrganization":{"@id":origin+"/#organization"},"hasOfferCatalog":offers.length?{"@type":"OfferCatalog","name":storeName+" product catalogue","itemListElement":offers}:undefined}];
+     }
+     const script=document.createElement("script");script.id="quickcart-route-jsonld";script.type="application/ld+json";script.textContent=JSON.stringify({"@context":"https://schema.org","@graph":graph});document.head.appendChild(script);
+   }
  },[route.type,route.slug,publicData]);
  useEffect(()=>{if(route.type==="app"&&!boot&&!user&&!customerSession)go("/auth/login",true);if(route.type==="auth"&&!boot&&!user){}else if(route.type==="auth"&&!boot&&user)go("/app/overview",true)},[route.type,boot,user,customerSession]);
  useEffect(()=>{if(route.type!=="app"||!(customerSession||localStorage.getItem("quickcart_customer_token")))return;localStorage.removeItem("quickcart_token");localStorage.removeItem("quickcart_store_id");localStorage.removeItem("quickcart_login_at");setUser(null);setStore(null);setStores([]);setProducts([]);setOrders([]);go("/",true)},[route.type,customerSession]);
