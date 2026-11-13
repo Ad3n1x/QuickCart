@@ -20,7 +20,7 @@ import { validateRegistration } from "../lib/registration-validation.js";
 import { Logo,Field,Password,Loading,Empty,Notice,Modal } from "../components/common/SharedUI.jsx";
 import {BarChart3,Check,ChevronDown,ChevronLeft,Copy,Crown,Download,Edit3,ExternalLink,Eye,EyeOff,FileText,LogIn,LogOut,Menu,MessageCircle,Package,Plus,Save,Search,Settings,Share2,ShoppingBag,Store,Tag,Trash2,TrendingUp,Truck,Upload,UserRound,Users,X,Image as ImageIcon} from "lucide-react";
 
-// Production API is supplied by Vercel; the fallback keeps local/GitHub-hosted builds working.
+// Production API URL is injected at build time; the fallback supports local and GitHub Pages builds.
 const routes={overview:"dashboard",dashboard:"dashboard",products:"products",orders:"orders",customers:"customers",business:"business",analytics:"analytics",discounts:"discounts",receipts:"receipts",settings:"settings",premium:"premium"};
 
 function cleanPath(){const raw=window.location.pathname||"/";const base=BASE||"";const path=base&&raw.startsWith(base)?raw.slice(base.length)||"/":raw;return path.length>1?path.replace(/\/+$/,""):path}
