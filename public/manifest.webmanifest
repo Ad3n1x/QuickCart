@@ -1,7 +1,7 @@
 {
-  "name": "QuickCart",
+  "name": "QuickCart by AD3N1X",
   "short_name": "QuickCart",
-  "description": "Create and run your online store from one simple app.",
+  "description": "A Nigerian commerce platform by AD3N1X for seller storefronts, product and order management, marketplace discovery and WhatsApp customer handoff.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
