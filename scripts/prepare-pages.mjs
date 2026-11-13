@@ -47,7 +47,7 @@ function render(template, page) {
   html = meta(html, "name", "robots", page.indexable === false ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
   html = meta(html, "name", "googlebot", page.indexable === false ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
   html = meta(html, "property", "og:type", "website");
-  html = meta(html, "property", "og:site_name", "QuickCart");
+  html = meta(html, "property", "og:site_name", "QuickCart by AD3N1X");
   html = meta(html, "property", "og:title", page.title);
   html = meta(html, "property", "og:description", page.description);
   html = meta(html, "property", "og:url", page.url);
@@ -73,7 +73,7 @@ const faqs = [
 const template = await fs.readFile(path.join(DIST, "index.html"), "utf8");
 const rootContent = [
   '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart</a></header>',
-  '<h1>QuickCart: online storefronts and multi-seller shopping in Nigeria</h1>',
+  '<h1>QuickCart by AD3N1X: online storefronts and multi-seller shopping in Nigeria</h1>',
   '<p>QuickCart helps Nigerian small businesses create a shareable online storefront, publish products, manage orders and connect with customers. Shoppers can discover products from participating independent stores in one marketplace.</p>',
   '<nav aria-label="QuickCart links"><a href="' + SITE + '/marketplace/">Explore the QuickCart marketplace</a></nav>',
   '<h2>For small-business sellers</h2><p>Create an account, set up a branded storefront, add products and share your store link. Manage your catalogue and orders from a mobile-friendly workspace.</p>',
@@ -83,13 +83,13 @@ const rootContent = [
   faqs.map(x => '<section><h3>' + esc(x[0]) + '</h3><p>' + esc(x[1]) + '</p></section>').join(""),
   '</main>'
 ].join("");
-const org = { "@type":"Organization", "@id":SITE+"/#organization", name:"QuickCart", alternateName:"QuickCart by AD3N1X", url:SITE+"/", description:"A Nigerian commerce platform connecting shoppers with online storefronts and helping small businesses manage products and orders.", founder:{ "@type":"Person", name:"AD3N1X", url:"https://github.com/Ad3n1x" } };
-const website = { "@type":"WebSite", "@id":SITE+"/#website", url:SITE+"/", name:"QuickCart", inLanguage:"en-NG", publisher:{ "@id":SITE+"/#organization" } };
+const org = { "@type":"Organization", "@id":SITE+"/#organization", name:"QuickCart by AD3N1X", alternateName:["QuickCart","QuickCart Marketplace"], url:SITE+"/", description:"A Nigerian commerce platform connecting shoppers with online storefronts and helping small businesses manage products and orders.", founder:{ "@type":"Person", name:"AD3N1X", url:"https://github.com/Ad3n1x" } };
+const website = { "@type":"WebSite", "@id":SITE+"/#website", url:SITE+"/", name:"QuickCart by AD3N1X", alternateName:"QuickCart", inLanguage:"en-NG", publisher:{ "@id":SITE+"/#organization" } };
 const rootTitle = "QuickCart by AD3N1X — Nigerian online stores and marketplace";
 const rootDescription = "QuickCart helps Nigerian small businesses create shareable online stores, manage products and orders, and connect with customers. Shoppers can discover products across participating stores.";
 const rootSchema = { "@context":"https://schema.org", "@graph":[
   org, website,
-  { "@type":"SoftwareApplication", "@id":SITE+"/#application", name:"QuickCart", url:SITE+"/", applicationCategory:"BusinessApplication", operatingSystem:"Web", description:"A web-based commerce platform where shoppers discover stores and small businesses create storefronts, manage product catalogues and orders, and connect with customers.", inLanguage:"en-NG", publisher:{ "@id":SITE+"/#organization" } },
+  { "@type":"SoftwareApplication", "@id":SITE+"/#application", name:"QuickCart by AD3N1X", alternateName:"QuickCart", url:SITE+"/", applicationCategory:"BusinessApplication", operatingSystem:"Web", description:"A web-based commerce platform where shoppers discover stores and small businesses create storefronts, manage product catalogues and orders, and connect with customers.", inLanguage:"en-NG", publisher:{ "@id":SITE+"/#organization" } },
   { "@type":"WebPage", "@id":SITE+"/#webpage", url:SITE+"/", name:rootTitle, description:rootDescription, inLanguage:"en-NG", isPartOf:{ "@id":SITE+"/#website" } },
   { "@type":"FAQPage", "@id":SITE+"/#faq", mainEntity:faqs.map(x => ({ "@type":"Question", name:x[0], acceptedAnswer:{ "@type":"Answer", text:x[1] } })) }
 ]};
@@ -114,7 +114,7 @@ const productLinks = (catalog.products || []).filter(p => p?.name).slice(0,60).m
 }).join("");
 const marketContent = [
   '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart</a> / Marketplace</header>',
-  '<h1>QuickCart Marketplace — discover products from Nigerian stores</h1>',
+  '<h1>QuickCart Marketplace by AD3N1X — discover products from Nigerian stores</h1>',
   '<p>Browse products from participating independent Nigerian businesses. Open a seller’s storefront to view its catalogue, then create an order and continue the handoff with the seller.</p>',
   '<p>Shoppers can use guest checkout. A cart containing items from different sellers creates a separate order for each seller. Payment is arranged directly with each business.</p>',
   '<h2>Participating stores</h2><ul>' + (storeLinks || "<li>Store listings load from the live marketplace.</li>") + '</ul>',
