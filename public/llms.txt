@@ -1,6 +1,6 @@
-# QuickCart
+# QuickCart by AD3N1X
 
-> QuickCart is a web-based commerce platform for Nigerian small businesses. It helps sellers publish shareable online storefronts, list products, manage orders and connect with customers. Shoppers can discover products from participating stores through the marketplace.
+> QuickCart by AD3N1X (also known as QuickCart) is a web-based commerce platform for Nigerian small businesses. It helps sellers publish shareable online storefronts, list products, manage orders and connect with customers. Shoppers can discover products from participating stores through the marketplace.
 
 ## Official pages
 
@@ -35,7 +35,8 @@ QuickCart provides online storefront discovery and commerce-management workflows
 
 ## Site identity
 
-- Product name: QuickCart
+- Official brand name: QuickCart by AD3N1X
+- Short product name: QuickCart
 - Publisher/developer identity: AD3N1X
 - Official public site: https://ad3n1x.github.io/QuickCart/
 - Source repository: https://github.com/Ad3n1x/QuickCart
