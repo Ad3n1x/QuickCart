@@ -1,6 +1,6 @@
-# QuickCart
+# QuickCart by AD3N1X
 
-**QuickCart** is a WhatsApp-first commerce platform built by **AD3N1X** to help small businesses create an online storefront, organise products and orders, and communicate with customers.
+**QuickCart by AD3N1X** (short name: **QuickCart**) is a WhatsApp-first commerce platform built by **AD3N1X** to help small businesses create an online storefront, organise products and orders, and communicate with customers.
 
 ## Live application
 
