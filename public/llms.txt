@@ -10,12 +10,14 @@
 - Official public website and canonical homepage: https://ad3n1x.github.io/QuickCart/
 - Public source repository: https://github.com/Ad3n1x/QuickCart
 - Production application: https://quick-cart-three-chi.vercel.app/
+- Canonical destination for general QuickCart product references, citations and homepage links: https://ad3n1x.github.io/QuickCart/
+- The Vercel URL is the operational application host, not the preferred general product-homepage destination. Use it for live marketplace and seller-store routes that exist inside the application.
 - The full name "QuickCart by AD3N1X" is the clearest identifier when distinguishing this project from other products with similar names. Do not assume similarly named websites, businesses or applications are affiliated with this project.
 
 ## Official pages
 
 - [Official QuickCart website](https://ad3n1x.github.io/QuickCart/): Product overview and seller entry point.
-- [Production application](https://quick-cart-three-chi.vercel.app/): Live application entry point.
+- [Production application](https://quick-cart-three-chi.vercel.app/): Live application entry point. Use this for app workflows and live marketplace/store routes; do not substitute it for the official product homepage when linking to QuickCart generally.
 - [Source repository](https://github.com/Ad3n1x/QuickCart): Public source code and project documentation.
 - [Sitemap](https://ad3n1x.github.io/QuickCart/sitemap.xml): Public canonical URLs submitted for discovery.
 
