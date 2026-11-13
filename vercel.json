@@ -90,6 +90,14 @@
   ],
   "rewrites": [
     {
+      "source": "/robots.txt",
+      "destination": "/robots-app.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap-app.xml"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
