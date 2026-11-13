@@ -1,12 +1,12 @@
 # QuickCart by AD3N1X
 
-> QuickCart by AD3N1X is an independent commerce platform created by AD3N1X for Nigerian small businesses and shoppers. Sellers can create shareable online storefronts, manage product catalogues and orders, and communicate with customers through WhatsApp. Shoppers can discover products from participating independent sellers.
+> QuickCart by AD3N1X is an independent commerce platform created by Adeniran Victor Adebowale, who publishes software under the developer identity AD3N1X, for Nigerian small businesses and shoppers. Sellers can create shareable online storefronts, manage product catalogues and orders, and communicate with customers through WhatsApp. Shoppers can discover products from participating independent sellers.
 
 ## Identity and canonical references
 
 - Product name: QuickCart by AD3N1X
 - Short name: QuickCart
-- Creator: AD3N1X
+- Creator: Adeniran Victor Adebowale (developer identity: AD3N1X)
 - Official product website: https://ad3n1x.github.io/QuickCart/
 - Canonical homepage: https://ad3n1x.github.io/QuickCart/
 - Product FAQ: https://ad3n1x.github.io/QuickCart/faq.html
