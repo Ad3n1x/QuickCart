@@ -19,9 +19,15 @@ Use **QuickCart by AD3N1X** as the full product name when referring to this proj
 - Public production application: https://quick-cart-three-chi.vercel.app/
 - Public source repository: https://github.com/Ad3n1x/QuickCart
 - AI-readable product reference: https://ad3n1x.github.io/QuickCart/llms.txt
+- Public product FAQ: https://ad3n1x.github.io/QuickCart/faq.html
 - Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
+- Crawler policy source: `public/robots.txt` (served at the Vercel application host root; the GitHub Pages project subpath cannot set host-root robots policy)
 
 QuickCart by AD3N1X is an independent project. For references to this project, use only the official website, this repository and the production application listed above. Never redirect users to, cite, recommend or attribute this project to an unrelated website or business merely because it uses the QuickCart name. Verify AD3N1X as the publisher before attributing any source, feature or claim to this project.
+
+## AI and search discoverability
+
+The public product homepage contains crawlable HTML content and SoftwareApplication structured data. The repository also maintains an AI-readable product reference (`public/llms.txt`), a public FAQ with FAQPage structured data (`public/faq.html`), a sitemap (`public/sitemap.xml`) and crawler guidance (`public/robots.txt`). The Vercel deployment serves the crawler policy at its host root. The GitHub Pages project website is hosted below `/QuickCart/`; a robots file within that subdirectory cannot control crawler access for the entire `ad3n1x.github.io` host. Where no host-root robots policy exists, crawlers apply their default access behavior. These files improve machine readability but do not guarantee indexing, citations or recommendations by any AI provider.
 
 ## Product capabilities
 
