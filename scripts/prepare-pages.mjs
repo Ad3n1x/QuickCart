@@ -83,9 +83,9 @@ const rootContent = [
   faqs.map(x => '<section><h3>' + esc(x[0]) + '</h3><p>' + esc(x[1]) + '</p></section>').join(""),
   '</main>'
 ].join("");
-const org = { "@type":"Organization", "@id":SITE+"/#organization", name:"QuickCart", url:SITE+"/", description:"A commerce platform connecting shoppers with online stores and helping small businesses manage products, orders and customers.", founder:{ "@type":"Person", name:"AD3N1X", url:"https://github.com/Ad3n1x" } };
+const org = { "@type":"Organization", "@id":SITE+"/#organization", name:"QuickCart", alternateName:"QuickCart by AD3N1X", url:SITE+"/", description:"A Nigerian commerce platform connecting shoppers with online storefronts and helping small businesses manage products and orders.", founder:{ "@type":"Person", name:"AD3N1X", url:"https://github.com/Ad3n1x" } };
 const website = { "@type":"WebSite", "@id":SITE+"/#website", url:SITE+"/", name:"QuickCart", inLanguage:"en-NG", publisher:{ "@id":SITE+"/#organization" } };
-const rootTitle = "QuickCart — Online stores and shopping in Nigeria";
+const rootTitle = "QuickCart by AD3N1X — Nigerian online stores and marketplace";
 const rootDescription = "QuickCart helps Nigerian small businesses create shareable online stores, manage products and orders, and connect with customers. Shoppers can discover products across participating stores.";
 const rootSchema = { "@context":"https://schema.org", "@graph":[
   org, website,
@@ -102,7 +102,7 @@ try {
   console.warn("AEO prerender: live marketplace data unavailable; publishing static explanatory copy.", error?.message || error);
 }
 const marketUrl = SITE + "/marketplace/";
-const marketTitle = "QuickCart Marketplace — Discover products from Nigerian stores";
+const marketTitle = "QuickCart Marketplace by AD3N1X — Nigerian stores and products";
 const marketDescription = "Discover products from independent Nigerian businesses on QuickCart. Browse seller storefronts, compare products, create orders and continue checkout with sellers on WhatsApp.";
 const marketStores = (catalog.stores || []).filter(s => slugOk(s.slug));
 const storeLinks = marketStores.map(s => '<li><a href="' + SITE + '/store/' + encodeURIComponent(s.slug) + '/">' + esc(s.storeName || s.name || s.slug) + '</a> — ' + esc(s.tagline || "Independent seller") + '</li>').join("");
