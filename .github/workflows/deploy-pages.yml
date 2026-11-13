@@ -75,22 +75,25 @@ jobs:
           test -s dist/index.html
           test -d dist/assets
 
-          cp public/sitemap.xml dist/sitemap.xml
-          cp public/robots.txt dist/robots.txt
+          # Generate crawlable public route HTML, route metadata, robots.txt and a live-store sitemap.
+          node scripts/prepare-pages.mjs
 
           test -s dist/sitemap.xml
           test -s dist/robots.txt
+          test -s dist/marketplace/index.html
+          test -s dist/404.html
           grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
+          grep -Fq 'noindex,nofollow' dist/404.html
+          grep -Fq 'QuickCart Marketplace' dist/marketplace/index.html
 
-          # Validate the sitemap as XML before publishing it.
+          # Validate the generated sitemap as XML before publishing it.
           python3 -c "import xml.etree.ElementTree as ET; ET.parse('dist/sitemap.xml')"
           grep -Fq '<?xml version="1.0" encoding="UTF-8"?>' dist/sitemap.xml
           grep -Fq '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' dist/sitemap.xml
           grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
+          grep -Fq 'https://ad3n1x.github.io/QuickCart/marketplace/' dist/sitemap.xml
 
-          cp dist/index.html dist/404.html
-          touch dist/.nojekyll
-          printf '%s\n' "$GITHUB_SHA" > dist/build-version.txt
+          printf '%s\\n' "$GITHUB_SHA" > dist/build-version.txt
 
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
