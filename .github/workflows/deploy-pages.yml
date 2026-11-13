@@ -93,7 +93,7 @@ jobs:
           grep -Fq 'https://ad3n1x.github.io/QuickCart/' dist/sitemap.xml
           grep -Fq 'https://ad3n1x.github.io/QuickCart/marketplace/' dist/sitemap.xml
 
-          printf '%s\\n' "$GITHUB_SHA" > dist/build-version.txt
+          printf '%s\n' "$GITHUB_SHA" > dist/build-version.txt
 
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
