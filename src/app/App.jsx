@@ -72,7 +72,7 @@ export default function App(){
    setMeta('meta[name="robots"]',"content",isPublic?"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1":"noindex,nofollow");
    setMeta('meta[name="googlebot"]',"content",isPublic?"index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1":"noindex,nofollow");
    setMeta('meta[property="og:type"]',"content","website");
-   setMeta('meta[property="og:site_name"]',"content","QuickCart");
+   setMeta('meta[property="og:site_name"]',"content","QuickCart by AD3N1X");
    setMeta('meta[property="og:title"]',"content",title);
    setMeta('meta[property="og:description"]',"content",description||"QuickCart account area.");
    setMeta('meta[property="og:locale"]',"content","en_NG");
