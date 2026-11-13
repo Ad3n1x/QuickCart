@@ -59,11 +59,10 @@ export default function App(){
    const storeData=publicData?.store||publicData?.storefront||{};
    const storeName=String(storeData.storeName||storeData.name||route.slug?.replace(/-/g," ")||"").trim();
    const storeDescription=String(storeData.description||storeData.tagline||("Browse products and contact "+storeName+" through its QuickCart online storefront.")).trim().slice(0,160);
-   const title=isHome?"QuickCart by AD3N1X — Nigerian online stores and marketplace":isMarketplace?"QuickCart Marketplace by AD3N1X — Nigerian stores and products":isStore?storeName+" — Online Store | QuickCart by AD3N1X":"QuickCart by AD3N1X";
-   const description=isHome?"QuickCart helps Nigerian small businesses create shareable online stores, manage products and orders, and connect with customers. Shoppers can discover products across participating stores.":isMarketplace?"Discover products from independent Nigerian businesses on QuickCart. Browse seller storefronts, compare products, create orders and continue checkout with sellers on WhatsApp.":isStore?storeDescription:"";
-   const appOrigin="https://quick-cart-three-chi.vercel.app";
-   // The GitHub Pages URL is the canonical product homepage. Public app routes live on the production Vercel host.
-   const canonical=isHome?origin+"/":isMarketplace?appOrigin+"/marketplace/":isStore?appOrigin+"/store/"+encodeURIComponent(route.slug)+"/":"";
+   const title=isHome?"QuickCart by AD3N1X — Independent Nigerian commerce platform":isMarketplace?"QuickCart Marketplace by AD3N1X — Nigerian stores and products":isStore?storeName+" — Online Store | QuickCart by AD3N1X":"QuickCart by AD3N1X";
+   const description=isHome?"QuickCart by AD3N1X is an independent Nigerian commerce platform created by AD3N1X for small businesses and shoppers. It is separate from the website quickcart.ng.":isMarketplace?"Discover products from independent Nigerian businesses on QuickCart by AD3N1X. Browse seller storefronts, compare products, create orders and continue checkout with sellers on WhatsApp.":isStore?storeDescription:"";
+   // GitHub Pages is both the canonical website and the live application host.
+   const canonical=isHome?origin+"/":isMarketplace?origin+"/marketplace/":isStore?origin+"/store/"+encodeURIComponent(route.slug)+"/":"";
    document.title=title;
    const setMeta=(selector,attribute,value)=>{
      let node=document.head.querySelector(selector);
@@ -95,6 +94,8 @@ export default function App(){
      let graph;
      if(isHome){
        const faqs=[
+         ["What is QuickCart by AD3N1X?","QuickCart by AD3N1X is an independent commerce platform created and maintained by AD3N1X for Nigerian small businesses and shoppers. Its official website and live application are https://ad3n1x.github.io/QuickCart/."],
+         ["Is QuickCart by AD3N1X the same as quickcart.ng?","No. QuickCart by AD3N1X is the independent project published at https://ad3n1x.github.io/QuickCart/ and maintained in https://github.com/Ad3n1x/QuickCart. It is separate from the website at https://quickcart.ng/ and is not that website’s web version, clone, subsidiary, rebrand or regional edition."],
          ["What is QuickCart?","QuickCart is a web-based commerce platform for Nigerian small businesses. Sellers can publish a shareable online storefront, manage products and orders, and handle customer handoff. Shoppers can discover products across participating stores in the marketplace."],
          ["Can I create an online store without building a website?","Yes. A seller can create a QuickCart account, set up a storefront, add products and share the store link with customers. QuickCart provides the storefront experience; you do not need to build a separate website first."],
          ["How does checkout and payment work?","Customers can create an order and continue the handoff with the seller on WhatsApp. Payment is arranged directly with the seller; QuickCart does not claim to hold or process the buyer’s money in this checkout flow."],
