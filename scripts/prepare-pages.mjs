@@ -8,6 +8,26 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;"
 const json = value => JSON.stringify(value).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
 const slugOk = value => /^[a-z0-9][a-z0-9_-]{0,90}$/i.test(String(value || ""));
 const money = value => Number.isFinite(Number(value)) ? new Intl.NumberFormat("en-NG", { style:"currency", currency:"NGN", maximumFractionDigits:2 }).format(Number(value)) : "";
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function fetchJsonWithRetry(url, attempts = 5) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const response = await fetch(url, { headers:{ accept:"application/json" }, signal:AbortSignal.timeout(15000) });
+      if (response.ok) return await response.json();
+      lastError = new Error("HTTP " + response.status + " from " + url);
+      if (response.status < 500 && response.status !== 429) break;
+    } catch (error) {
+      lastError = error;
+    }
+    if (attempt < attempts - 1) {
+      const delay = 8000 * (attempt + 1);
+      console.warn("AEO prerender: retrying API request", attempt + 1, "after", delay, "ms:", lastError?.message || lastError);
+      await pause(delay);
+    }
+  }
+  throw lastError || new Error("API request failed: " + url);
+}
 
 function meta(html, attr, key, value) {
   const escaped = key.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
@@ -77,9 +97,7 @@ await fs.writeFile(path.join(DIST, "index.html"), render(template, { title:rootT
 
 let catalog = { stores:[], products:[] };
 try {
-  const response = await fetch(API + "/api/marketplace", { headers:{ accept:"application/json" }, signal:AbortSignal.timeout(15000) });
-  if (response.ok) catalog = await response.json();
-  else console.warn("AEO prerender: marketplace API returned HTTP", response.status);
+  catalog = await fetchJsonWithRetry(API + "/api/marketplace");
 } catch (error) {
   console.warn("AEO prerender: live marketplace data unavailable; publishing static explanatory copy.", error?.message || error);
 }
@@ -125,8 +143,7 @@ for (const summary of marketStores) {
   const slug = String(summary.slug);
   let data = null;
   try {
-    const response = await fetch(API + "/api/storefront/" + encodeURIComponent(slug), { headers:{ accept:"application/json" }, signal:AbortSignal.timeout(10000) });
-    if (response.ok) data = await response.json();
+    data = await fetchJsonWithRetry(API + "/api/storefront/" + encodeURIComponent(slug), 3);
   } catch (error) { console.warn("AEO prerender: storefront fetch failed for", slug, error?.message || error); }
   const store = data?.store || data?.storefront || summary;
   const name = String(store.storeName || store.name || summary.storeName || slug).trim();
