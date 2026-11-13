@@ -4,7 +4,8 @@
 
 ## Live application
 
-- **Website:** https://quick-cart-three-chi.vercel.app/
+- **Public discovery website (canonical/indexed):** https://ad3n1x.github.io/QuickCart/
+- **Production application:** https://quick-cart-three-chi.vercel.app/
 - **Source code:** https://github.com/Ad3n1x/QuickCart
 - **Developer portfolio:** https://portfolio-sandy-seven-w0bgdmliak.vercel.app/
 
