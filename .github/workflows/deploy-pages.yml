@@ -83,6 +83,9 @@ jobs:
 
           test -s dist/sitemap.xml
           test -s dist/robots.txt
+          test -s dist/llms.txt
+          grep -Fq "User-agent: OAI-SearchBot" dist/robots.txt
+          grep -Fq "Allow: /" dist/robots.txt
           test -s dist/marketplace/index.html
           test -s dist/404.html
           grep -Fq "Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml" dist/robots.txt
