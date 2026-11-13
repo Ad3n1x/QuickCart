@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
 
+# Public shopping and storefront pages may be indexed.
+# Private account, seller workspace and administration routes are excluded.
+Disallow: /QuickCart/app/
+Disallow: /QuickCart/admin/
+Disallow: /QuickCart/auth/
+Disallow: /QuickCart/marketplace/auth/
+Disallow: /QuickCart/store/*/auth/
+
 Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
