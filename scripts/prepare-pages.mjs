@@ -22,6 +22,7 @@ function canonical(html, url) {
 }
 function render(template, page) {
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, "<title>" + esc(page.title) + "</title>");
+  html = html.replace('href="./manifest.webmanifest"', 'href="/QuickCart/manifest.webmanifest"');
   html = meta(html, "name", "description", page.description);
   html = meta(html, "name", "robots", page.indexable === false ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
   html = meta(html, "name", "googlebot", page.indexable === false ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
@@ -106,7 +107,8 @@ const marketContent = [
 ].join("");
 const marketSchema = { "@context":"https://schema.org", "@graph":[
   { "@type":"CollectionPage", "@id":marketUrl+"#webpage", url:marketUrl, name:marketTitle, description:marketDescription, inLanguage:"en-NG", isPartOf:{ "@id":SITE+"/#website" }, about:{ "@type":"Thing", name:"Online shopping from independent Nigerian businesses" } },
-  { "@type":"ItemList", "@id":marketUrl+"#stores", name:"Participating QuickCart stores", itemListElement:marketStores.slice(0,100).map((s,i) => ({ "@type":"ListItem", position:i+1, url:SITE+"/store/"+encodeURIComponent(s.slug)+"/", name:String(s.storeName || s.name || s.slug) })) }
+  { "@type":"ItemList", "@id":marketUrl+"#stores", name:"Participating QuickCart stores", itemListElement:marketStores.slice(0,100).map((s,i) => ({ "@type":"ListItem", position:i+1, url:SITE+"/store/"+encodeURIComponent(s.slug)+"/", name:String(s.storeName || s.name || s.slug) })) },
+  { "@type":"FAQPage", "@id":marketUrl+"#faq", mainEntity":[["Can I shop without an account?","Guest checkout is available. Enter your name and WhatsApp phone number to create an order without signing in."],["How do payments work?","Payment is arranged directly with the seller. Confirm the seller’s payment instructions and amount before paying."],["Who handles delivery?","Each seller controls whether pickup or delivery is available. Confirm delivery coverage, fees and timing with the seller."]].map(x => ({ "@type":"Question", name:x[0], acceptedAnswer:{ "@type":"Answer", text:x[1] } })) }
 ]};
 const marketDir = path.join(DIST, "marketplace");
 await fs.mkdir(marketDir, { recursive:true });
