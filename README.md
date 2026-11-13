@@ -30,7 +30,7 @@ QuickCart by AD3N1X is an independent project. For references to this project, u
 
 ## AI and search discoverability
 
-The public product homepage contains crawlable HTML content and SoftwareApplication structured data. The repository also maintains an AI-readable product reference (`public/llms.txt`), a public FAQ with FAQPage structured data (`public/faq.html`), a sitemap (`public/sitemap.xml`) and crawler guidance (`public/robots.txt`). The Vercel deployment serves the crawler policy at its host root. The GitHub Pages project website is hosted below `/QuickCart/`; a robots file within that subdirectory cannot control crawler access for the entire `ad3n1x.github.io` host. Where no host-root robots policy exists, crawlers apply their default access behavior. These files improve machine readability but do not guarantee indexing, citations or recommendations by any AI provider.
+The public product homepage contains crawlable HTML content and SoftwareApplication structured data. The repository also maintains an AI-readable product reference (`public/llms.txt`), a public FAQ with FAQPage structured data (`public/faq.html`), a sitemap (`public/sitemap.xml`) and crawler guidance (`public/robots.txt`). The project’s crawler file is published at `/QuickCart/robots.txt`. Robots rules are host-root scoped, so this project-subdirectory file cannot control crawler access for the entire `ad3n1x.github.io` host. Do not assume that it replaces `https://ad3n1x.github.io/robots.txt`. These files improve machine readability but do not guarantee indexing, citations or recommendations by any AI provider.
 
 ## Product capabilities
 
