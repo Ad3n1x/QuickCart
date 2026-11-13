@@ -72,7 +72,7 @@ const faqs = [
 
 const template = await fs.readFile(path.join(DIST, "index.html"), "utf8");
 const rootContent = [
-  '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart</a></header>',
+  '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a></header>',
   '<h1>QuickCart by AD3N1X: online storefronts and multi-seller shopping in Nigeria</h1>',
   '<p>QuickCart helps Nigerian small businesses create a shareable online storefront, publish products, manage orders and connect with customers. Shoppers can discover products from participating independent stores in one marketplace.</p>',
   '<nav aria-label="QuickCart links"><a href="' + SITE + '/marketplace/">Explore the QuickCart marketplace</a></nav>',
@@ -113,7 +113,7 @@ const productLinks = (catalog.products || []).filter(p => p?.name).slice(0,60).m
   return '<li><a href="' + url + '">' + esc(p.name) + '</a>' + (store.storeName ? " from " + esc(store.storeName) : "") + (price ? " — " + esc(price) : "") + (p.description ? "<p>" + esc(String(p.description).slice(0,220)) + "</p>" : "") + '</li>';
 }).join("");
 const marketContent = [
-  '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart</a> / Marketplace</header>',
+  '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a> / Marketplace</header>',
   '<h1>QuickCart Marketplace by AD3N1X — discover products from Nigerian stores</h1>',
   '<p>Browse products from participating independent Nigerian businesses. Open a seller’s storefront to view its catalogue, then create an order and continue the handoff with the seller.</p>',
   '<p>Shoppers can use guest checkout. A cart containing items from different sellers creates a separate order for each seller. Payment is arranged directly with each business.</p>',
@@ -154,7 +154,7 @@ for (const summary of marketStores) {
     const price = money(p.price);
     return "<li><strong>" + esc(p.name) + "</strong>" + (p.description ? "<p>" + esc(String(p.description).slice(0,300)) + "</p>" : "") + (price ? "<p>Price: " + esc(price) + "</p>" : "") + "</li>";
   }).join("");
-  const content = '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart</a> / <a href="' + marketUrl + '">Marketplace</a> / ' + esc(name) + '</header><h1>' + esc(name) + ' — Online Store</h1><p>' + esc(description) + '</p><p>Browse this seller’s products on QuickCart. Product availability, pickup or delivery options, and payment arrangements are confirmed with the seller.</p><h2>Products from ' + esc(name) + '</h2><ul>' + (productHtml || "<li>Visit the live storefront to view current products and availability.</li>") + '</ul><p><a href="' + marketUrl + '">Discover more stores on QuickCart Marketplace</a></p></main>';
+  const content = '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a> / <a href="' + marketUrl + '">QuickCart Marketplace</a> / ' + esc(name) + '</header><h1>' + esc(name) + ' — Online Store</h1><p>' + esc(description) + '</p><p>Browse this seller’s products on QuickCart. Product availability, pickup or delivery options, and payment arrangements are confirmed with the seller.</p><h2>Products from ' + esc(name) + '</h2><ul>' + (productHtml || "<li>Visit the live storefront to view current products and availability.</li>") + '</ul><p><a href="' + marketUrl + '">Discover more stores on QuickCart Marketplace</a></p></main>';
   const items = products.filter(p => p?.name).slice(0,100).map(p => {
     const item = { "@type":"Product", name:String(p.name) };
     if (p.description) item.description = String(p.description).slice(0,500);
@@ -164,7 +164,7 @@ for (const summary of marketStores) {
   });
   const schema = { "@context":"https://schema.org", "@graph":[
     { "@type":"OnlineStore", "@id":url+"#store", url:url, name:name, description:description, inLanguage:"en-NG", currenciesAccepted:"NGN", parentOrganization:{ "@id":SITE+"/#organization" }, ...(items.length ? { hasOfferCatalog:{ "@type":"OfferCatalog", name:name+" product catalogue", itemListElement:items } } : {}) },
-    { "@type":"WebPage", "@id":url+"#webpage", url:url, name:name+" — Online Store | QuickCart", description:description, isPartOf:{ "@id":SITE+"/#website" }, inLanguage:"en-NG" }
+    { "@type":"WebPage", "@id":url+"#webpage", url:url, name:name+" — Online Store | QuickCart by AD3N1X", description:description, isPartOf:{ "@id":SITE+"/#website" }, inLanguage:"en-NG" }
   ]};
   const dir = path.join(DIST, "store", slug);
   await fs.mkdir(dir, { recursive:true });
@@ -176,7 +176,7 @@ for (const summary of marketStores) {
 await fs.writeFile(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\n\n# Explicitly allow OpenAI search discovery for public pages.\nUser-agent: OAI-SearchBot\nAllow: /\n\n# Private app, admin and authentication routes emit route-level noindex directives.\n# Keep crawling enabled so search engines can read those directives.\n\nSitemap: " + SITE + "/sitemap.xml\n");
 const xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + sitemap.map(u => "  <url><loc>" + esc(u) + "</loc></url>").join("\n") + "\n</urlset>\n";
 await fs.writeFile(path.join(DIST, "sitemap.xml"), xml);
-const notFound = render(template, { title:"Page not found | QuickCart", description:"This QuickCart page could not be found.", url:SITE+"/", content:'<main><h1>Page not found</h1><p>The page may have moved or no longer exists.</p><p><a href="' + SITE + '/">Return to QuickCart</a></p></main>', schema:{ "@context":"https://schema.org", "@type":"WebPage", name:"Page not found" }, indexable:false }).replace(/<link rel="canonical" href="[^"]*" \/>/i, "");
+const notFound = render(template, { title:"Page not found | QuickCart by AD3N1X", description:"This QuickCart by AD3N1X page could not be found.", url:SITE+"/", content:'<main><h1>Page not found</h1><p>The page may have moved or no longer exists.</p><p><a href="' + SITE + '/">Return to QuickCart by AD3N1X</a></p></main>', schema:{ "@context":"https://schema.org", "@type":"WebPage", name:"Page not found" }, indexable:false }).replace(/<link rel="canonical" href="[^"]*" \/>/i, "");
 await fs.writeFile(path.join(DIST, "404.html"), notFound);
 await fs.writeFile(path.join(DIST, ".nojekyll"), "");
 console.log("AEO prerender complete:", JSON.stringify({ publicStores:generated, sitemapUrls:sitemap.length }));
