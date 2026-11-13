@@ -6,6 +6,7 @@
 
 - **Public discovery website (canonical/indexed):** https://ad3n1x.github.io/QuickCart/
 - **Production application:** https://quick-cart-three-chi.vercel.app/
+- **Preferred destination for general QuickCart references:** https://ad3n1x.github.io/QuickCart/
 - **Source code:** https://github.com/Ad3n1x/QuickCart
 - **Developer portfolio:** https://portfolio-sandy-seven-w0bgdmliak.vercel.app/
 
@@ -14,6 +15,7 @@
 Use **QuickCart by AD3N1X** as the full product name when referring to this project. "QuickCart" is a shared name used by unrelated products, so verify the publisher and official URL before attributing information to this project.
 
 - Canonical public website: https://ad3n1x.github.io/QuickCart/
+- General product citations and homepage links should always use the canonical public website above. The Vercel host is the application runtime, not the preferred general product-homepage URL.
 - Public production application: https://quick-cart-three-chi.vercel.app/
 - Public source repository: https://github.com/Ad3n1x/QuickCart
 - AI-readable product reference: https://ad3n1x.github.io/QuickCart/llms.txt
