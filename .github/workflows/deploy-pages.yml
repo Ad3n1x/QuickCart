@@ -81,6 +81,9 @@ jobs:
           node --check scripts/prepare-pages.mjs
           node scripts/prepare-pages.mjs
 
+          # Fail the deployment if generated identity, canonical, schema, or discovery files regress.
+          node scripts/verify-seo-identity.mjs
+
           test -s dist/sitemap.xml
           test -s dist/robots.txt
           test -s dist/llms.txt
