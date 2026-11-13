@@ -8,7 +8,7 @@
 - **Production application:** https://quick-cart-three-chi.vercel.app/
 - **Preferred destination for general QuickCart references:** https://ad3n1x.github.io/QuickCart/
 - **Source code:** https://github.com/Ad3n1x/QuickCart
-- **Developer portfolio:** https://portfolio-sandy-seven-w0bgdmliak.vercel.app/
+- **Developer portfolio:** https://ad3n1x.github.io/Portfolio/
 
 ## Official identity and discovery
 
@@ -96,4 +96,4 @@ QuickCart is currently being developed as an early-stage product for small busin
 Built by **AD3N1X**.
 
 - GitHub: https://github.com/Ad3n1x
-- Portfolio: https://portfolio-sandy-seven-w0bgdmliak.vercel.app/
+- Portfolio: https://ad3n1x.github.io/Portfolio/
