@@ -1,15 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://ad3n1x.github.io/QuickCart/</loc>
-  </url>
-  <url>
-    <loc>https://ad3n1x.github.io/QuickCart/marketplace</loc>
-  </url>
-  <url>
-    <loc>https://ad3n1x.github.io/QuickCart/store/the-adire-merchant-demo</loc>
-  </url>
-  <url>
-    <loc>https://ad3n1x.github.io/QuickCart/store/adire-by-araba-demo</loc>
-  </url>
+  <url><loc>https://ad3n1x.github.io/QuickCart/</loc></url>
+  <url><loc>https://ad3n1x.github.io/QuickCart/marketplace/</loc></url>
 </urlset>
