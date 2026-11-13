@@ -1,7 +1,6 @@
 # QuickCart by AD3N1X — crawler policy
-# This file is served from the Vercel application host root.
-# GitHub Pages project-site robots rules are host-root scoped; this file at
-# /QuickCart/robots.txt cannot govern the entire ad3n1x.github.io host.
+# This file is published within the GitHub Pages project at /QuickCart/robots.txt.
+# It cannot govern host-root crawler policy at https://ad3n1x.github.io/robots.txt.
 
 User-agent: *
 Allow: /
