@@ -76,6 +76,7 @@ jobs:
           test -d dist/assets
 
           # Generate crawlable public route HTML, route metadata, robots.txt and a live-store sitemap.
+          node --check scripts/prepare-pages.mjs
           node scripts/prepare-pages.mjs
 
           test -s dist/sitemap.xml
