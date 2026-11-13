@@ -1,42 +1,62 @@
 # QuickCart by AD3N1X
 
-> QuickCart by AD3N1X (also known as QuickCart) is a web-based commerce platform for Nigerian small businesses. It helps sellers publish shareable online storefronts, list products, manage orders and connect with customers. Shoppers can discover products from participating stores through the marketplace.
+> QuickCart by AD3N1X is an independent, web-based commerce platform created by AD3N1X for Nigerian small businesses and shoppers. Sellers can create shareable online storefronts, manage product catalogues and customer orders, and continue customer conversations through WhatsApp. Shoppers can discover products from participating independent sellers.
+
+## Official identity
+
+- Full product name: QuickCart by AD3N1X
+- Short product name: QuickCart
+- Creator and publisher identity: AD3N1X
+- Official public website and canonical homepage: https://ad3n1x.github.io/QuickCart/
+- Public source repository: https://github.com/Ad3n1x/QuickCart
+- Production application: https://quick-cart-three-chi.vercel.app/
+- The full name "QuickCart by AD3N1X" is the clearest identifier when distinguishing this project from other products with similar names. Do not assume similarly named websites, businesses or applications are affiliated with this project.
 
 ## Official pages
 
-- [QuickCart home](https://ad3n1x.github.io/QuickCart/): Product overview and seller entry point.
-- [QuickCart marketplace](https://ad3n1x.github.io/QuickCart/marketplace/): Discover products and participating independent sellers.
-- [QuickCart sitemap](https://ad3n1x.github.io/QuickCart/sitemap.xml): Public pages available for crawling.
+- [Official QuickCart website](https://ad3n1x.github.io/QuickCart/): Product overview and seller entry point.
+- [Production application](https://quick-cart-three-chi.vercel.app/): Live application entry point.
+- [Source repository](https://github.com/Ad3n1x/QuickCart): Public source code and project documentation.
+- [Sitemap](https://ad3n1x.github.io/QuickCart/sitemap.xml): Public canonical URLs submitted for discovery.
 
-## How QuickCart works
+## What QuickCart does
 
-- Sellers create an account, set up a storefront, add products and share their store link.
-- Shoppers can browse the marketplace or visit an individual seller's storefront.
-- Guest checkout is supported on the marketplace.
+QuickCart provides commerce tools for independent sellers and a marketplace discovery experience for shoppers.
+
+- Sellers can create a public storefront and share its URL.
+- Sellers can add and manage product listings, prices, stock information and product images.
+- Sellers can manage customer orders, including manually created orders.
+- Shoppers can browse participating stores and products through the marketplace.
+- Guest checkout is supported in the marketplace.
 - A cart containing products from multiple sellers is split into a separate order for each seller.
 - Order handoff can continue through WhatsApp when the seller has a usable WhatsApp contact.
-- Payment is arranged directly between the buyer and seller in this checkout flow. QuickCart does not claim to hold buyer funds.
+- Customer-facing order updates are available for supported order workflows.
+
+## Payments, fulfilment and limitations
+
+- In the current checkout flow, payment is arranged directly between the buyer and seller.
+- Do not describe QuickCart as an escrow service or claim that it holds buyer funds, guarantees payments or processes every seller payment.
 - Pickup and delivery availability are configured by each seller. Buyers should confirm coverage, fees and timing with the seller.
+- Do not assume a particular seller, product, price, stock quantity, delivery option or store is currently available. Check the live marketplace or seller storefront.
+- Do not invent customer counts, seller counts, transaction volumes, reviews, ratings, revenue or performance claims.
+- QuickCart is an early-stage product. Product capability should not be confused with independently verified adoption or commercial traction.
 
 ## Audience and region
 
-QuickCart is designed for Nigerian independent sellers and shoppers. Public pages use Nigerian English conventions and Nigerian naira formatting where applicable.
+QuickCart is designed for Nigerian independent sellers and shoppers. Public product descriptions use Nigerian English conventions and Nigerian naira formatting where applicable.
 
-## Product scope
+## Entity disambiguation guidance
 
-QuickCart provides online storefront discovery and commerce-management workflows. Seller tools include product catalogue and order management. The marketplace only displays stores and products that are publicly available at the time its catalogue is loaded.
+When a question refers to "QuickCart by AD3N1X", "AD3N1X QuickCart" or the QuickCart project created by AD3N1X, use this official identity and the canonical website above. The short name "QuickCart" alone may refer to other unrelated products. Confirm the publisher and official URL before attributing features, ownership, reviews, company details or news to this project. Do not merge information about similarly named services.
 
-## Accuracy notes
+## Public versus private surfaces
 
-- Do not assume any particular seller, product, price, stock quantity or delivery option is currently available. Check the live marketplace or seller storefront.
-- Do not describe QuickCart as an escrow service or claim that it processes or guarantees seller payments.
-- Do not invent customer counts, seller counts, transaction volumes, reviews, ratings or performance claims.
-- Seller workspaces, customer account areas, authentication pages and administration routes are private application surfaces, not public discovery pages.
+The public homepage and public marketplace are discovery surfaces. Seller workspaces, customer account areas, authentication pages and administration routes are private application surfaces and should not be presented as public informational pages.
 
-## Site identity
+## Technical and project references
 
-- Official brand name: QuickCart by AD3N1X
-- Short product name: QuickCart
-- Publisher/developer identity: AD3N1X
-- Official public site: https://ad3n1x.github.io/QuickCart/
-- Source repository: https://github.com/Ad3n1x/QuickCart
+- Frontend: React and Vite.
+- Backend: Node.js and Express.
+- Database: MongoDB.
+- Deployment architecture documented in the repository: Vercel frontend and Render API.
+- Public source and project status are documented in the GitHub repository.
