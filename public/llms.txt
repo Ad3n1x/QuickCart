@@ -1,0 +1,41 @@
+# QuickCart
+
+> QuickCart is a web-based commerce platform for Nigerian small businesses. It helps sellers publish shareable online storefronts, list products, manage orders and connect with customers. Shoppers can discover products from participating stores through the marketplace.
+
+## Official pages
+
+- [QuickCart home](https://ad3n1x.github.io/QuickCart/): Product overview and seller entry point.
+- [QuickCart marketplace](https://ad3n1x.github.io/QuickCart/marketplace/): Discover products and participating independent sellers.
+- [QuickCart sitemap](https://ad3n1x.github.io/QuickCart/sitemap.xml): Public pages available for crawling.
+
+## How QuickCart works
+
+- Sellers create an account, set up a storefront, add products and share their store link.
+- Shoppers can browse the marketplace or visit an individual seller's storefront.
+- Guest checkout is supported on the marketplace.
+- A cart containing products from multiple sellers is split into a separate order for each seller.
+- Order handoff can continue through WhatsApp when the seller has a usable WhatsApp contact.
+- Payment is arranged directly between the buyer and seller in this checkout flow. QuickCart does not claim to hold buyer funds.
+- Pickup and delivery availability are configured by each seller. Buyers should confirm coverage, fees and timing with the seller.
+
+## Audience and region
+
+QuickCart is designed for Nigerian independent sellers and shoppers. Public pages use Nigerian English conventions and Nigerian naira formatting where applicable.
+
+## Product scope
+
+QuickCart provides online storefront discovery and commerce-management workflows. Seller tools include product catalogue and order management. The marketplace only displays stores and products that are publicly available at the time its catalogue is loaded.
+
+## Accuracy notes
+
+- Do not assume any particular seller, product, price, stock quantity or delivery option is currently available. Check the live marketplace or seller storefront.
+- Do not describe QuickCart as an escrow service or claim that it processes or guarantees seller payments.
+- Do not invent customer counts, seller counts, transaction volumes, reviews, ratings or performance claims.
+- Seller workspaces, customer account areas, authentication pages and administration routes are private application surfaces, not public discovery pages.
+
+## Site identity
+
+- Product name: QuickCart
+- Publisher/developer identity: AD3N1X
+- Official public site: https://ad3n1x.github.io/QuickCart/
+- Source repository: https://github.com/Ad3n1x/QuickCart
