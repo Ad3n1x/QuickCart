@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#12392d" />
-    <meta name="description" content="QuickCart by AD3N1X helps Nigerian small businesses create online storefronts, manage products and orders, and connect with shoppers across participating stores." />
+    <meta name="description" content="QuickCart by AD3N1X is a Nigerian commerce platform where small businesses create online storefronts, manage products and orders, and connect with shoppers through WhatsApp." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -12,30 +12,36 @@
     <meta name="author" content="AD3N1X" />
     <meta property="og:locale" content="en_NG" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="QuickCart by AD3N1X — Nigerian online stores and marketplace" />
-    <meta property="og:description" content="Discover stores and products, or create an online storefront. QuickCart helps small businesses manage products, orders and customers in one place." />
+    <meta property="og:title" content="QuickCart by AD3N1X — Nigerian commerce platform" />
+    <meta property="og:description" content="Create a mobile-first storefront, manage products and orders, and connect with customers through WhatsApp. Discover independent sellers in the QuickCart marketplace." />
     <meta property="og:url" content="https://ad3n1x.github.io/QuickCart/" />
     <meta property="og:site_name" content="QuickCart by AD3N1X" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="QuickCart by AD3N1X — Nigerian online stores and marketplace" />
-    <meta name="twitter:description" content="Discover stores and products, or create an online storefront. QuickCart helps small businesses manage products, orders and customers in one place." />
+    <meta name="twitter:title" content="QuickCart by AD3N1X — Nigerian commerce platform" />
+    <meta name="twitter:description" content="A Nigerian commerce platform for independent sellers and shoppers. Built by AD3N1X." />
     <link rel="canonical" href="https://ad3n1x.github.io/QuickCart/" />
+    <link rel="sitemap" type="application/xml" href="https://ad3n1x.github.io/QuickCart/sitemap.xml" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
           {
-            "@type": "Organization",
-            "@id": "https://ad3n1x.github.io/QuickCart/#organization",
+            "@type": "Person",
+            "@id": "https://github.com/Ad3n1x#person",
+            "name": "AD3N1X",
+            "url": "https://github.com/Ad3n1x",
+            "sameAs": [
+              "https://github.com/Ad3n1x",
+              "https://dev.to/ade_nix_271"
+            ]
+          },
+          {
+            "@type": "Brand",
+            "@id": "https://ad3n1x.github.io/QuickCart/#brand",
             "name": "QuickCart by AD3N1X",
-            "alternateName": ["QuickCart", "QuickCart Marketplace"],
+            "alternateName": "QuickCart",
             "url": "https://ad3n1x.github.io/QuickCart/",
-            "description": "A commerce platform connecting shoppers with online stores and helping small businesses manage products, orders and customers.",
-            "founder": {
-              "@type": "Person",
-              "name": "AD3N1X",
-              "url": "https://github.com/Ad3n1x"
-            }
+            "description": "The independent QuickCart commerce software project created by AD3N1X for Nigerian small businesses and shoppers."
           },
           {
             "@type": "WebSite",
@@ -44,8 +50,11 @@
             "name": "QuickCart by AD3N1X",
             "alternateName": "QuickCart",
             "inLanguage": "en-NG",
+            "creator": {
+              "@id": "https://github.com/Ad3n1x#person"
+            },
             "publisher": {
-              "@id": "https://ad3n1x.github.io/QuickCart/#organization"
+              "@id": "https://github.com/Ad3n1x#person"
             }
           },
           {
@@ -56,11 +65,25 @@
             "url": "https://ad3n1x.github.io/QuickCart/",
             "applicationCategory": "BusinessApplication",
             "operatingSystem": "Web",
-            "description": "QuickCart is a web-based commerce platform where shoppers can discover stores and small businesses can create storefronts, manage product catalogues, orders and customer relationships.",
+            "description": "QuickCart by AD3N1X is a web-based commerce platform where Nigerian small businesses can create shareable online storefronts, manage products and orders, and connect with shoppers through WhatsApp. Shoppers can discover products from participating independent sellers.",
             "inLanguage": "en-NG",
+            "creator": {
+              "@id": "https://github.com/Ad3n1x#person"
+            },
             "publisher": {
-              "@id": "https://ad3n1x.github.io/QuickCart/#organization"
-            }
+              "@id": "https://github.com/Ad3n1x#person"
+            },
+            "brand": {
+              "@id": "https://ad3n1x.github.io/QuickCart/#brand"
+            },
+            "featureList": [
+              "Seller storefront creation",
+              "Product catalogue and inventory management",
+              "Seller order management",
+              "Multi-vendor product discovery",
+              "WhatsApp customer handoff",
+              "Customer-facing order updates"
+            ]
           }
         ]
       }
@@ -69,10 +92,43 @@
     <link rel="shortcut icon" type="image/svg+xml" href="%BASE_URL%quickcart-logo-compact.svg?v=2" />
     <link rel="apple-touch-icon" href="%BASE_URL%quickcart-logo-compact.svg?v=2" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <title>QuickCart by AD3N1X — Nigerian online stores and marketplace</title>
+    <title>QuickCart by AD3N1X — Nigerian commerce platform</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="quickcart-static-fallback">
+        <header>
+          <p><strong>QuickCart by AD3N1X</strong></p>
+          <h1>Online storefronts and marketplace tools for Nigerian businesses</h1>
+          <p>QuickCart by AD3N1X is an independent, web-based commerce platform created by AD3N1X. It helps small businesses create shareable online storefronts, manage product catalogues and customer orders, and continue customer conversations through WhatsApp.</p>
+        </header>
+        <section>
+          <h2>What can you do with QuickCart?</h2>
+          <ul>
+            <li>Create a mobile-friendly online storefront for a small business.</li>
+            <li>Add products, prices, stock information and product images.</li>
+            <li>Organise and manage customer orders.</li>
+            <li>Let shoppers discover products from participating independent sellers.</li>
+            <li>Continue checkout conversations with sellers through WhatsApp.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Who makes QuickCart?</h2>
+          <p>QuickCart is built and maintained by AD3N1X. The official project website is this page, and the source repository is <a href="https://github.com/Ad3n1x/QuickCart">Ad3n1x/QuickCart on GitHub</a>.</p>
+          <p><a href="https://quick-cart-three-chi.vercel.app/">Open the QuickCart application</a>.</p>
+        </section>
+        <section>
+          <h2>QuickCart frequently asked questions</h2>
+          <h3>Is QuickCart a website builder?</h3>
+          <p>QuickCart gives sellers a ready-to-share storefront and tools for managing products and orders. Sellers do not need to build a separate website first.</p>
+          <h3>How does customer checkout work?</h3>
+          <p>Customers can place an order and continue the handoff with the seller through WhatsApp. Payment and fulfilment arrangements are confirmed directly with each seller.</p>
+          <h3>Can shoppers discover more than one seller?</h3>
+          <p>Yes. The QuickCart marketplace is designed to help shoppers browse products from participating independent stores. Each seller manages their own orders and fulfilment.</p>
+        </section>
+        <footer><p>QuickCart by AD3N1X. An independent Nigerian commerce software project created by AD3N1X.</p></footer>
+      </main>
+    </div>
     <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>
