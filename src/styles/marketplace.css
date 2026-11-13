@@ -105,3 +105,5 @@
  .market-product-card{transition:none}
  .market-product-card:hover{transform:none}
 }
+
+.market-faq{padding-top:12px}.market-faq-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}.market-faq-list details{background:#fff;border:1px solid #e5ebe4;border-radius:14px;padding:17px 18px}.market-faq-list summary{cursor:pointer;font-weight:750;color:#263b2d;line-height:1.45}.market-faq-list p{margin:11px 0 0;color:#66756a;font-size:13px;line-height:1.7}@media(max-width:650px){.market-faq-list{grid-template-columns:1fr}}
