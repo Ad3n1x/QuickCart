@@ -1,11 +1,11 @@
 User-agent: *
 Allow: /
 
-# Explicitly permit OpenAI's search crawler so public pages can be eligible for ChatGPT Search.
 User-agent: OAI-SearchBot
 Allow: /
 
-# Private app, admin and authentication routes emit route-level noindex directives.
-# Crawlers must be able to read those directives, so these paths are not blocked here.
+# Opt out of OpenAI model-training crawling while keeping search discovery enabled.
+User-agent: GPTBot
+Disallow: /
 
 Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
