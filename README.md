@@ -92,7 +92,6 @@ The current deployment architecture uses:
 
 - **Primary frontend and live application:** GitHub Pages
 - **Backend/API:** Render
-- **Secondary Vercel deployment:** may exist as an alternate host, but is not the canonical URL.
 - **Database:** MongoDB Atlas
 
 Set the frontend API URL and backend secrets in the respective hosting environments. Do not put database credentials, JWT secrets, email API keys, or payment secrets in frontend code or public repository files.
