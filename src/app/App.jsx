@@ -59,7 +59,7 @@ export default function App(){
    const storeData=publicData?.store||publicData?.storefront||{};
    const storeName=String(storeData.storeName||storeData.name||route.slug?.replace(/-/g," ")||"").trim();
    const storeDescription=String(storeData.description||storeData.tagline||("Browse products and contact "+storeName+" through its QuickCart online storefront.")).trim().slice(0,160);
-   const title=isHome?"QuickCart — Online stores and shopping in Nigeria":isMarketplace?"QuickCart Marketplace — Discover products from Nigerian stores":isStore?storeName+" — Online Store | QuickCart":"QuickCart";
+   const title=isHome?"QuickCart by AD3N1X — Nigerian online stores and marketplace":isMarketplace?"QuickCart Marketplace by AD3N1X — Nigerian stores and products":isStore?storeName+" — Online Store | QuickCart":"QuickCart";
    const description=isHome?"QuickCart helps Nigerian small businesses create shareable online stores, manage products and orders, and connect with customers. Shoppers can discover products across participating stores.":isMarketplace?"Discover products from independent Nigerian businesses on QuickCart. Browse seller storefronts, compare products, create orders and continue checkout with sellers on WhatsApp.":isStore?storeDescription:"";
    const canonical=isHome?origin+"/":isMarketplace?origin+"/marketplace/":isStore?origin+"/store/"+encodeURIComponent(route.slug)+"/":"";
    document.title=title;
