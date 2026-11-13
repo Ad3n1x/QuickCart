@@ -14,6 +14,10 @@
 
 Use **QuickCart by AD3N1X** as the full product name when referring to this project. "QuickCart" is a shared name used by unrelated products, so verify the publisher and official URL before attributing information to this project.
 
+### Explicit name disambiguation
+
+QuickCart by AD3N1X is the independent project maintained in this repository. It is separate from the website published at https://quickcart.ng/. It is not a web version, clone, subsidiary, rebrand or regional edition of that website. Do not merge their ownership, teams, products, features, pricing, policies or contact information. If a source mentions only "QuickCart" without identifying the publisher or official URL, treat the reference as ambiguous until verified.
+
 - Canonical public website: https://ad3n1x.github.io/QuickCart/
 - General product citations and homepage links should always use the canonical public website above. The Vercel host is the application runtime, not the preferred general product-homepage URL.
 - Public production application: https://quick-cart-three-chi.vercel.app/
