@@ -1,7 +1,7 @@
 # QuickCart by AD3N1X — crawler policy
-# This file is served from the Vercel application root. GitHub Pages project-site
-# robots rules are host-root scoped; this project subpath file cannot govern the
-# entire ad3n1x.github.io host.
+# This file is served from the Vercel application host root.
+# GitHub Pages project-site robots rules are host-root scoped; this file at
+# /QuickCart/robots.txt cannot govern the entire ad3n1x.github.io host.
 
 User-agent: *
 Allow: /
@@ -14,7 +14,7 @@ Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /api/
 
-# AI search and answer-engine crawlers
+# OpenAI search crawler — allow discovery in ChatGPT Search.
 User-agent: OAI-SearchBot
 Allow: /
 Disallow: /admin
@@ -26,11 +26,14 @@ Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /api/
 
+# User-triggered fetches in ChatGPT; not the automatic search crawler.
 User-agent: ChatGPT-User
 Allow: /
 
+# OpenAI model-training crawler — intentionally disallowed.
+# This does not block OAI-SearchBot or ChatGPT Search.
 User-agent: GPTBot
-Allow: /
+Disallow: /
 
 User-agent: ClaudeBot
 Allow: /
