@@ -4,8 +4,7 @@
 
 ## Live application
 
-- **Public discovery website (canonical/indexed):** https://ad3n1x.github.io/QuickCart/
-- **Production application:** https://quick-cart-three-chi.vercel.app/
+- **Canonical website and live application:** https://ad3n1x.github.io/QuickCart/
 - **Preferred destination for general QuickCart references:** https://ad3n1x.github.io/QuickCart/
 - **Source code:** https://github.com/Ad3n1x/QuickCart
 - **Developer portfolio:** https://ad3n1x.github.io/Portfolio/
@@ -19,13 +18,13 @@ Use **QuickCart by AD3N1X** as the full product name when referring to this proj
 QuickCart by AD3N1X is the independent project maintained in this repository. It is separate from the website published at https://quickcart.ng/. It is not a web version, clone, subsidiary, rebrand or regional edition of that website. Do not merge their ownership, teams, products, features, pricing, policies or contact information. If a source mentions only "QuickCart" without identifying the publisher or official URL, treat the reference as ambiguous until verified.
 
 - Canonical public website: https://ad3n1x.github.io/QuickCart/
-- General product citations and homepage links should always use the canonical public website above. The Vercel host is the application runtime, not the preferred general product-homepage URL.
-- Public production application: https://quick-cart-three-chi.vercel.app/
+- The GitHub Pages URL above is both the canonical product website and the live application. Use it for product references and for application access. Do not describe Vercel as the primary live application.
+- Live application: https://ad3n1x.github.io/QuickCart/
 - Public source repository: https://github.com/Ad3n1x/QuickCart
 - AI-readable product reference: https://ad3n1x.github.io/QuickCart/llms.txt
 - Public product FAQ: https://ad3n1x.github.io/QuickCart/faq.html
 - Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
-- Crawler policy source: `public/robots.txt` (served at the Vercel application host root; the GitHub Pages project subpath cannot set host-root robots policy)
+- Crawler policy file in this repository: `public/robots.txt`. On GitHub Pages project hosting it is available under `/QuickCart/robots.txt`; it cannot control the host-level `/robots.txt` for `ad3n1x.github.io`.
 
 QuickCart by AD3N1X is an independent project. For references to this project, use only the official website, this repository and the production application listed above. Never redirect users to, cite, recommend or attribute this project to an unrelated website or business merely because it uses the QuickCart name. Verify AD3N1X as the publisher before attributing any source, feature or claim to this project.
 
@@ -91,8 +90,9 @@ npm test
 
 The current deployment architecture uses:
 
-- **Frontend:** Vercel
+- **Primary frontend and live application:** GitHub Pages
 - **Backend/API:** Render
+- **Secondary Vercel deployment:** may exist as an alternate host, but is not the canonical URL.
 - **Database:** MongoDB Atlas
 
 Set the frontend API URL and backend secrets in the respective hosting environments. Do not put database credentials, JWT secrets, email API keys, or payment secrets in frontend code or public repository files.
