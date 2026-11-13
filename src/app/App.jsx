@@ -61,7 +61,9 @@ export default function App(){
    const storeDescription=String(storeData.description||storeData.tagline||("Browse products and contact "+storeName+" through its QuickCart online storefront.")).trim().slice(0,160);
    const title=isHome?"QuickCart by AD3N1X — Nigerian online stores and marketplace":isMarketplace?"QuickCart Marketplace by AD3N1X — Nigerian stores and products":isStore?storeName+" — Online Store | QuickCart by AD3N1X":"QuickCart by AD3N1X";
    const description=isHome?"QuickCart helps Nigerian small businesses create shareable online stores, manage products and orders, and connect with customers. Shoppers can discover products across participating stores.":isMarketplace?"Discover products from independent Nigerian businesses on QuickCart. Browse seller storefronts, compare products, create orders and continue checkout with sellers on WhatsApp.":isStore?storeDescription:"";
-   const canonical=isHome?origin+"/":isMarketplace?origin+"/marketplace/":isStore?origin+"/store/"+encodeURIComponent(route.slug)+"/":"";
+   const appOrigin="https://quick-cart-three-chi.vercel.app";
+   // The GitHub Pages URL is the canonical product homepage. Public app routes live on the production Vercel host.
+   const canonical=isHome?origin+"/":isMarketplace?appOrigin+"/marketplace/":isStore?appOrigin+"/store/"+encodeURIComponent(route.slug)+"/":"";
    document.title=title;
    const setMeta=(selector,attribute,value)=>{
      let node=document.head.querySelector(selector);
