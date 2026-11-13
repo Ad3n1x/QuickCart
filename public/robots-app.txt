@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+# Search discovery is enabled; OpenAI model-training crawling is disallowed.
+User-agent: GPTBot
+Disallow: /
+
+Sitemap: https://quick-cart-three-chi.vercel.app/sitemap.xml
