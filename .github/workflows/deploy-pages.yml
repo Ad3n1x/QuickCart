@@ -6,6 +6,8 @@ name: Deploy QuickCart to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 permissions:
