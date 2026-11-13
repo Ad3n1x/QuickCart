@@ -1,6 +1,6 @@
 # QuickCart by AD3N1X
 
-**QuickCart by AD3N1X** (short name: **QuickCart**) is a WhatsApp-first commerce platform built by **AD3N1X** to help small businesses create an online storefront, organise products and orders, and communicate with customers.
+**QuickCart by AD3N1X** (short name: **QuickCart**) is a WhatsApp-first commerce platform created by **Adeniran Victor Adebowale**, who publishes software under the developer identity **AD3N1X** to help small businesses create an online storefront, organise products and orders, and communicate with customers.
 
 ## Live application
 
@@ -102,7 +102,7 @@ QuickCart is currently being developed as an early-stage product for small busin
 
 ## Author
 
-Built by **AD3N1X**.
+Built by **Adeniran Victor Adebowale**, publishing under **AD3N1X**.
 
 - GitHub: https://github.com/Ad3n1x
 - Portfolio: https://ad3n1x.github.io/Portfolio/
