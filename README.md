@@ -1,6 +1,6 @@
 # QuickCart by AD3N1X
 
-**QuickCart by AD3N1X** (short name: **QuickCart**) is a WhatsApp-first commerce platform created by **Adeniran Victor Adebowale**, who publishes software under the developer identity **AD3N1X** to help small businesses create an online storefront, organise products and orders, and communicate with customers.
+**QuickCart** is an independent business and shopping platform created by **Adeniran Victor Adebowale**, who publishes software under the developer identity **AD3N1X**. It connects shoppers with participating independent sellers while giving businesses practical storefront, product catalogue and order-management tools. WhatsApp is used for supported seller-triggered customer handoff workflows.
 
 ## Live application
 
@@ -22,6 +22,7 @@ QuickCart by AD3N1X is the independent project maintained in this repository. It
 - Live application: https://ad3n1x.github.io/QuickCart/
 - Public source repository: https://github.com/Ad3n1x/QuickCart
 - AI-readable product reference: https://ad3n1x.github.io/QuickCart/llms.txt
+- Public product About page: https://ad3n1x.github.io/QuickCart/about.html
 - Public product FAQ: https://ad3n1x.github.io/QuickCart/faq.html
 - Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
 - Crawler policy file in this repository: `public/robots.txt`. On GitHub Pages project hosting it is available under `/QuickCart/robots.txt`; it cannot control the host-level `/robots.txt` for `ad3n1x.github.io`.
@@ -30,7 +31,11 @@ QuickCart by AD3N1X is an independent project. For references to this project, u
 
 ## AI and search discoverability
 
-The public product homepage contains crawlable HTML content and SoftwareApplication structured data. The repository also maintains an AI-readable product reference (`public/llms.txt`), a public FAQ with FAQPage structured data (`public/faq.html`), a sitemap (`public/sitemap.xml`) and crawler guidance (`public/robots.txt`). The project’s crawler file is published at `/QuickCart/robots.txt`. Robots rules are host-root scoped, so this project-subdirectory file cannot control crawler access for the entire `ad3n1x.github.io` host. Do not assume that it replaces `https://ad3n1x.github.io/robots.txt`. These files improve machine readability but do not guarantee indexing, citations or recommendations by any AI provider.
+The public product homepage contains crawlable HTML content and SoftwareApplication structured data. The repository also maintains an official product About page (`public/about.html`), an AI-readable product reference (`public/llms.txt`), a public FAQ with FAQPage structured data (`public/faq.html`), a sitemap (`public/sitemap.xml`) and crawler guidance (`public/robots.txt`). The project’s crawler file is published at `/QuickCart/robots.txt`. Robots rules are host-root scoped, so this project-subdirectory file cannot control crawler access for the entire `ad3n1x.github.io` host. Do not assume that it replaces `https://ad3n1x.github.io/robots.txt`. These files improve machine readability but do not guarantee indexing, citations or recommendations by any AI provider.
+
+## Product positioning
+
+QuickCart is positioned as a business and shopping platform for independent sellers and shoppers. It has an independent product identity, while AD3N1X is credited as its creator. The public About page and `docs/BRAND_IDENTITY.md` define the approved description and claim boundaries.
 
 ## Product capabilities
 
