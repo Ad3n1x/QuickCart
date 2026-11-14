@@ -24,7 +24,6 @@ function harness(adminPasswordHash="old-hash",sendEmail){
  }});
  const handlers={};
  const app={post(path,...fns){handlers["POST "+path]=fns[fns.length-1]},get(path,...fns){handlers["GET "+path]=fns[fns.length-1]}};
- const sent=[];
  const bcrypt={async compare(p,h){return p==="right-password"&&h==="old-hash"},async hash(p){return "bcrypt:"+p}};
  const env=process.env.ADMIN_JWT_SECRET;process.env.ADMIN_JWT_SECRET="admin-test-secret";
  registerAdminRoutes(app,{db,adminAuth:(_q,_s,next)=>next(),adminTokenFor:()=> "admin-token",adminEmail:"owner@example.com",adminPasswordHash,bcrypt,randomBytes:()=>Buffer.alloc(32,7),sendAdminPasswordResetEmail:effectiveSendEmail,frontendUrl:"https://quick-cart.example"});
