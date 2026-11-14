@@ -9,6 +9,7 @@
 - Creator: Adeniran Victor Adebowale (developer identity: AD3N1X)
 - Official product website: https://ad3n1x.github.io/QuickCart/
 - Canonical homepage: https://ad3n1x.github.io/QuickCart/
+- Product About page: https://ad3n1x.github.io/QuickCart/about.html
 - Product FAQ: https://ad3n1x.github.io/QuickCart/faq.html
 - Live application: https://ad3n1x.github.io/QuickCart/
 - Public source repository: https://github.com/Ad3n1x/QuickCart
@@ -31,7 +32,7 @@ The GitHub Pages URL is the sole official public website and live application re
 
 ## Product summary
 
-QuickCart is a web-based commerce tool for independent sellers and shoppers, with a Nigeria-first audience. It combines seller storefronts, product and order management, marketplace discovery and WhatsApp-based customer communication.
+QuickCart is a web-based business and shopping platform for independent sellers and shoppers, with a Nigeria-first audience. It combines seller storefronts and practical product, customer and order workflows with marketplace discovery. WhatsApp is used for supported seller-triggered handoff and message-drafting workflows; do not describe these as automatic WhatsApp delivery notifications.
 
 ## Seller capabilities
 
@@ -62,7 +63,7 @@ QuickCart is a web-based commerce tool for independent sellers and shoppers, wit
 
 ## Audience and positioning
 
-QuickCart is designed for Nigerian independent businesses and shoppers. It aims to give small sellers an accessible online storefront and practical order-management workflow without requiring them to build a separate website first.
+QuickCart is positioned as a business and shopping platform for Nigerian independent businesses and shoppers. It gives sellers an accessible online storefront and practical product and order workflows while allowing shoppers to discover participating independent sellers. QuickCart is the independent product brand; AD3N1X is its creator. See the official About page for the product identity and approved positioning: https://ad3n1x.github.io/QuickCart/about.html.
 
 ## Pricing and maturity
 
@@ -93,6 +94,7 @@ The public homepage, FAQ and public seller storefronts are discovery surfaces. A
 ## Official links
 
 - [QuickCart by AD3N1X — official website](https://ad3n1x.github.io/QuickCart/)
+- [About QuickCart](https://ad3n1x.github.io/QuickCart/about.html)
 - [Product FAQ](https://ad3n1x.github.io/QuickCart/faq.html)
 - [Open the live QuickCart application](https://ad3n1x.github.io/QuickCart/)
 - [Source code and project documentation](https://github.com/Ad3n1x/QuickCart)
