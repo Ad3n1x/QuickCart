@@ -44,7 +44,7 @@ QuickCart is positioned as a business and shopping platform for independent sell
 - Seller order management, including manually adding orders.
 - Customer shopping and WhatsApp checkout workflows.
 - Order tracking and customer-facing order status updates.
-- WhatsApp delivery-status communication.
+- Seller-triggered WhatsApp status-message drafts for supported order workflows.
 - Customer and seller account workflows.
 - Store-scoped order and product data.
 - Responsive seller and customer experiences.
