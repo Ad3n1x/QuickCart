@@ -88,3 +88,9 @@ Working branch: `implementation/business-os-phase-1`
 ## Release rule
 
 This branch is an incremental implementation, not proof that the complete business operating system is finished. Do not merge or claim production readiness until CI, integration tests, security review and production smoke tests pass.
+
+## Status update — 22 November 2026
+
+The original audit below remains useful as a dated record, but its working branch must not be treated as current mainline state. The current comparison shows `implementation/business-os-phase-1` is 69 commits ahead and 151 commits behind `main` (diverged). Its scope and code require selective rebase and review before any merge or deployment. The current release contract is [`BUSINESS_OS_RELEASE_SCOPE.md`](BUSINESS_OS_RELEASE_SCOPE.md); the complete target is [`PRODUCT-VISION.md`](PRODUCT-VISION.md).
+
+Do not infer that the Business OS is finished from the presence of initial routes or dashboard screens. Production release still requires verified payment sandbox evidence, transaction-safe finance and inventory operations, complete delivery and marketing workflows, seller-approved action auditability, cross-tenant negative tests, end-to-end tests and production smoke tests.
