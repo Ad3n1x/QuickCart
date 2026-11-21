@@ -12,6 +12,8 @@
 
 QuickCart is an independent product brand. AD3N1X is its creator and publisher, not a replacement product name. Use the product name on product surfaces and retain a clear creator credit in About, documentation, metadata and public profiles.
 
+The longer-term product direction is a connected, Nigeria-first Business OS that joins buyer shopping with seller operations across orders, inventory, procurement, finance, delivery, marketing and seller-approved recommendations. The complete target and its release constraints are maintained in [`docs/PRODUCT-VISION.md`](PRODUCT-VISION.md). The approved short positioning below continues to describe the documented current scope; do not present planned capabilities as shipped.
+
 ## Official positioning
 
 **QuickCart is a business and shopping platform for independent sellers and shoppers.**
