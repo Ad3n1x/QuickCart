@@ -13,6 +13,7 @@ import OrderReceiptModal from "../features/receipts/OrderReceiptModal.jsx";
 import { DashboardShell, Account, StoreSetup, ProductModal, FeaturePromo, Overview, Products, Orders, Customers, Analytics, SettingsPage, Discounts, Premium, ShareModal } from "../features/dashboard/DashboardViews.jsx";
 import BusinessOS from "../features/dashboard/BusinessOS.jsx";
 import Marketplace from "../features/marketplace/Marketplace.jsx";
+import {DemoHub,SellerDemo} from "../features/demo/DualDemo.jsx";
 import AdminDashboard from "../features/admin/AdminDashboard.jsx";
 import AdminAuth from "../features/admin/AdminAuth.jsx";
 import AdminPasswordRecovery from "../features/admin/AdminPasswordRecovery.jsx";
@@ -32,6 +33,8 @@ const routeMatchers=[
  {pattern:/^\/marketplace\/auth\/(login|signup)$/,resolve:m=>({type:"marketplace-auth",mode:m[1]})},
  {pattern:/^\/marketplace$/,resolve:()=>({type:"marketplace"})},
  {pattern:/^\/ad-demo$/,resolve:()=>({type:"marketplace-demo"})},
+ {pattern:/^\/demo$/,resolve:()=>({type:"demo-hub"})},
+ {pattern:/^\/seller-demo$/,resolve:()=>({type:"seller-demo"})},
  {pattern:/^\/admin\/login$/,resolve:()=>({type:"admin-login"})},
  {pattern:/^\/admin\/forgot-password$/,resolve:()=>({type:"admin-forgot-password"})},
  {pattern:/^\/admin\/reset-password$/,resolve:()=>({type:"admin-reset-password"})},
@@ -153,6 +156,8 @@ export default function App(){
   if(route.type==="admin-reset-password")return <AdminPasswordRecovery mode="reset"/>;
   if(route.type==="admin")return <AdminDashboard onSignOut={()=>{sessionStorage.removeItem("quickcart_admin_token");go("/admin/login",true)}}/>;
    if(route.type==="account-recovery")return <PasswordRecovery accountType={route.accountType} mode={route.mode} onBack={()=>go(route.accountType==="buyer"?"/marketplace/auth/login":"/auth/login")}/>;
+  if(route.type==="demo-hub")return <DemoHub/>;
+  if(route.type==="seller-demo")return <SellerDemo/>;
   if(route.type==="landing")return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
   // Customer credentials must never render seller workspace routes, even for one render before effects run.
   if(route.type==="app"&&(customerSession||localStorage.getItem("quickcart_customer_token")))return <Landing onAuth={m=>go("/auth/"+m)} onMarketplace={()=>go("/marketplace")} canInstall={Boolean(install)} onInstall={async()=>{try{await install?.prompt();await install?.userChoice}catch{}setInstall(null)}}/>;
