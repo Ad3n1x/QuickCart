@@ -41,7 +41,7 @@ function canonical(html, url) {
   return re.test(html) ? html.replace(re, tag) : html.replace("</head>", "  " + tag + "\n</head>");
 }
 function render(template, page) {
-  let html = template.replace(/<title>[\s\S]*?<\/title>/i, "<title>" + esc(page.title) + "</title>");
+  let html = template.replaceAll("https://quick-cart-three-chi.vercel.app", SITE).replace(/<title>[\s\S]*?<\/title>/i, "<title>" + esc(page.title) + "</title>");
   html = html.replace('href="./manifest.webmanifest"', 'href="/QuickCart/manifest.webmanifest"');
   html = meta(html, "name", "description", page.description);
   html = meta(html, "name", "robots", page.indexable === false ? "noindex,nofollow" : "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1");
