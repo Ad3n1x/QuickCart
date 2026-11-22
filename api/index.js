@@ -11,11 +11,12 @@ import { registerDiscountRoutes } from "../server/src/routes/discounts.js";
 import { registerOrderRoutes } from "../server/src/routes/orders.js";
 import { registerBusinessOsRoutes } from "../server/src/routes/business-os.js";
 import { registerAdminRoutes } from "../server/src/routes/admin.js";
+import { registerAccountPasswordRecoveryRoutes } from "../server/src/routes/account-password-recovery.js";
 import { createDatabaseConnection } from "../server/src/config/database.js";
 import { createAuthServices } from "../server/src/middleware/auth.js";
 import { createOtp,emailPattern,now,slugify } from "../server/src/utils/identity.js";
 import { PLAN_CONFIG,planFor,planStoreLimit } from "../server/src/config/plans.js";
-import { createVerificationEmailSender,createOrderUpdateEmailSender,createAdminPasswordResetEmailSender } from "../server/src/services/email.js";
+import { createVerificationEmailSender,createOrderUpdateEmailSender,createAdminPasswordResetEmailSender,createAccountPasswordResetEmailSender } from "../server/src/services/email.js";
 import { createPaymentServices } from "../server/src/services/payments.js";
 import { getUserStore } from "../server/src/services/stores.js";
 
@@ -64,6 +65,7 @@ const requireCurrentAdminSession = (req,res,next) => adminAuth(req,res,async()=>
 const sendVerificationEmail = createVerificationEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const sendOrderUpdateEmail = createOrderUpdateEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const sendAdminPasswordResetEmail = createAdminPasswordResetEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
+const sendAccountPasswordResetEmail = createAccountPasswordResetEmailSender({ apiKey: brevoApiKey, fromEmail: brevoFromEmail, fromName: brevoFromName });
 const { uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction } = createPaymentServices({ secretKey: alatPaySecretKey, businessId: alatPayBusinessId, baseUrl: alatPayBaseUrl });
 
 app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();await database.command({ping:1});const adminRecovery={adminJwtSecret:adminJwtSecret?'configured':'unavailable',passwordBootstrap:adminPasswordHash?'configured':'automatic',brevoApiKey:brevoApiKey?'configured':'unavailable',brevoSender:brevoFromEmail?'configured':'unavailable',frontendUrl:frontendUrl?'configured':'unavailable'};const adminReady=Boolean(adminJwtSecret&&brevoApiKey&&brevoFromEmail&&frontendUrl);const ready=Boolean(jwtSecret&&brevoApiKey&&brevoFromEmail&&adminReady);const status={database:'connected',authentication:jwtSecret?'configured':'unavailable',emailProvider:brevoApiKey&&brevoFromEmail?'configured':'unavailable',adminRecovery:{...adminRecovery,ready:adminReady}};if(!ready)return res.status(503).json({ok:false,...status});res.json({ok:true,...status});}catch(error){console.error('Health check failed:',error?.message||error);res.status(503).json({ok:false,database:'unavailable',error:'Service dependencies are not ready.'});}});
@@ -71,6 +73,7 @@ app.get('/api/_healthcheck',async(_req,res)=>{try{const database=await db();awai
 const routeDependencies = { db, auth, customerAuth, customerTokenFor, tokenFor, hashToken, emailPattern, createOtp, sendVerificationEmail, sendOrderUpdateEmail, bcrypt, randomUUID, randomBytes, jwt, jwtSecret, now, slugify, planFor, planStoreLimit, PLAN_CONFIG, uniquePaymentReference, createAlatPayVirtualAccount, verifyAlatPayTransaction, getUserStore };
 registerCustomerAuthRoutes(app, routeDependencies);
 registerSellerAuthRoutes(app, routeDependencies);
+registerAccountPasswordRecoveryRoutes(app, { db, hashToken, randomBytes, bcrypt, sendAccountPasswordResetEmail });
 registerStoreRoutes(app, routeDependencies);
 registerPaymentRoutes(app, routeDependencies);
 registerDiscountRoutes(app, routeDependencies);
