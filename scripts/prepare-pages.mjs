@@ -160,6 +160,21 @@ const demoDescription = "Explore a populated preview of the QuickCart buyer mark
 const demoContent = '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a> / Buyer marketplace preview</header><h1>QuickCart Buyer Marketplace Preview</h1><p>This advertising preview uses the real QuickCart buyer marketplace interface with sample products and fictional sellers. Cart and checkout interactions are for demonstration only; no real orders or payments are created.</p><p><a href="' + marketUrl + '">Open the live marketplace</a></p></main>';
 const demoSchema = { "@context":"https://schema.org", "@type":"WebPage", "@id":SITE+"/ad-demo/#webpage", url:SITE+"/ad-demo/", name:demoTitle, description:demoDescription, isPartOf:{ "@id":SITE+"/#website" } };
 await fs.writeFile(path.join(demoDir, "index.html"), render(template, { title:demoTitle, description:demoDescription, url:SITE+"/ad-demo/", content:demoContent, schema:demoSchema, indexable:false }));
+ 
+// Paired buyer/seller product demonstration entry points.
+const demoPages = [
+  { path:"demo", title:"QuickCart — Buyer and Seller Demos", description:"Explore the QuickCart buyer marketplace and seller workspace using sample data.", heading:"QuickCart Buyer and Seller Demos", body:"Choose the buyer marketplace to explore products and simulated checkout, or the seller workspace to review sample business metrics, products and orders." },
+  { path:"seller-demo", title:"QuickCart Seller Workspace — Demo", description:"Explore a sample QuickCart seller workspace with illustrative products, orders and business metrics.", heading:"QuickCart Seller Workspace Demo", body:"This preview demonstrates a sample seller dashboard, product catalogue, order processing and customer activity. All data is fictional and actions are local to the demo." }
+];
+for (const page of demoPages) {
+  const dir = path.join(DIST, page.path);
+  await fs.mkdir(dir, { recursive:true });
+  const url = SITE + "/" + page.path + "/";
+  const content = '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a> / Demo</header><h1>' + esc(page.heading) + '</h1><p>' + esc(page.body) + '</p><p><a href="' + SITE + '/ad-demo/">Buyer marketplace demo</a> · <a href="' + SITE + '/seller-demo/">Seller workspace demo</a></p><p>Sample data only. No real orders or payments are created.</p></main>';
+  const schema = { "@context":"https://schema.org", "@type":"WebPage", "@id":url+"#webpage", url, name:page.title, description:page.description, isPartOf:{ "@id":SITE+"/#website" } };
+  await fs.writeFile(path.join(dir, "index.html"), render(template, { title:page.title, description:page.description, url, content, schema, indexable:false }));
+}
+
 
 
 const sitemap = [SITE+"/", SITE+"/faq.html", marketUrl];
