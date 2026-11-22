@@ -98,6 +98,19 @@ const rootSchema = { "@context":"https://schema.org", "@graph":[
 ]};
 await fs.writeFile(path.join(DIST, "index.html"), render(template, { title:rootTitle, description:rootDescription, url:SITE+"/", content:rootContent, schema:rootSchema }));
 
+const faqUrl = SITE + "/faq.html";
+const faqTitle = "QuickCart by AD3N1X — Frequently asked questions";
+const faqDescription = "Answers about QuickCart by AD3N1X, the independent Nigerian commerce platform for sellers and shoppers.";
+const faqContent = '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a> / Frequently asked questions</header><h1>Frequently asked questions</h1>' +
+  faqs.map(([q,a]) => '<section><h2>' + esc(q) + '</h2><p>' + esc(a) + '</p></section>').join("") +
+  '<p><a href="' + SITE + '/marketplace/">Explore the QuickCart marketplace</a></p></main>';
+const faqSchema = { "@context":"https://schema.org", "@graph":[
+  { "@type":"WebPage", "@id":faqUrl+"#webpage", url:faqUrl, name:faqTitle, description:faqDescription, inLanguage:"en-NG", isPartOf:{ "@id":SITE+"/#website" } },
+  { "@type":"FAQPage", "@id":faqUrl+"#faq", mainEntity:faqs.map(([q,a]) => ({ "@type":"Question", name:q, acceptedAnswer:{ "@type":"Answer", text:a } })) }
+]};
+await fs.writeFile(path.join(DIST, "faq.html"), render(template, { title:faqTitle, description:faqDescription, url:faqUrl, content:faqContent, schema:faqSchema }));
+
+
 let catalog = { stores:[], products:[] };
 try {
   catalog = await fetchJsonWithRetry(API + "/api/marketplace");
@@ -139,6 +152,15 @@ const marketSchema = { "@context":"https://schema.org", "@graph":[
 const marketDir = path.join(DIST, "marketplace");
 await fs.mkdir(marketDir, { recursive:true });
 await fs.writeFile(path.join(marketDir, "index.html"), render(template, { title:marketTitle, description:marketDescription, url:marketUrl, content:marketContent, schema:marketSchema }));
+
+const demoDir = path.join(DIST, "ad-demo");
+await fs.mkdir(demoDir, { recursive:true });
+const demoTitle = "QuickCart Buyer Marketplace — Advertising Preview";
+const demoDescription = "Explore a populated preview of the QuickCart buyer marketplace. Sample products and sellers are used; checkout is simulated and does not create real orders or payments.";
+const demoContent = '<main class="seo-fallback"><header><a href="' + SITE + '/">QuickCart by AD3N1X</a> / Buyer marketplace preview</header><h1>QuickCart Buyer Marketplace Preview</h1><p>This advertising preview uses the real QuickCart buyer marketplace interface with sample products and fictional sellers. Cart and checkout interactions are for demonstration only; no real orders or payments are created.</p><p><a href="' + marketUrl + '">Open the live marketplace</a></p></main>';
+const demoSchema = { "@context":"https://schema.org", "@type":"WebPage", "@id":SITE+"/ad-demo/#webpage", url:SITE+"/ad-demo/", name:demoTitle, description:demoDescription, isPartOf:{ "@id":SITE+"/#website" } };
+await fs.writeFile(path.join(demoDir, "index.html"), render(template, { title:demoTitle, description:demoDescription, url:SITE+"/ad-demo/", content:demoContent, schema:demoSchema, indexable:false }));
+
 
 const sitemap = [SITE+"/", SITE+"/faq.html", marketUrl];
 let generated = 0;
