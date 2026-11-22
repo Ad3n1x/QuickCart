@@ -49,6 +49,7 @@ export default function PasswordRecovery({accountType="seller",mode="forgot",onB
     <div className={buyer?"customer-auth-brand":"auth-brand"}><Logo size={44}/><div><span className="eyebrow">QUICKCART {buyer?"BUYER":"SELLER"}</span><h1>{reset?"Choose a new password":"Forgot your password?"}</h1><p>{reset?"Create a new password for your QuickCart account.":"Enter the email address linked to your account and we’ll send a secure reset link."}</p></div></div>
     {message&&<div className="form-success">{message}</div>}
     {error&&<div className="form-error">{error}</div>}
+    {reset&&!token&&!error&&<div className="form-error">This reset link is missing its security token. Request a new link.</div>}
     {!(reset&&message)&&<form className="stack" onSubmit={submit}>
       {!reset?<Field label="Email address" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="you@example.com"/>:<><Password label="New password" value={password} onChange={setPassword}/><Password label="Confirm new password" value={confirmPassword} onChange={setConfirmPassword}/><small className="muted">Use 8–128 characters with uppercase, lowercase, a number and a symbol.</small></>}
       <button className="primary-button big full" disabled={loading||Boolean(reset&&!token)}>{loading?"Please wait…":reset?"Update password":"Send reset link"} <KeyRound size={17}/></button>
