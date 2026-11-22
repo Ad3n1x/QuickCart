@@ -37,6 +37,12 @@ The public product homepage contains crawlable HTML content and SoftwareApplicat
 
 QuickCart is positioned as a business and shopping platform for independent sellers and shoppers. It has an independent product identity, while AD3N1X is credited as its creator. The public About page and `docs/BRAND_IDENTITY.md` define the approved description and claim boundaries.
 
+## Product vision and release boundaries
+
+The longer-term product vision is a Nigeria-first business and shopping platform that connects buyer journeys with a connected operating system for independent sellers. The intended seller areas include storefronts, products, customer/order workflows, inventory and procurement, finance/reconciliation, delivery operations, marketing/reporting and seller-approved recommendations. The detailed target, constraints and acceptance criteria are in [`docs/PRODUCT-VISION.md`](docs/PRODUCT-VISION.md).
+
+The feature list below describes the documented current application scope, not completion of the entire Business OS. The implementation and release documents still identify unverified payment-sandbox evidence, finance/inventory ledger guarantees, delivery proof, marketing conversion workflows, approved-action execution, comprehensive tenant-isolation/E2E coverage and production smoke tests. Do not advertise these as complete until their release gates are passed.
+
 ## Product capabilities
 
 - Seller storefront setup and shareable public store pages.

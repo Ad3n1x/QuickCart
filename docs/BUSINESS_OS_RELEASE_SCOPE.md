@@ -2,6 +2,10 @@
 
 This release extends the existing QuickCart application. It must not replace the app, remove monetization code, or introduce paid gates during the free launch.
 
+This file is a release-scope and acceptance contract; checked items indicate work recorded in the audit, not proof that the complete Business OS is production-ready. See [`PRODUCT-VISION.md`](PRODUCT-VISION.md) for the full product target.
+
+**Branch reconciliation warning (22 November 2026):** the historical `implementation/business-os-phase-1` branch is 69 commits ahead and 151 behind `main` in the current comparison. It is not a safe merge candidate. Rebase/reconcile the useful changes against current `main`, review every migration and route, then rerun the complete release gates. Do not deploy that branch wholesale.
+
 ## Delivery policy
 - Work on `implementation/business-os-phase-1`; do not merge to `main` or deploy until the release gates below pass.
 - Keep credentials in Render/Vercel environment settings. Never commit secrets or request them in chat.
