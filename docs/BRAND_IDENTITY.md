@@ -6,7 +6,7 @@
 - Full attribution form: **QuickCart by AD3N1X**
 - Creator: **Adeniran Victor Adebowale**
 - Creator's publishing identity: **AD3N1X**
-- Official product website and live application: https://ad3n1x.github.io/QuickCart/
+- Official product website and live application: https://quick-cart-three-chi.vercel.app/
 - Source repository: https://github.com/Ad3n1x/QuickCart
 - Initial market: Nigeria
 
@@ -60,11 +60,11 @@ Creator attribution:
 
 ## Canonical public references
 
-- Product homepage and live application: https://ad3n1x.github.io/QuickCart/
-- About page: https://ad3n1x.github.io/QuickCart/about.html
-- FAQ: https://ad3n1x.github.io/QuickCart/faq.html
-- AI-readable reference: https://ad3n1x.github.io/QuickCart/llms.txt
-- Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
+- Product homepage and live application: https://quick-cart-three-chi.vercel.app/
+- About page: https://quick-cart-three-chi.vercel.app/about.html
+- FAQ: https://quick-cart-three-chi.vercel.app/faq.html
+- AI-readable reference: https://quick-cart-three-chi.vercel.app/llms.txt
+- Sitemap: https://quick-cart-three-chi.vercel.app/sitemap.xml
 - Source repository: https://github.com/Ad3n1x/QuickCart
 - Creator portfolio: https://ad3n1x.github.io/Portfolio/
 
