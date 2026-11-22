@@ -57,7 +57,7 @@ function render(template, page) {
   html = meta(html, "name", "twitter:description", page.description);
   html = canonical(html, page.url);
   html = html.replace(/<script\s+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/i, '<script type="application/ld+json">' + json(page.schema) + "</script>");
-  return html.replace(/<div id="root">[\\s\\S]*?<\\/div>/i, '<div id="root">' + page.content + "</div>");
+  return html.replace(/<div id="root">[\s\S]*?<\/div>/i, '<div id="root">' + page.content + "</div>");
 }
 
 const faqs = [
