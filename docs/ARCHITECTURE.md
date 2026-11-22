@@ -58,7 +58,7 @@ src/
   utils/
 ```
 
-`src/main.jsx` remains the live Vite entrypoint. A separate `client/` directory is intentionally not introduced until Vite's root, base path, public assets, PWA/service-worker paths, and GitHub Pages workflow can be migrated and tested together.
+`src/main.jsx` remains the live Vite entrypoint. A separate `client/` directory is intentionally not introduced until Vite's root, base path, public assets, PWA/service-worker paths, Vercel routing, and any retained GitHub Pages mirror can be migrated and tested together.
 
 ## Server target
 
@@ -131,4 +131,4 @@ Only put genuinely environment-neutral schemas/constants in `shared`. Do not sha
 - Customer history and cart data remain correctly scoped.
 - Payment callbacks are verified server-side and are idempotent.
 - `npm run check` and `npm run build` pass, plus API integration and browser smoke tests.
-- GitHub Pages base path, Vercel routing, Render start command, and PWA service-worker scope are verified.
+- Vercel routing is the canonical production frontend path; any GitHub Pages mirror, Render API start command, and PWA service-worker scope are verified separately.
