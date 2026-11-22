@@ -13,11 +13,11 @@ const packageJson = JSON.parse(read("package.json"));
 const html = read("index.html");
 const main = read("src/main.jsx");
 const apiClient = read("src/lib/api.js");
-const app = [read("src/App.jsx"), read("src/app/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js"), read("src/lib/navigation.js"), read("src/features/dashboard/DashboardViews.jsx"), read("src/features/storefront/PublicStore.jsx"), read("src/features/auth/AuthViews.jsx"), read("src/features/marketing/Landing.jsx"), read("src/features/receipts/ReceiptScanner.jsx"), read("src/features/receipts/OrderReceiptModal.jsx"), read("src/components/common/SharedUI.jsx"), read("src/components/forms/PhoneField.jsx")].join("\n");
+const app = [read("src/App.jsx"), read("src/app/App.jsx"), read("src/lib/order-utils.js"), read("src/lib/identity.js"), read("src/lib/navigation.js"), read("src/features/dashboard/DashboardViews.jsx"), read("src/features/storefront/PublicStore.jsx"), read("src/features/auth/AuthViews.jsx"), read("src/features/auth/PasswordRecovery.jsx"), read("src/features/marketing/Landing.jsx"), read("src/features/receipts/ReceiptScanner.jsx"), read("src/features/receipts/OrderReceiptModal.jsx"), read("src/components/common/SharedUI.jsx"), read("src/components/forms/PhoneField.jsx")].join("\n");
 const css = read("src/styles/main.css");
 const serviceWorker = read("public/sw.js");
 const vite = read("vite.config.js");
-const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/services/stores.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js"), read("server/src/routes/customer-auth.js"), read("server/src/routes/seller-auth.js"), read("server/src/routes/store.js"), read("server/src/routes/payments.js"), read("server/src/routes/discounts.js"), read("server/src/routes/orders.js")].join("\n");
+const api = [read("api/index.js"), read("server/src/config/database.js"), read("server/src/middleware/auth.js"), read("server/src/services/email.js"), read("server/src/services/payments.js"), read("server/src/services/stores.js"), read("server/src/config/plans.js"), read("server/src/utils/identity.js"), read("server/src/routes/customer-auth.js"), read("server/src/routes/seller-auth.js"), read("server/src/routes/account-password-recovery.js"), read("server/src/routes/store.js"), read("server/src/routes/payments.js"), read("server/src/routes/discounts.js"), read("server/src/routes/orders.js")].join("\n");
 const workflow = read(".github/workflows/deploy-pages.yml");
 
 check("Product modal CSS uses real line breaks and does not contain escaped newline tokens",
@@ -100,6 +100,14 @@ check("Customer receipt OCR validates uploads and always releases worker resourc
 check("Checkout idempotency does not reuse un-fingerprinted legacy keys",
   /savedCheckout&&typeof savedCheckout==="object"&&savedCheckout\.fingerprint===checkoutFingerprint\?savedCheckout\.id:""/.test(app) &&
   !/typeof savedCheckout==="string"\?savedCheckout/.test(app));
+check("Buyer and seller accounts both expose secure forgot-password and reset-password flows",
+  /account-recovery/.test(app) &&
+  /Forgot password\\?/.test(app) &&
+  /createAccountPasswordResetEmailSender/.test(api) &&
+  /account_password_resets/.test(api) &&
+  /15 \\* 60 \\* 1000/.test(api) &&
+  /passwordChangedAt/.test(api));
+
 check("Deployment workflow checks backend syntax and verifies live sitemap files",
   /node --check api\/index\.js/.test(workflow) &&
   /Verify live SEO files/.test(workflow) &&
