@@ -101,12 +101,12 @@ check("Checkout idempotency does not reuse un-fingerprinted legacy keys",
   /savedCheckout&&typeof savedCheckout==="object"&&savedCheckout\.fingerprint===checkoutFingerprint\?savedCheckout\.id:""/.test(app) &&
   !/typeof savedCheckout==="string"\?savedCheckout/.test(app));
 check("Buyer and seller accounts both expose secure forgot-password and reset-password flows",
-  /account-recovery/.test(app) &&
-  /Forgot password\\?/.test(app) &&
-  /createAccountPasswordResetEmailSender/.test(api) &&
-  /account_password_resets/.test(api) &&
-  /15 \\* 60 \\* 1000/.test(api) &&
-  /passwordChangedAt/.test(api));
+  app.includes("account-recovery") &&
+  app.includes("Forgot password?") &&
+  api.includes("createAccountPasswordResetEmailSender") &&
+  api.includes("account_password_resets") &&
+  api.includes("15 * 60 * 1000") &&
+  api.includes("passwordChangedAt"));
 
 check("Deployment workflow checks backend syntax and verifies live sitemap files",
   /node --check api\/index\.js/.test(workflow) &&
