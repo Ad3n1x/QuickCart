@@ -14,6 +14,7 @@ const site = "https://ad3n1x.github.io/QuickCart";
 const root = read("dist/index.html");
 const marketplace = read("dist/marketplace/index.html");
 const faq = read("dist/faq.html");
+const adDemo = read("dist/ad-demo/index.html");
 const llms = read("dist/llms.txt");
 const sitemap = read("dist/sitemap.xml");
 const robots = read("dist/robots.txt");
@@ -38,6 +39,8 @@ const marketPage = marketGraph.find((item) => item["@type"] === "CollectionPage"
 check("Homepage canonical is the sole official GitHub Pages URL", canonical(root) === site + "/");
 check("Marketplace canonical points to the official marketplace route", canonical(marketplace) === site + "/marketplace/");
 check("FAQ canonical points to the official FAQ route", canonical(faq) === site + "/faq.html");
+check("Buyer ad preview has its own canonical route and is not indexable", canonical(adDemo) === site + "/ad-demo/" && /noindex,nofollow/.test(adDemo));
+check("Buyer ad preview clearly identifies its sample catalogue and simulated checkout", /sample products and fictional sellers/i.test(adDemo) && /no real orders or payments/i.test(adDemo));
 check("Homepage title clearly identifies QuickCart by AD3N1X", /QuickCart by AD3N1X/.test(title(root)));
 check("Marketplace title clearly identifies QuickCart by AD3N1X", /QuickCart.*AD3N1X/i.test(title(marketplace)));
 check("Homepage visibly identifies the project as independent and distinct from quickcart.ng", /independent/i.test(root) && /quickcart\.ng/i.test(root));
