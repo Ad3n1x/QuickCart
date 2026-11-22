@@ -87,7 +87,7 @@ The public homepage, FAQ and public seller storefronts are discovery surfaces. A
 - Backend: Node.js and Express.
 - Database: MongoDB.
 - Authentication: JWT-based application authentication.
-- Primary frontend and live application: GitHub Pages at https://quick-cart-three-chi.vercel.app/.
+- Primary frontend and live application: Vercel at https://quick-cart-three-chi.vercel.app/.
 - Backend deployment: Render.
 - Source repository: https://github.com/Ad3n1x/QuickCart
 
