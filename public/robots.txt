@@ -1,6 +1,5 @@
 # QuickCart by AD3N1X — crawler policy
-# This file is published within the GitHub Pages project at /QuickCart/robots.txt.
-# It cannot govern host-root crawler policy at https://ad3n1x.github.io/robots.txt.
+# This file is served from the Vercel project root and governs crawler access for the canonical QuickCart application host.
 
 User-agent: *
 Allow: /
@@ -49,4 +48,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://ad3n1x.github.io/QuickCart/sitemap.xml
+Sitemap: https://quick-cart-three-chi.vercel.app/sitemap.xml
