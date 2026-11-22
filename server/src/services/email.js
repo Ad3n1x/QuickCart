@@ -67,3 +67,21 @@ export function createAdminPasswordResetEmailSender({apiKey,fromEmail,fromName="
   return data;
  };
 }
+
+
+export function createAccountPasswordResetEmailSender({apiKey,fromEmail,fromName="QuickCart"}) {
+ return async function sendAccountPasswordResetEmail(email,name,resetUrl,accountType) {
+  if(!apiKey||!fromEmail)throw new Error("Brevo email settings are not configured.");
+  const safeName=escapeEmailHtml(name||"there");
+  const safeUrl=escapeEmailHtml(resetUrl);
+  const audience=accountType==="buyer"?"buyer":"seller";
+  const textContent=`Hi ${name||"there"}, a password reset was requested for your QuickCart ${audience} account. Use this one-time link within 15 minutes:\\n\\n${resetUrl}\\n\\nIf you did not request this, ignore this email.`;
+  const htmlContent=`<!doctype html><html><body style="margin:0;background:#f4f7f5;padding:32px 16px;font-family:Arial,sans-serif;color:#17231d"><main style="max-width:540px;margin:auto;background:#fff;border:1px solid #e5ece7;border-radius:18px;padding:30px"><p style="color:#587064;font-size:12px;letter-spacing:1.5px;font-weight:700">QUICKCART ACCOUNT SECURITY</p><h1 style="font-size:24px;margin:8px 0 12px">Reset your password</h1><p style="color:#53645b;line-height:1.65">Hi ${safeName}, use the button below to choose a new password for your QuickCart ${audience} account.</p><p style="margin:26px 0"><a href="${safeUrl}" style="display:inline-block;background:#245b3e;color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px">Reset password</a></p><p style="color:#63736a;font-size:13px;line-height:1.6">This one-time link expires in <strong>15 minutes</strong> and can only be used once. If you did not request this, you can safely ignore this email.</p><p style="color:#87938c;font-size:11px;margin-top:28px">QuickCart by AD3N1X</p></main></body></html>`;
+  const response=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{accept:"application/json","api-key":apiKey,"content-type":"application/json"},body:JSON.stringify({sender:{name:fromName,email:fromEmail},to:[{email,name}],subject:"Reset your QuickCart password",textContent,htmlContent}),signal:AbortSignal.timeout(15000)});
+  const raw=await response.text();
+  let data={};try{data=raw?JSON.parse(raw):{}}catch{data={message:raw.slice(0,300)}}
+  if(!response.ok)throw new Error(String(data.message||data.error||"Brevo rejected the password reset email.").slice(0,300));
+  if(!data.messageId)throw new Error("Brevo did not confirm acceptance of the password reset email.");
+  return data;
+ };
+}
