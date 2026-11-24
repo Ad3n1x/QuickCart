@@ -21,12 +21,21 @@ import { createPaymentServices } from "../server/src/services/payments.js";
 import { getUserStore } from "../server/src/services/stores.js";
 
 const app = express();
+app.disable('x-powered-by');
 
-const frontendUrl = (process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app').replace(/\/+$/, '');
+const frontendUrl = (process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app').replace(/\\/+$/, '');
 const allowedOrigins = new Set([frontendUrl, 'https://quick-cart-adeniran-victor-adebowales-projects.vercel.app', 'https://quick-cart-git-main-adeniran-victor-adebowales-projects.vercel.app', 'https://quick-cart-three-chi.vercel.app', 'https://ad3n1x.github.io', 'http://localhost:5173', 'http://localhost:4173']);
-const isAllowedOrigin = origin => !origin || allowedOrigins.has(origin) || /^https:\/\/quick-cart-[a-z0-9-]+-adeniran-victor-adebowales-projects\.vercel\.app$/i.test(origin);
+const isAllowedOrigin = origin => !origin || allowedOrigins.has(origin) || /^https:\\/\\/quick-cart-[a-z0-9-]+-adeniran-victor-adebowales-projects\\.vercel\\.app$/i.test(origin);
 app.set('trust proxy',1);
-app.use((req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');if(req.path.startsWith('/api/'))res.setHeader('Cache-Control','no-store');if(req.secure||req.headers['x-forwarded-proto']==='https')res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');next();});
+app.use((req,res,next)=>{
+  res.setHeader('X-Content-Type-Options','nosniff');
+  res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options','DENY');
+  res.setHeader('Content-Security-Policy',"default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'");
+  if(req.path.startsWith('/api/')) res.setHeader('Cache-Control','no-store');
+  if(req.secure||req.headers['x-forwarded-proto']==='https') res.setHeader('Strict-Transport-Security','max-age=31536000; includeSubDomains');
+  next();
+});
 app.use((req,res,next)=>{if(req.path.startsWith('/api/') && process.env.NODE_ENV==='production' && req.headers['x-forwarded-proto']!=='https')return res.status(400).json({error:'HTTPS is required.',code:'HTTPS_REQUIRED'});next();});
 app.use(cors({ origin: (origin, callback) => { if (isAllowedOrigin(origin)) return callback(null, true); callback(new Error('Origin not allowed by CORS.')); } }));
 app.use(express.json({ limit: '8mb' }));
