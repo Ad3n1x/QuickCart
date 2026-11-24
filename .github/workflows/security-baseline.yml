@@ -1,0 +1,29 @@
+name: QuickCart OWASP ZAP Baseline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/security-baseline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quickcart-zap-baseline
+  cancel-in-progress: false
+
+jobs:
+  passive-baseline:
+    name: Passive web security baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Run OWASP ZAP Baseline
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: "https://quick-cart-three-chi.vercel.app/"
+          allow_issue_writing: false
+          fail_action: false
+          artifact_name: "quickcart-zap-baseline-report"
