@@ -1,4 +1,5 @@
 name: QuickCart OWASP ZAP Baseline
+# Re-run after frontend and API security-header hardening.
 
 on:
   push:
