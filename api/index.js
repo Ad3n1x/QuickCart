@@ -23,9 +23,9 @@ import { getUserStore } from "../server/src/services/stores.js";
 const app = express();
 app.disable('x-powered-by');
 
-const frontendUrl = (process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app').replace(/\\/+$/, '');
+const frontendUrl = (process.env.FRONTEND_URL || 'https://quick-cart-three-chi.vercel.app').replace(/\/+$/, '');
 const allowedOrigins = new Set([frontendUrl, 'https://quick-cart-adeniran-victor-adebowales-projects.vercel.app', 'https://quick-cart-git-main-adeniran-victor-adebowales-projects.vercel.app', 'https://quick-cart-three-chi.vercel.app', 'https://ad3n1x.github.io', 'http://localhost:5173', 'http://localhost:4173']);
-const isAllowedOrigin = origin => !origin || allowedOrigins.has(origin) || /^https:\\/\\/quick-cart-[a-z0-9-]+-adeniran-victor-adebowales-projects\\.vercel\\.app$/i.test(origin);
+const isAllowedOrigin = origin => !origin || allowedOrigins.has(origin) || /^https:\/\/quick-cart-[a-z0-9-]+-adeniran-victor-adebowales-projects\.vercel\.app$/i.test(origin);
 app.set('trust proxy',1);
 app.use((req,res,next)=>{
   res.setHeader('X-Content-Type-Options','nosniff');
